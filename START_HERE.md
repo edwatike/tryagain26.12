@@ -6,8 +6,8 @@
 
 ```powershell
 # Backend
-@"
-DATABASE_URL=postgresql+asyncpg://postgres:postgres@localhost:5432/postgres
+@" 
+DATABASE_URL=postgresql+asyncpg://postgres:Jnvnszoe5971312059001@localhost:5432/b2bplatform
 PARSER_SERVICE_URL=http://127.0.0.1:9003
 ENV=development
 LOG_LEVEL=INFO
@@ -29,7 +29,10 @@ LOG_LEVEL=INFO
 "@ | Out-File -FilePath "parser_service\.env" -Encoding utf8
 ```
 
-**Важно:** Замените `postgres:postgres@localhost:5432/postgres` на ваши реальные данные БД!
+**⚠️ ВАЖНО:** 
+- Используется база данных `b2bplatform` (НЕ МЕНЯТЬ!)
+- Пароль: `Jnvnszoe5971312059001`
+- Подробности: см. `docs/DATABASE_CONFIG.md`
 
 ## Шаг 2: Примените миграции БД
 
@@ -39,7 +42,9 @@ LOG_LEVEL=INFO
 
 Или вручную:
 ```powershell
-psql -U postgres -d postgres -f backend\migrations\001_initial_schema.sql
+$env:PGPASSWORD="Jnvnszoe5971312059001"
+psql -U postgres -d b2bplatform -h localhost -p 5432 -f backend\migrations\001_initial_schema.sql
+psql -U postgres -d b2bplatform -h localhost -p 5432 -f backend\migrations\002_audit_log.sql
 ```
 
 ## Шаг 3: Запустите все сервисы

@@ -159,29 +159,54 @@ class BlacklistModel(Base):
     )
 
 
-class ParsingRunModel(Base):
-    """Model for parsing_runs table."""
-    __tablename__ = "parsing_runs"
+class ParsingRequestModel(Base):
+    """Model for parsing_requests table."""
+    __tablename__ = "parsing_requests"
     
-    run_id: Mapped[str] = mapped_column(String(255), primary_key=True)
-    keyword: Mapped[str] = mapped_column(String(255), nullable=False)
-    status: Mapped[str] = mapped_column(String(50), nullable=False)  # running, completed, failed
-    started_at: Mapped[datetime] = mapped_column(
-        server_default=func.now(),
-        nullable=False
-    )
-    finished_at: Mapped[Optional[datetime]] = mapped_column(nullable=True)
-    error: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    results_count: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
     created_at: Mapped[datetime] = mapped_column(
         server_default=func.now(),
         nullable=False
     )
+    updated_at: Mapped[datetime] = mapped_column(
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False
+    )
+    created_by: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    raw_keys_json: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    depth: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    source: Mapped[Optional[str]] = mapped_column(String(32), nullable=True)
+    comment: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    title: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+
+
+class ParsingRunModel(Base):
+    """Model for parsing_runs table."""
+    __tablename__ = "parsing_runs"
+    
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    run_id: Mapped[str] = mapped_column(String(64), nullable=False, unique=True)
+    request_id: Mapped[int] = mapped_column(Integer, ForeignKey("parsing_requests.id", ondelete="CASCADE"), nullable=False)
+    parser_task_id: Mapped[Optional[str]] = mapped_column(String(128), nullable=True)
+    status: Mapped[str] = mapped_column(String(32), nullable=False)
+    depth: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    source: Mapped[Optional[str]] = mapped_column(String(32), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        server_default=func.now(),
+        nullable=False
+    )
+    started_at: Mapped[Optional[datetime]] = mapped_column(nullable=True)
+    finished_at: Mapped[Optional[datetime]] = mapped_column(nullable=True)
+    error_message: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    
+    # Relationship
+    request: Mapped[Optional["ParsingRequestModel"]] = relationship("ParsingRequestModel", lazy="select")
     
     # Indexes
     __table_args__ = (
-        Index("idx_parsing_runs_keyword", "keyword"),
         Index("idx_parsing_runs_status", "status"),
+        Index("idx_parsing_runs_run_id", "run_id"),
     )
 
 
@@ -209,3 +234,27 @@ class DomainQueueModel(Base):
         Index("idx_domains_queue_keyword", "keyword"),
     )
 
+
+class AuditLogModel(Base):
+    """Model for audit_log table."""
+    __tablename__ = "audit_log"
+    
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    table_name: Mapped[str] = mapped_column(String(255), nullable=False)
+    operation: Mapped[str] = mapped_column(String(10), nullable=False)  # INSERT, UPDATE, DELETE
+    record_id: Mapped[str] = mapped_column(String(255), nullable=False)
+    old_data: Mapped[Optional[dict]] = mapped_column(Text, nullable=True)  # JSONB as Text for now
+    new_data: Mapped[Optional[dict]] = mapped_column(Text, nullable=True)  # JSONB as Text for now
+    changed_by: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    changed_at: Mapped[datetime] = mapped_column(
+        server_default=func.now(),
+        nullable=False
+    )
+    
+    # Indexes
+    __table_args__ = (
+        Index("idx_audit_log_table_name", "table_name"),
+        Index("idx_audit_log_operation", "operation"),
+        Index("idx_audit_log_record_id", "record_id"),
+        Index("idx_audit_log_changed_at", "changed_at"),
+    )

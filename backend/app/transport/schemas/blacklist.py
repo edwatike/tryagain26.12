@@ -1,7 +1,7 @@
 """Pydantic schemas for blacklist."""
 from datetime import datetime
 from typing import Optional, List
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from app.transport.schemas.common import BaseDTO
 
@@ -11,7 +11,7 @@ class BlacklistEntryDTO(BaseDTO):
     domain: str
     reason: Optional[str] = None
     addedBy: Optional[str] = Field(None, alias="added_by")
-    addedAt: datetime = Field(alias="added_at")
+    addedAt: Optional[str] = Field(None, alias="added_at")  # Строка вместо datetime для совместимости с Frontend
     parsingRunId: Optional[str] = Field(None, alias="parsing_run_id")
     
     model_config = ConfigDict(
@@ -26,6 +26,24 @@ class AddToBlacklistRequestDTO(BaseModel):
     reason: Optional[str] = None
     addedBy: Optional[str] = None
     parsingRunId: Optional[str] = None
+    
+    @field_validator('domain')
+    @classmethod
+    def validate_domain(cls, v: str) -> str:
+        """Validate domain format."""
+        if not v or len(v.strip()) == 0:
+            raise ValueError("Domain cannot be empty")
+        if len(v) > 255:
+            raise ValueError("Domain is too long (max 255 characters)")
+        # Basic domain validation (can be enhanced)
+        domain = v.strip().lower()
+        if '.' not in domain:
+            raise ValueError("Invalid domain format")
+        # Remove protocol if present
+        domain = domain.replace('http://', '').replace('https://', '').replace('www.', '')
+        if len(domain) < 3:
+            raise ValueError("Domain is too short")
+        return domain
 
 
 class BlacklistResponseDTO(BaseModel):

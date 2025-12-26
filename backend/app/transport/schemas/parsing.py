@@ -24,27 +24,46 @@ class ParsingStatusResponseDTO(BaseModel):
     runId: str = Field(alias="run_id")
     keyword: str
     status: str
-    startedAt: datetime = Field(alias="started_at")
+    startedAt: Optional[datetime] = Field(None, alias="started_at")
     finishedAt: Optional[datetime] = Field(None, alias="finished_at")
-    error: Optional[str] = None
-    resultsCount: Optional[int] = Field(None, alias="results_count")
+    error: Optional[str] = Field(None, alias="error_message")
+    resultsCount: Optional[int] = None  # Not in DB, can be calculated from parsing_hits
 
 
 class ParsingRunDTO(BaseDTO):
     """Parsing run DTO."""
     runId: str = Field(alias="run_id")
-    keyword: str
+    keyword: str  # Will be extracted from request.title or raw_keys_json
     status: str
-    startedAt: datetime = Field(alias="started_at")
-    finishedAt: Optional[datetime] = Field(None, alias="finished_at")
-    error: Optional[str] = None
-    resultsCount: Optional[int] = Field(None, alias="results_count")
-    createdAt: datetime = Field(alias="created_at")
+    startedAt: Optional[str] = Field(None, alias="started_at")
+    finishedAt: Optional[str] = Field(None, alias="finished_at")
+    error: Optional[str] = Field(None, alias="error_message")
+    resultsCount: Optional[int] = None  # Not in DB, can be calculated from parsing_hits
+    createdAt: str = Field(alias="created_at")
     
     model_config = ConfigDict(
         from_attributes=True,
-        populate_by_name=True
+        populate_by_name=True,
+        # Используем by_alias=True для сериализации в JSON
+        json_schema_extra={
+            "example": {
+                "runId": "123e4567-e89b-12d3-a456-426614174000",
+                "keyword": "test keyword",
+                "status": "running",
+                "startedAt": "2025-12-26T14:00:00Z",
+                "finishedAt": None,
+                "error": None,
+                "resultsCount": None,
+                "createdAt": "2025-12-26T14:00:00Z"
+            }
+        }
     )
+    
+    def model_dump(self, **kwargs):
+        """Override model_dump to use by_alias=True by default for JSON serialization."""
+        kwargs.setdefault("by_alias", True)
+        kwargs.setdefault("mode", "json")
+        return super().model_dump(**kwargs)
 
 
 class ParsingRunsListResponseDTO(BaseModel):

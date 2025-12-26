@@ -18,9 +18,10 @@ if not exist "backend\.env" (
 )
 echo.
 
-REM Start Chrome CDP
+REM Start Chrome CDP (visible mode - not headless, so you can pass CAPTCHA if needed)
 echo [2/5] Starting Chrome in CDP mode...
-start "" "C:\Program Files\Google\Chrome\Application\chrome.exe" --remote-debugging-port=9222 --headless --disable-gpu
+echo NOTE: Chrome will be VISIBLE (not headless) so you can pass CAPTCHA manually if needed
+start "" "C:\Program Files\Google\Chrome\Application\chrome.exe" --remote-debugging-port=9222 --disable-gpu --no-sandbox --disable-dev-shm-usage
 timeout /t 3 /nobreak >nul
 echo OK: Chrome started on port 9222
 echo.

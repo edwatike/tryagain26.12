@@ -24,7 +24,7 @@
 - **Frontend**: Next.js 16 (App Router), TypeScript, Tailwind CSS, Shadcn UI
 - **Backend**: FastAPI (Python), SQLAlchemy 2.0, PostgreSQL
 - **Parser Service**: FastAPI, Playwright, Chrome CDP
-- **База данных**: PostgreSQL 15
+- **База данных**: PostgreSQL 15 (используется база `b2bplatform`)
 
 ## Структура проекта
 
@@ -61,14 +61,18 @@ b2b-platform/
 ### Вариант 1: Автоматический запуск (рекомендуется)
 
 1. **Настройте подключение к БД** (один раз):
-   - Откройте `backend/.env` и укажите вашу БД:
+   - ⚠️ **ВАЖНО:** Используется база данных `b2bplatform` (пароль: `Jnvnszoe5971312059001`)
+   - Откройте `backend/.env` и установите:
      ```
-     DATABASE_URL=postgresql+asyncpg://user:password@host:port/database
+     DATABASE_URL=postgresql+asyncpg://postgres:Jnvnszoe5971312059001@localhost:5432/b2bplatform
      ```
    - Примените миграции:
      ```powershell
-     .\setup-database.bat
+     $env:PGPASSWORD="Jnvnszoe5971312059001"
+     psql -U postgres -d b2bplatform -h localhost -p 5432 -f backend\migrations\001_initial_schema.sql
+     psql -U postgres -d b2bplatform -h localhost -p 5432 -f backend\migrations\002_audit_log.sql
      ```
+   - Подробности: см. `docs/DATABASE_CONFIG.md`
 
 2. **Запустите всё одной командой:**
    ```powershell
@@ -83,7 +87,7 @@ b2b-platform/
 
 - Python 3.12+
 - Node.js 18+
-- PostgreSQL (любая версия, база должна существовать)
+- PostgreSQL (любая версия, используется база `b2bplatform`)
 - Google Chrome (для парсинга)
 
 ### 1. Backend
@@ -151,10 +155,11 @@ playwright install chromium
 cp .env.example .env
 
 # Запустить Chrome в режиме отладки (в отдельном терминале)
+# Chrome запускается в видимом режиме (не headless), чтобы можно было пройти капчу вручную
 # Linux/Mac:
-google-chrome --remote-debugging-port=9222 --headless
+google-chrome --remote-debugging-port=9222
 # Windows:
-chrome.exe --remote-debugging-port=9222 --headless
+chrome.exe --remote-debugging-port=9222
 
 # Запустить Parser Service
 python run_api.py
@@ -217,6 +222,16 @@ cd frontend/moderator-dashboard-ui
 npm run lint
 npm run type-check
 ```
+
+### Проверка импортов (Backend)
+
+Перед коммитом рекомендуется запустить скрипт проверки импортов `date`/`datetime`:
+
+```bash
+python temp/backend/check_imports.py
+```
+
+Скрипт проверяет все роутеры и usecases на отсутствующие импорты. Подробнее см. [`docs/TROUBLESHOOTING.md`](docs/TROUBLESHOOTING.md) - раздел "Инструменты для профилактики ошибок".
 
 ## Документация
 

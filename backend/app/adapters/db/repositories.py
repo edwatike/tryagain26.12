@@ -254,15 +254,67 @@ class ParsingRunRepository:
     
     async def get_by_id(self, run_id: str) -> Optional[ParsingRunModel]:
         """Get parsing run by ID."""
+        from app.adapters.db.models import ParsingRequestModel
+        
+        # Join with parsing_requests and eager load relationship
         result = await self.session.execute(
-            select(ParsingRunModel).where(ParsingRunModel.run_id == run_id)
+            select(ParsingRunModel)
+            .join(ParsingRequestModel, ParsingRunModel.request_id == ParsingRequestModel.id)
+            .options(selectinload(ParsingRunModel.request))
+            .where(ParsingRunModel.run_id == run_id)
         )
         return result.scalar_one_or_none()
     
-    async def list(self, limit: int = 100, offset: int = 0) -> tuple[List[ParsingRunModel], int]:
-        """List parsing runs with pagination."""
-        query = select(ParsingRunModel).order_by(ParsingRunModel.started_at.desc())
-        count_query = select(func.count()).select_from(ParsingRunModel)
+    async def list(
+        self,
+        limit: int = 100,
+        offset: int = 0,
+        status: Optional[str] = None,
+        keyword: Optional[str] = None,
+        sort_by: str = "created_at",
+        sort_order: str = "desc"
+    ) -> tuple[List[ParsingRunModel], int]:
+        """List parsing runs with pagination, filtering, and sorting."""
+        from app.adapters.db.models import ParsingRequestModel
+        
+        # Join with parsing_requests and eager load relationship
+        query = (
+            select(ParsingRunModel)
+            .join(ParsingRequestModel, ParsingRunModel.request_id == ParsingRequestModel.id)
+            .options(selectinload(ParsingRunModel.request))
+        )
+        
+        # Фильтрация по статусу
+        if status:
+            query = query.where(ParsingRunModel.status == status)
+        
+        # Фильтрация по keyword (через parsing_requests)
+        if keyword:
+            query = query.where(
+                (ParsingRequestModel.title.ilike(f"%{keyword}%")) |
+                (ParsingRequestModel.raw_keys_json.ilike(f"%{keyword}%"))
+            )
+        
+        # Сортировка
+        sort_column = getattr(ParsingRunModel, sort_by, ParsingRunModel.created_at)
+        if sort_order == "asc":
+            query = query.order_by(sort_column.asc().nulls_last())
+        else:
+            query = query.order_by(sort_column.desc().nulls_last())
+        
+        # Count query с теми же фильтрами
+        count_query = (
+            select(func.count())
+            .select_from(ParsingRunModel)
+            .join(ParsingRequestModel, ParsingRunModel.request_id == ParsingRequestModel.id)
+        )
+        if status:
+            count_query = count_query.where(ParsingRunModel.status == status)
+        if keyword:
+            count_query = count_query.where(
+                (ParsingRequestModel.title.ilike(f"%{keyword}%")) |
+                (ParsingRequestModel.raw_keys_json.ilike(f"%{keyword}%"))
+            )
         
         result = await self.session.execute(
             query.limit(limit).offset(offset)
@@ -286,6 +338,16 @@ class ParsingRunRepository:
         await self.session.flush()
         await self.session.refresh(run)
         return run
+    
+    async def delete(self, run_id: str) -> bool:
+        """Delete parsing run by run_id."""
+        run = await self.get_by_id(run_id)
+        if not run:
+            return False
+        
+        await self.session.delete(run)
+        await self.session.flush()
+        return True
 
 
 class DomainQueueRepository:

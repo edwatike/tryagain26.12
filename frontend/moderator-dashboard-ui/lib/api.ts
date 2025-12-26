@@ -17,13 +17,22 @@ export async function apiFetch<T>(
 ): Promise<T> {
   const url = `${API_BASE_URL}${endpoint}`
   
+  // Для DELETE запросов с body нужно явно указать Content-Type
+  const headers: HeadersInit = {
+    ...options?.headers,
+  }
+  
+  // Добавляем Content-Type только если есть body и метод не GET
+  if (options?.body && options.method !== "GET") {
+    headers["Content-Type"] = "application/json"
+  } else if (!options?.body && options?.method !== "GET" && options?.method !== "DELETE") {
+    headers["Content-Type"] = "application/json"
+  }
+  
   try {
     const response = await fetch(url, {
       ...options,
-      headers: {
-        "Content-Type": "application/json",
-        ...options?.headers,
-      },
+      headers,
     })
     
     if (!response.ok) {
@@ -43,7 +52,27 @@ export async function apiFetch<T>(
       )
     }
     
-    return await response.json()
+    // Для DELETE запросов без body может не быть JSON ответа
+    if (response.status === 204) {
+      return {} as T
+    }
+    
+    // Пытаемся получить JSON, если есть
+    const contentType = response.headers.get("content-type")
+    if (contentType && contentType.includes("application/json")) {
+      return await response.json()
+    }
+    
+    // Если нет JSON, возвращаем пустой объект
+    const text = await response.text()
+    if (text) {
+      try {
+        return JSON.parse(text) as T
+      } catch {
+        return {} as T
+      }
+    }
+    return {} as T
   } catch (error) {
     if (error instanceof APIError) throw error
     if (error instanceof TypeError && error.message.includes("fetch")) {

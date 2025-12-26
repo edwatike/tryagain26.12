@@ -17,6 +17,7 @@ from app.usecases import (
     get_parsing_status,
     get_parsing_run,
     list_parsing_runs,
+    delete_parsing_run,
     list_domains_queue,
     remove_from_domains_queue,
 )
@@ -39,6 +40,7 @@ __all__ = [
     "get_parsing_status",
     "get_parsing_run",
     "list_parsing_runs",
+    "delete_parsing_run",
     "list_domains_queue",
     "remove_from_domains_queue",
 ]

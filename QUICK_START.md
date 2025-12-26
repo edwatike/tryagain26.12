@@ -57,7 +57,8 @@ copy .env.example .env
 ```
 Или вручную:
 ```powershell
-start "" "C:\Program Files\Google\Chrome\Application\chrome.exe" --remote-debugging-port=9222 --headless --disable-gpu
+# Chrome запускается в видимом режиме (не headless), чтобы можно было пройти капчу вручную
+start "" "C:\Program Files\Google\Chrome\Application\chrome.exe" --remote-debugging-port=9222 --disable-gpu
 ```
 
 ### Терминал 2: Parser Service

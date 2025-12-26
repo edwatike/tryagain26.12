@@ -42,10 +42,47 @@ async def get_parsing_status_endpoint(
     db: AsyncSession = Depends(get_db)
 ):
     """Get parsing status by run ID."""
-    status = await get_parsing_status.execute(db=db, run_id=run_id)
-    if not status:
-        from fastapi import HTTPException
+    import json
+    import logging
+    from fastapi import HTTPException
+    
+    logger = logging.getLogger(__name__)
+    
+    run = await get_parsing_status.execute(db=db, run_id=run_id)
+    if not run:
         raise HTTPException(status_code=404, detail="Parsing run not found")
     
-    return ParsingStatusResponseDTO.model_validate(status)
+    try:
+        # Extract keyword from request.title or raw_keys_json
+        keyword = "Unknown"
+        if run.request:
+            if run.request.title:
+                keyword = run.request.title
+            elif run.request.raw_keys_json:
+                try:
+                    keys_data = json.loads(run.request.raw_keys_json)
+                    if isinstance(keys_data, list) and len(keys_data) > 0:
+                        keyword = keys_data[0] if isinstance(keys_data[0], str) else str(keys_data[0])
+                    elif isinstance(keys_data, dict) and "keys" in keys_data:
+                        keys = keys_data["keys"]
+                        if isinstance(keys, list) and len(keys) > 0:
+                            keyword = keys[0] if isinstance(keys[0], str) else str(keys[0])
+                except (json.JSONDecodeError, KeyError, IndexError):
+                    pass
+        
+        # Create DTO with extracted keyword
+        # Используем camelCase для соответствия DTO
+        status_dict = {
+            "runId": run.run_id,  # Используем camelCase для соответствия DTO
+            "keyword": keyword,
+            "status": run.status,
+            "startedAt": run.started_at.isoformat() if run.started_at else None,
+            "finishedAt": run.finished_at.isoformat() if run.finished_at else None,
+            "error": run.error_message,  # Маппим error_message на error
+            "resultsCount": None,  # Можно вычислить из parsing_hits, но пока null
+        }
+        return ParsingStatusResponseDTO.model_validate(status_dict)
+    except Exception as e:
+        logger.error(f"Error converting parsing status {run_id}: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Error processing parsing status: {str(e)}")
 

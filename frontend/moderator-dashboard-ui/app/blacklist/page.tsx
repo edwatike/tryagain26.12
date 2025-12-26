@@ -21,15 +21,20 @@ export default function BlacklistPage() {
   async function loadBlacklist() {
     try {
       setLoading(true)
-      const data = await apiFetch<{ entries: BlacklistEntryDTO[] }>("/moderator/blacklist?limit=100&offset=0")
-      setEntries(data.entries)
       setError(null)
+      const data = await apiFetch<{ entries: BlacklistEntryDTO[]; total: number }>("/moderator/blacklist?limit=100&offset=0")
+      setEntries(data.entries || [])
+      // Если entries пустой, но total > 0, значит проблема с данными
+      if ((!data.entries || data.entries.length === 0) && data.total > 0) {
+        setError(`В базе данных есть ${data.total} записей, но они не загружены. Проверьте формат данных.`)
+      }
     } catch (err) {
       if (err instanceof APIError) {
         setError(err.message)
       } else {
         setError("Ошибка загрузки черного списка")
       }
+      console.error("Blacklist load error:", err)
     } finally {
       setLoading(false)
     }
@@ -76,7 +81,7 @@ export default function BlacklistPage() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Черный список доменов</CardTitle>
+        <CardTitle>Черный список</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         {error && <div className="text-red-500">{error}</div>}
@@ -91,32 +96,42 @@ export default function BlacklistPage() {
           <Button onClick={handleAdd}>Добавить</Button>
         </div>
 
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Домен</TableHead>
-              <TableHead>Причина</TableHead>
-              <TableHead>Действия</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {entries.map((entry) => (
-              <TableRow key={entry.domain}>
-                <TableCell>{entry.domain}</TableCell>
-                <TableCell>{entry.reason || "—"}</TableCell>
-                <TableCell>
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={() => handleDelete(entry.domain)}
-                  >
-                    Удалить
-                  </Button>
-                </TableCell>
+        {entries.length === 0 ? (
+          <div className="text-center py-8 text-muted-foreground">
+            Черный список пуст. Добавьте домен, чтобы начать.
+          </div>
+        ) : (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Домен</TableHead>
+                <TableHead>Причина</TableHead>
+                <TableHead>Добавлен</TableHead>
+                <TableHead>Действия</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {entries.map((entry) => (
+                <TableRow key={entry.domain}>
+                  <TableCell>{entry.domain}</TableCell>
+                  <TableCell>{entry.reason || "—"}</TableCell>
+                  <TableCell>
+                    {entry.addedAt ? new Date(entry.addedAt).toLocaleDateString('ru-RU') : "—"}
+                  </TableCell>
+                  <TableCell>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => handleDelete(entry.domain)}
+                    >
+                      Удалить
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        )}
       </CardContent>
     </Card>
   )

@@ -19,6 +19,13 @@ export function SupplierDetailClient({ supplierId }: { supplierId: number }) {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
+    // Проверяем валидность supplierId перед загрузкой данных
+    if (!supplierId || isNaN(supplierId) || supplierId <= 0) {
+      setError("Неверный ID поставщика")
+      setLoading(false)
+      return
+    }
+    
     loadSupplier()
     loadKeywords()
   }, [supplierId])
@@ -52,6 +59,11 @@ export function SupplierDetailClient({ supplierId }: { supplierId: number }) {
   }
 
   async function loadKeywords() {
+    // Проверяем валидность supplierId перед запросом
+    if (!supplierId || isNaN(supplierId) || supplierId <= 0) {
+      return
+    }
+    
     try {
       const data = await apiFetch<{ keywords: SupplierKeyword[] }>(
         `/moderator/suppliers/${supplierId}/keywords`
@@ -59,6 +71,7 @@ export function SupplierDetailClient({ supplierId }: { supplierId: number }) {
       setKeywords(data.keywords)
     } catch (err) {
       console.error("Failed to load keywords", err)
+      // Не устанавливаем ошибку, так как keywords - это дополнительная информация
     }
   }
 
@@ -102,7 +115,12 @@ export function SupplierDetailClient({ supplierId }: { supplierId: number }) {
   }
 
   if (error || !supplier) {
-    return <div className="text-red-500">Ошибка: {error || "Поставщик не найден"}</div>
+    const errorMessage = error || "Поставщик не найден"
+    return (
+      <div className="text-red-500 p-4">
+        Ошибка: {typeof errorMessage === 'string' ? errorMessage : JSON.stringify(errorMessage)}
+      </div>
+    )
   }
 
   return (

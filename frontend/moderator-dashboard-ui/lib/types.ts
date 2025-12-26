@@ -49,18 +49,24 @@ export interface BlacklistEntryDTO {
   domain: string
   reason: string | null
   addedBy: string | null
-  addedAt: string
+  addedAt: string | null
   parsingRunId: string | null
 }
 
 export interface ParsingRunDTO {
-  runId: string
+  run_id?: string  // Backend возвращает snake_case
+  runId?: string  // Для обратной совместимости
   keyword: string
-  status: "running" | "completed" | "failed"
-  startedAt: string
-  finishedAt: string | null
-  error: string | null
+  status: string  // Может быть любым статусом, не только "running" | "completed" | "failed"
+  started_at?: string | null  // Backend возвращает snake_case
+  startedAt?: string | null  // Для обратной совместимости
+  finished_at?: string | null  // Backend возвращает snake_case
+  finishedAt?: string | null  // Для обратной совместимости
+  error_message?: string | null  // Backend возвращает snake_case
+  error?: string | null  // Для обратной совместимости
   resultsCount: number | null
+  created_at?: string  // Backend возвращает snake_case
+  createdAt?: string  // Для обратной совместимости
 }
 
 export interface DomainQueueEntryDTO {

@@ -11,7 +11,10 @@ class Settings(BaseSettings):
     """Application settings loaded from environment variables."""
 
     # Database
-    DATABASE_URL: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/b2b"
+    # ⚠️ ВАЖНО: Используется база данных b2bplatform
+    # Пароль: Jnvnszoe5971312059001
+    # НЕ МЕНЯТЬ без обновления всех документов и миграций!
+    DATABASE_URL: str = "postgresql+asyncpg://postgres:Jnvnszoe5971312059001@localhost:5432/b2bplatform"
 
     # Parser Service
     PARSER_SERVICE_URL: str = "http://127.0.0.1:9003"

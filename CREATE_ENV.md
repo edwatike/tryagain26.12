@@ -5,7 +5,7 @@
 Создайте файл `backend/.env` со следующим содержимым:
 
 ```env
-DATABASE_URL=postgresql+asyncpg://postgres:postgres@localhost:5432/postgres
+DATABASE_URL=postgresql+asyncpg://postgres:Jnvnszoe5971312059001@localhost:5432/b2bplatform
 PARSER_SERVICE_URL=http://127.0.0.1:9003
 ENV=development
 LOG_LEVEL=INFO
@@ -14,7 +14,10 @@ CORS_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
 ATTACHMENTS_DIR=storage/attachments
 ```
 
-**Важно:** Замените `postgres:postgres@localhost:5432/postgres` на ваши реальные данные БД!
+**⚠️ ВАЖНО:** 
+- Используется база данных `b2bplatform` (НЕ МЕНЯТЬ!)
+- Пароль: `Jnvnszoe5971312059001`
+- Подробности: см. `docs/DATABASE_CONFIG.md`
 
 ## Frontend
 
@@ -38,8 +41,8 @@ LOG_LEVEL=INFO
 
 ```powershell
 # Backend
-@"
-DATABASE_URL=postgresql+asyncpg://postgres:postgres@localhost:5432/postgres
+@" 
+DATABASE_URL=postgresql+asyncpg://postgres:Jnvnszoe5971312059001@localhost:5432/b2bplatform
 PARSER_SERVICE_URL=http://127.0.0.1:9003
 ENV=development
 LOG_LEVEL=INFO
