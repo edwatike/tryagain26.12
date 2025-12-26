@@ -1,0 +1,46 @@
+name: Parser Service CI
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'parser_service/**'
+      - '.github/workflows/parser-service-ci.yml'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'parser_service/**'
+      - '.github/workflows/parser-service-ci.yml'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+        cache: 'pip'
+
+    - name: Install dependencies
+      working-directory: ./parser_service
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Check imports
+      working-directory: ./parser_service
+      run: |
+        python -c "from src.parser import Parser; print('✓ Imports successful')"
+      continue-on-error: true
+
+    - name: Install Playwright browsers (if needed)
+      working-directory: ./parser_service
+      run: |
+        pip install playwright || echo "Playwright not in requirements"
+        playwright install chromium || echo "Playwright browsers not needed"
+      continue-on-error: true
+

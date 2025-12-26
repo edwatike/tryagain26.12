@@ -1,0 +1,61 @@
+name: Main CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  # Проверка всех сервисов
+  check-all:
+    runs-on: ubuntu-latest
+    name: Check All Services
+    
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Check Backend structure
+      run: |
+        echo "Checking Backend structure..."
+        test -f backend/requirements.txt || exit 1
+        test -f backend/app/main.py || exit 1
+        echo "✓ Backend structure OK"
+
+    - name: Check Frontend structure
+      run: |
+        echo "Checking Frontend structure..."
+        test -f frontend/moderator-dashboard-ui/package.json || exit 1
+        test -f frontend/moderator-dashboard-ui/next.config.mjs || exit 1
+        echo "✓ Frontend structure OK"
+
+    - name: Check Parser Service structure
+      run: |
+        echo "Checking Parser Service structure..."
+        test -f parser_service/requirements.txt || exit 1
+        test -f parser_service/api.py || exit 1
+        echo "✓ Parser Service structure OK"
+
+    - name: Check documentation
+      run: |
+        echo "Checking documentation..."
+        test -f docs/TROUBLESHOOTING.md || echo "⚠ TROUBLESHOOTING.md not found"
+        test -f README.md || echo "⚠ README.md not found"
+        echo "✓ Documentation check completed"
+
+  # Зависимости между jobs
+  backend:
+    needs: check-all
+    uses: ./.github/workflows/backend-ci.yml
+    secrets: inherit
+
+  frontend:
+    needs: check-all
+    uses: ./.github/workflows/frontend-ci.yml
+    secrets: inherit
+
+  parser:
+    needs: check-all
+    uses: ./.github/workflows/parser-service-ci.yml
+    secrets: inherit
+

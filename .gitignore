@@ -44,3 +44,6 @@ logs/
 storage/
 *.tmp
 
+# GitHub Actions
+.github/workflows/*.local.yml
+
