@@ -1,7 +1,7 @@
 """Pydantic schemas for moderator suppliers."""
-from datetime import datetime
-from typing import Optional, List
-from pydantic import BaseModel, ConfigDict, Field
+from datetime import datetime, date
+from typing import Optional, List, Union
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from app.transport.schemas.common import BaseDTO
 
@@ -50,6 +50,14 @@ class ModeratorSupplierDTO(BaseDTO):
         from_attributes=True,
         populate_by_name=True
     )
+    
+    @field_validator('registrationDate', mode='before')
+    @classmethod
+    def convert_registration_date(cls, v):
+        """Convert date object to string."""
+        if isinstance(v, date):
+            return v.isoformat()
+        return v
 
 
 class CreateModeratorSupplierRequestDTO(BaseModel):

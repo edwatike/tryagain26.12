@@ -41,6 +41,13 @@ async def lifespan(app: FastAPI):
     logging.getLogger("starlette").setLevel(logging.DEBUG)
     logging.getLogger("fastapi").setLevel(logging.DEBUG)
     print("=== Logging configured ===", file=sys.stderr, flush=True)
+    
+    # Логируем при старте приложения
+    logger = logging.getLogger(__name__)
+    logger.critical("=== APPLICATION STARTUP COMPLETE ===")
+    logger.error("=== APPLICATION STARTUP COMPLETE ===")
+    print("=== APPLICATION STARTUP COMPLETE ===", file=sys.stderr, flush=True)
+    
     yield
     # Shutdown
 

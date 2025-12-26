@@ -102,13 +102,70 @@ async def list_suppliers_new(
         print(f"=== ENDPOINT TRACEBACK:\n{traceback.format_exc()} ===", file=sys.stderr, flush=True)
         raise
 
-# Старый endpoint - ВРЕМЕННО УПРОЩАЕМ ДО МИНИМУМА
-@router.get("/suppliers")
-async def list_suppliers():
-    """List suppliers - ABSOLUTE MINIMUM for testing."""
-    import sys
-    print("=== SUPPLIERS ENDPOINT CALLED (NO PARAMS) ===", file=sys.stderr, flush=True)
-    return {"suppliers": [], "total": 0, "status": "minimal_test"}
+@router.get("/suppliers", response_model=ModeratorSuppliersListResponseDTO)
+async def list_suppliers(
+    limit: int = Query(default=100, ge=1, le=1000),
+    offset: int = Query(default=0, ge=0),
+    supplier_type: Optional[str] = Query(default=None, alias="type"),
+    db: AsyncSession = Depends(get_db)
+):
+    """List suppliers with pagination."""
+    suppliers, total = await list_moderator_suppliers.execute(
+        db=db,
+        limit=limit,
+        offset=offset,
+        type_filter=supplier_type
+    )
+    
+    # Convert suppliers to DTOs, handling date fields
+    supplier_dtos = []
+    for s in suppliers:
+        # Convert date fields to strings before validation
+        registration_date_str = None
+        if s.registration_date:
+            if isinstance(s.registration_date, date):
+                registration_date_str = s.registration_date.isoformat()
+            else:
+                registration_date_str = str(s.registration_date)
+        
+        supplier_dict = {
+            'id': s.id,
+            'name': s.name,
+            'inn': s.inn,
+            'email': s.email,
+            'domain': s.domain,
+            'address': s.address,
+            'type': s.type,
+            'ogrn': s.ogrn,
+            'kpp': s.kpp,
+            'okpo': s.okpo,
+            'company_status': s.company_status,
+            'registration_date': registration_date_str,
+            'legal_address': s.legal_address,
+            'phone': s.phone,
+            'website': s.website,
+            'vk': s.vk,
+            'telegram': s.telegram,
+            'authorized_capital': s.authorized_capital,
+            'revenue': s.revenue,
+            'profit': s.profit,
+            'finance_year': s.finance_year,
+            'legal_cases_count': s.legal_cases_count,
+            'legal_cases_sum': s.legal_cases_sum,
+            'legal_cases_as_plaintiff': s.legal_cases_as_plaintiff,
+            'legal_cases_as_defendant': s.legal_cases_as_defendant,
+            'checko_data': s.checko_data,
+            'created_at': s.created_at,
+            'updated_at': s.updated_at,
+        }
+        supplier_dtos.append(ModeratorSupplierDTO.model_validate(supplier_dict, from_attributes=False))
+    
+    return ModeratorSuppliersListResponseDTO(
+        suppliers=supplier_dtos,
+        total=total,
+        limit=limit,
+        offset=offset
+    )
 
 
 @router.get("/suppliers/{supplier_id}", response_model=ModeratorSupplierDTO)
