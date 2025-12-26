@@ -1,0 +1,107 @@
+"""Pydantic schemas for moderator suppliers."""
+from datetime import datetime
+from typing import Optional, List
+from pydantic import BaseModel, ConfigDict, Field
+
+from app.transport.schemas.common import BaseDTO
+
+
+class SupplierType(str):
+    """Supplier type enum."""
+    SUPPLIER = "supplier"
+    RESELLER = "reseller"
+
+
+class ModeratorSupplierDTO(BaseDTO):
+    """Supplier DTO."""
+    id: int
+    name: str
+    inn: Optional[str] = None
+    email: Optional[str] = None
+    domain: Optional[str] = None
+    address: Optional[str] = None
+    type: str = "supplier"
+    
+    # Checko fields
+    ogrn: Optional[str] = None
+    kpp: Optional[str] = None
+    okpo: Optional[str] = None
+    companyStatus: Optional[str] = Field(None, alias="company_status")
+    registrationDate: Optional[str] = Field(None, alias="registration_date")
+    legalAddress: Optional[str] = Field(None, alias="legal_address")
+    phone: Optional[str] = None
+    website: Optional[str] = None
+    vk: Optional[str] = None
+    telegram: Optional[str] = None
+    authorizedCapital: Optional[int] = Field(None, alias="authorized_capital")
+    revenue: Optional[int] = None
+    profit: Optional[int] = None
+    financeYear: Optional[int] = Field(None, alias="finance_year")
+    legalCasesCount: Optional[int] = Field(None, alias="legal_cases_count")
+    legalCasesSum: Optional[int] = Field(None, alias="legal_cases_sum")
+    legalCasesAsPlaintiff: Optional[int] = Field(None, alias="legal_cases_as_plaintiff")
+    legalCasesAsDefendant: Optional[int] = Field(None, alias="legal_cases_as_defendant")
+    checkoData: Optional[str] = Field(None, alias="checko_data")
+    
+    createdAt: datetime = Field(alias="created_at")
+    updatedAt: datetime = Field(alias="updated_at")
+    
+    model_config = ConfigDict(
+        from_attributes=True,
+        populate_by_name=True
+    )
+
+
+class CreateModeratorSupplierRequestDTO(BaseModel):
+    """Request DTO for creating supplier."""
+    name: str
+    inn: Optional[str] = None
+    email: Optional[str] = None
+    domain: Optional[str] = None
+    address: Optional[str] = None
+    type: str = "supplier"
+
+
+class UpdateModeratorSupplierRequestDTO(BaseModel):
+    """Request DTO for updating supplier."""
+    name: Optional[str] = None
+    inn: Optional[str] = None
+    email: Optional[str] = None
+    domain: Optional[str] = None
+    address: Optional[str] = None
+    type: Optional[str] = None
+    
+    # Checko fields
+    ogrn: Optional[str] = None
+    kpp: Optional[str] = None
+    okpo: Optional[str] = None
+    companyStatus: Optional[str] = None
+    registrationDate: Optional[str] = None
+    legalAddress: Optional[str] = None
+    phone: Optional[str] = None
+    website: Optional[str] = None
+    vk: Optional[str] = None
+    telegram: Optional[str] = None
+    authorizedCapital: Optional[int] = None
+    revenue: Optional[int] = None
+    profit: Optional[int] = None
+    financeYear: Optional[int] = None
+    legalCasesCount: Optional[int] = None
+    legalCasesSum: Optional[int] = None
+    legalCasesAsPlaintiff: Optional[int] = None
+    legalCasesAsDefendant: Optional[int] = None
+    checkoData: Optional[str] = None
+
+
+class SupplierKeywordsResponseDTO(BaseModel):
+    """Response DTO for supplier keywords."""
+    keywords: List[dict]
+
+
+class ModeratorSuppliersListResponseDTO(BaseModel):
+    """Response DTO for suppliers list."""
+    suppliers: List[ModeratorSupplierDTO]
+    total: int
+    limit: int
+    offset: int
+
