@@ -8,9 +8,17 @@ async def execute(
     db: AsyncSession,
     limit: int = 100,
     offset: int = 0,
-    status: Optional[str] = None
+    status: Optional[str] = None,
+    keyword: Optional[str] = None,
+    parsing_run_id: Optional[str] = None
 ):
     """List domains queue entries with pagination."""
     repo = DomainQueueRepository(db)
-    return await repo.list(limit=limit, offset=offset, status=status)
+    return await repo.list(
+        limit=limit,
+        offset=offset,
+        status=status,
+        keyword=keyword,
+        parsing_run_id=parsing_run_id
+    )
 

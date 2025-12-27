@@ -6,3 +6,5 @@ export default function NewSupplierPage() {
   return <SupplierEditClient supplierId={0} />
 }
 
+
+

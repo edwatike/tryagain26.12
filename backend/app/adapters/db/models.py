@@ -163,7 +163,7 @@ class ParsingRequestModel(Base):
     """Model for parsing_requests table."""
     __tablename__ = "parsing_requests"
     
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     created_at: Mapped[datetime] = mapped_column(
         server_default=func.now(),
         nullable=False

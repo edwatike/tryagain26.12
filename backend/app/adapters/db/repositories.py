@@ -9,6 +9,7 @@ from app.adapters.db.models import (
     KeywordModel,
     SupplierKeywordModel,
     BlacklistModel,
+    ParsingRequestModel,
     ParsingRunModel,
     DomainQueueModel,
 )
@@ -238,6 +239,35 @@ class BlacklistRepository:
         return entry is not None
 
 
+class ParsingRequestRepository:
+    """Repository for parsing requests."""
+    
+    def __init__(self, session: AsyncSession):
+        self.session = session
+    
+    async def create(self, request_data: dict) -> ParsingRequestModel:
+        """Create a new parsing request."""
+        # Remove any invalid fields that might be passed by mistake
+        valid_fields = {
+            'id', 'created_at', 'updated_at', 'created_by', 'raw_keys_json',
+            'depth', 'source', 'comment', 'title'
+        }
+        filtered_data = {k: v for k, v in request_data.items() if k in valid_fields}
+        
+        # Log if invalid fields were filtered out
+        invalid_fields = set(request_data.keys()) - valid_fields
+        if invalid_fields:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.warning(f"Filtered out invalid fields from request_data: {invalid_fields}")
+        
+        request = ParsingRequestModel(**filtered_data)
+        self.session.add(request)
+        await self.session.flush()
+        await self.session.refresh(request)
+        return request
+
+
 class ParsingRunRepository:
     """Repository for parsing runs."""
     
@@ -246,11 +276,41 @@ class ParsingRunRepository:
     
     async def create(self, run_data: dict) -> ParsingRunModel:
         """Create a new parsing run."""
-        run = ParsingRunModel(**run_data)
-        self.session.add(run)
-        await self.session.flush()
-        await self.session.refresh(run)
-        return run
+        import logging
+        logger = logging.getLogger(__name__)
+        
+        # Remove any invalid fields that might be passed by mistake
+        valid_fields = {
+            'id', 'run_id', 'request_id', 'parser_task_id', 'status', 
+            'depth', 'source', 'created_at', 'started_at', 'finished_at', 'error_message'
+        }
+        
+        # Log input data for debugging
+        logger.debug(f"ParsingRunRepository.create called with: {run_data}")
+        
+        filtered_data = {k: v for k, v in run_data.items() if k in valid_fields}
+        
+        # Log if invalid fields were filtered out
+        invalid_fields = set(run_data.keys()) - valid_fields
+        if invalid_fields:
+            logger.warning(f"Filtered out invalid fields from run_data: {invalid_fields}. Original data: {run_data}")
+        
+        # Double check - explicitly remove keyword if it somehow got through
+        if 'keyword' in filtered_data:
+            logger.error(f"ERROR: 'keyword' field found in filtered_data! This should not happen. filtered_data: {filtered_data}")
+            del filtered_data['keyword']
+        
+        logger.debug(f"Creating ParsingRunModel with filtered_data: {filtered_data}")
+        
+        try:
+            run = ParsingRunModel(**filtered_data)
+            self.session.add(run)
+            await self.session.flush()
+            await self.session.refresh(run)
+            return run
+        except TypeError as e:
+            logger.error(f"TypeError creating ParsingRunModel. filtered_data: {filtered_data}, error: {e}")
+            raise
     
     async def get_by_id(self, run_id: str) -> Optional[ParsingRunModel]:
         """Get parsing run by ID."""
@@ -375,7 +435,9 @@ class DomainQueueRepository:
         self,
         limit: int = 100,
         offset: int = 0,
-        status: Optional[str] = None
+        status: Optional[str] = None,
+        keyword: Optional[str] = None,
+        parsing_run_id: Optional[str] = None  # Added parsing_run_id filter
     ) -> tuple[List[DomainQueueModel], int]:
         """List queue entries with pagination."""
         query = select(DomainQueueModel)
@@ -384,6 +446,14 @@ class DomainQueueRepository:
         if status:
             query = query.where(DomainQueueModel.status == status)
             count_query = count_query.where(DomainQueueModel.status == status)
+        
+        if keyword:
+            query = query.where(DomainQueueModel.keyword.ilike(f"%{keyword}%"))
+            count_query = count_query.where(DomainQueueModel.keyword.ilike(f"%{keyword}%"))
+        
+        if parsing_run_id:  # Filter by parsing_run_id
+            query = query.where(DomainQueueModel.parsing_run_id == parsing_run_id)
+            count_query = count_query.where(DomainQueueModel.parsing_run_id == parsing_run_id)
         
         query = query.order_by(DomainQueueModel.created_at.desc())
         

@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from "react"
 import { useRouter, useParams } from "next/navigation"
-import { apiFetch, APIError } from "@/lib/api"
-import { ParsingRunDTO } from "@/lib/types"
+import { apiFetch, APIError, getDomainsQueue } from "@/lib/api"
+import { ParsingRunDTO, DomainQueueEntryDTO } from "@/lib/types"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -29,38 +29,89 @@ export default function ParsingRunDetailPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [domains, setDomains] = useState<DomainQueueEntryDTO[]>([])
+  const [loadingDomains, setLoadingDomains] = useState(false)
 
   useEffect(() => {
     if (runId) {
       loadRun()
+      loadDomains()
     }
   }, [runId])
-
-  async function loadRun() {
-    try {
-      setLoading(true)
-      const data = await apiFetch<ParsingRunDTO>(`/parsing/runs/${runId}`)
-      setRun(data)
-      setError(null)
-    } catch (err) {
-      console.error("Error loading parsing run:", err)
-      if (err instanceof APIError) {
-        if (err.status === 404) {
-          setError("Запуск парсинга не найден")
-          toast.error("Запуск парсинга не найден")
-        } else {
-          setError(err.message)
-          toast.error(`Ошибка загрузки: ${err.message}`)
-        }
-      } else {
-        const errorMsg = "Ошибка загрузки запуска парсинга"
-        setError(errorMsg)
-        toast.error(errorMsg)
-      }
-    } finally {
-      setLoading(false)
+  
+  useEffect(() => {
+    // Reload domains when run status changes to completed
+    if (run?.status === "completed" && runId) {
+      loadDomains()
     }
-  }
+  }, [run?.status, runId])
+
+  // Polling для обновления статуса, если парсинг еще выполняется
+  useEffect(() => {
+    if (!runId || !run) return
+
+    // Если статус "running", обновляем каждые 2 секунды
+    if (run.status === "running") {
+      const interval = setInterval(() => {
+        loadRun()
+      }, 2000) // Обновляем каждые 2 секунды
+
+      return () => clearInterval(interval)
+    }
+  }, [runId, run?.status])
+
+          async function loadRun() {
+            try {
+              setLoading(true)
+              const data = await apiFetch<ParsingRunDTO>(`/parsing/runs/${runId}`)
+              setRun(data)
+              setError(null)
+            } catch (err) {
+              // Log detailed error to console (visible in F12)
+              console.error("[Parsing Run Detail] Error loading run:", {
+                error: err,
+                runId: runId,
+                details: err instanceof APIError ? {
+                  status: err.status,
+                  message: err.message,
+                  data: err.data
+                } : err
+              })
+              
+              if (err instanceof APIError) {
+                if (err.status === 404) {
+                  setError("Запуск парсинга не найден")
+                  toast.error("Запуск парсинга не найден")
+                } else {
+                  setError(err.message)
+                  toast.error(`Ошибка загрузки: ${err.message}`)
+                }
+              } else {
+                const errorMsg = "Ошибка загрузки запуска парсинга"
+                setError(errorMsg)
+                toast.error(errorMsg)
+              }
+            } finally {
+              setLoading(false)
+            }
+          }
+          
+          async function loadDomains() {
+            if (!runId) return
+            try {
+              setLoadingDomains(true)
+              const data = await getDomainsQueue({
+                parsingRunId: runId,
+                limit: 1000
+              })
+              setDomains(data.entries)
+            } catch (err) {
+              console.error("[Parsing Run Detail] Error loading domains:", err)
+              // Don't show error toast for domains, just log it
+            } finally {
+              setLoadingDomains(false)
+            }
+          }
 
   async function handleDelete() {
     if (!run) return
@@ -206,9 +257,49 @@ export default function ParsingRunDetailPage() {
               <p className="text-red-500">{run.error || run.error_message || "—"}</p>
             </div>
           ) : null}
+          
+          {/* Список найденных URL */}
+          {run.status === "completed" && domains.length > 0 && (
+            <div>
+              <label className="text-sm font-medium text-muted-foreground mb-2 block">
+                Найденные URL ({domains.length})
+              </label>
+              <div className="max-h-96 overflow-y-auto border rounded-md p-4 space-y-2">
+                {loadingDomains ? (
+                  <p className="text-sm text-muted-foreground">Загрузка...</p>
+                ) : (
+                  domains.map((entry, index) => (
+                    <div key={entry.domain || index} className="flex items-start gap-2 p-2 hover:bg-muted rounded">
+                      <div className="flex-1 min-w-0">
+                        <a
+                          href={entry.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-sm text-blue-600 hover:underline break-all"
+                        >
+                          {entry.url}
+                        </a>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Домен: {entry.domain}
+                        </p>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          )}
+          
+          {run.status === "completed" && domains.length === 0 && !loadingDomains && (
+            <div>
+              <label className="text-sm font-medium text-muted-foreground">Найденные URL</label>
+              <p className="text-sm text-muted-foreground">URL не найдены</p>
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>
   )
 }
+
 

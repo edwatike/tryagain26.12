@@ -29,3 +29,5 @@ COMMENT ON COLUMN audit_log.new_data IS 'New data (for INSERT and UPDATE)';
 COMMENT ON COLUMN audit_log.changed_by IS 'User or system that made the change';
 COMMENT ON COLUMN audit_log.changed_at IS 'Timestamp when the change was made';
 
+
+

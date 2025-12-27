@@ -1,4 +1,5 @@
 """Router for moderator suppliers."""
+import logging
 from typing import Optional
 from datetime import date
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -24,53 +25,67 @@ from app.usecases import (
 )
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
 
 # Абсолютно минимальный endpoint для проверки
 @router.get("/suppliers-empty")
 async def suppliers_empty():
     """Absolute minimum endpoint - no parameters, no dependencies."""
-    import sys
-    print("=== EMPTY ENDPOINT CALLED ===", file=sys.stderr, flush=True)
+    try:
+        logger.debug("=== EMPTY ENDPOINT CALLED ===")
+    except Exception:
+        pass  # Безопасное логирование
     return {"ok": True}
 
 
 @router.get("/suppliers-debug")
 async def debug_suppliers():
     """Debug endpoint without dependencies."""
-    import sys
-    print("=== DEBUG ENDPOINT CALLED ===", file=sys.stderr, flush=True)
+    try:
+        logger.debug("=== DEBUG ENDPOINT CALLED ===")
+    except Exception:
+        pass
     return {"status": "ok", "message": "Debug endpoint works"}
 
 @router.get("/suppliers-minimal")
 async def minimal_suppliers():
     """Minimal endpoint without any parameters."""
-    import sys
-    print("=== MINIMAL ENDPOINT CALLED ===", file=sys.stderr, flush=True)
+    try:
+        logger.debug("=== MINIMAL ENDPOINT CALLED ===")
+    except Exception:
+        pass
     return {"status": "ok", "suppliers": []}
 
 @router.get("/suppliers-simple")
 async def simple_suppliers():
     """Simple endpoint - absolute minimum."""
-    import sys
-    print("=== SIMPLE ENDPOINT CALLED ===", file=sys.stderr, flush=True)
+    try:
+        logger.debug("=== SIMPLE ENDPOINT CALLED ===")
+    except Exception:
+        pass
     return {"ok": True}
 
 @router.get("/test")
 async def test_endpoint():
     """Test endpoint to verify router works."""
-    import sys
-    print("=== TEST ENDPOINT CALLED ===", file=sys.stderr, flush=True)
+    try:
+        logger.debug("=== TEST ENDPOINT CALLED ===")
+    except Exception:
+        pass
     return {"status": "ok", "message": "Router works"}
 
 @router.get("/suppliers-test")
 async def test_suppliers(db: AsyncSession = Depends(get_db)):
     """Test endpoint with DB dependency."""
-    print("=== TEST ENDPOINT CALLED ===")
     try:
-        print("=== DB session obtained ===")
+        logger.debug("=== TEST ENDPOINT CALLED ===")
+        logger.debug("=== DB session obtained ===")
         return {"status": "ok", "db": "connected"}
     except Exception as e:
-        print(f"=== TEST ERROR: {e} ===")
+        try:
+            logger.error(f"=== TEST ERROR: {e} ===", exc_info=True)
+        except Exception:
+            pass
         import traceback
         return {"status": "error", "error": str(e), "traceback": traceback.format_exc()}
 
@@ -83,10 +98,12 @@ async def list_suppliers_new(
     supplier_type: Optional[str] = Query(default=None, alias="type"),
 ):
     """List suppliers - new version for testing."""
-    import sys
     try:
-        print("=== SUPPLIERS-NEW ENDPOINT CALLED ===", file=sys.stderr, flush=True)
-        print(f"=== Parameters: limit={limit}, offset={offset}, type={supplier_type} ===", file=sys.stderr, flush=True)
+        try:
+            logger.debug(f"=== SUPPLIERS-NEW ENDPOINT CALLED ===")
+            logger.debug(f"=== Parameters: limit={limit}, offset={offset}, type={supplier_type} ===")
+        except Exception:
+            pass  # Безопасное логирование
         
         result = {
             "suppliers": [],
@@ -95,12 +112,17 @@ async def list_suppliers_new(
             "offset": offset,
             "status": "test_mode"
         }
-        print("=== Returning result ===", file=sys.stderr, flush=True)
+        try:
+            logger.debug("=== Returning result ===")
+        except Exception:
+            pass
         return result
     except Exception as e:
         import traceback
-        print(f"=== ENDPOINT EXCEPTION: {type(e).__name__}: {e} ===", file=sys.stderr, flush=True)
-        print(f"=== ENDPOINT TRACEBACK:\n{traceback.format_exc()} ===", file=sys.stderr, flush=True)
+        try:
+            logger.error(f"=== ENDPOINT EXCEPTION: {type(e).__name__}: {e} ===", exc_info=True)
+        except Exception:
+            pass
         raise
 
 @router.get("/suppliers", response_model=ModeratorSuppliersListResponseDTO)

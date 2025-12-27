@@ -133,3 +133,5 @@ python ../scripts/check_data_integrity.py
 - `docs/TROUBLESHOOTING.md` - решение проблем
 - `scripts/README.md` - скрипты для работы с БД
 
+
+

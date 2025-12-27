@@ -1,485 +1,821 @@
 # Библия ошибок и решений
 
-**⚠️ ВАЖНО: Этот документ является "БИБЛИЕЙ" ошибок и решений. Все ошибки и их решения ОБЯЗАТЕЛЬНО документируются здесь и НЕ ДОЛЖНЫ быть удалены или изменены без крайней необходимости.**
-
-**📚 Связанные документы:**
-- **Главная точка входа**: [`docs/DOCUMENTATION_INDEX.md`](DOCUMENTATION_INDEX.md) - индекс всей документации
-- **Правила работы**: [`.cursorrules`](../../.cursorrules) - правила для AI-агента
-- **Общее описание**: [`README.md`](../../README.md)
-
-## Принципы документирования
-
-1. **Каждая ошибка** должна быть задокументирована с:
-   - Описанием проблемы
-   - Причиной возникновения
-   - Решением
-   - Командами для проверки/воспроизведения
-   - Ссылками на измененные файлы
-
-2. **Решения НЕ должны быть удалены** даже если кажется, что проблема больше не актуальна
-
-3. **При повторении ошибки** сначала проверяй этот документ
-
----
-
-## Ошибка 1: 500 Internal Server Error на `/moderator/suppliers` - несколько процессов на порту 8000
+## Ошибка: NotImplementedError при запуске Playwright на Windows
 
 ### Описание проблемы
-- Endpoint `/moderator/suppliers` возвращает 500 Internal Server Error
-- CORS заголовки отсутствуют в ответе
-- Логи НЕ появляются в терминале Backend (ни middleware, ни endpoint не вызываются)
-- Ошибка происходит ДО того, как запрос доходит до FastAPI
-- Другие endpoints (`/health`, `/`) работают нормально
-
-### Причина
-**На порту 8000 слушали несколько процессов Backend одновременно.** Запрос шел не к тому процессу, который был обновлен с последними изменениями кода.
-
-### Решение
-1. Остановить ВСЕ процессы на порту 8000:
-   ```powershell
-   Get-Process | Where-Object {$_.Id -in @(PID_LIST)} | Stop-Process -Force
-   ```
-
-2. Проверить, что порт свободен:
-   ```powershell
-   netstat -ano | Select-String ":8000"
-   ```
-
-3. Запустить только ОДИН процесс Backend:
-   ```powershell
-   cd backend
-   python -m uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
-   ```
-
-### Проверка
-```bash
-curl -H "Origin: http://localhost:3000" "http://127.0.0.1:8000/moderator/suppliers?limit=1&offset=0"
+При запуске парсинга через Parser Service возникает ошибка:
+```
+NotImplementedError
+Failed to connect to Chrome CDP at http://127.0.0.1:9222
 ```
 
-Ожидаемый результат: `200 OK` с данными в JSON формате и CORS заголовками.
+Ошибка возникает при вызове `async_playwright().start()`, когда Playwright пытается создать subprocess для запуска драйвера.
 
-### Измененные файлы
-- Не требовалось изменений в коде
-- Проблема была в конфигурации/запуске сервисов
+### Причина
+На Windows Playwright требует использования `WindowsProactorEventLoopPolicy` для asyncio, чтобы поддерживать subprocess. Проблема в том, что uvicorn.Server создает свой собственный event loop внутри `serve()`, который может не использовать установленную policy.
 
-### Дата решения
+### Текущее состояние решения
+
+**Попытки решения:**
+1. ✅ Установка `WindowsProactorEventLoopPolicy` в `parser_service/run_api.py` ДО всех импортов
+2. ✅ Установка policy в `parser_service/api.py` 
+3. ✅ Использование `asyncio.run()` для запуска uvicorn сервера (как в `temp/test_browser_connection.py`, который работает)
+4. ✅ Использование `uvicorn.Server` с явным указанием event loop
+
+**Проблема:** Даже при использовании `asyncio.run()` uvicorn.Server создает свой event loop внутри `serve()`, который не использует установленную policy.
+
+**Рабочее решение для тестов:**
+`temp/test_browser_connection.py` работает, потому что использует `asyncio.run()` напрямую для тестовой функции, а не через uvicorn.
+
+### Временное решение
+
+Использовать `temp/test_browser_connection.py` как основу для тестирования парсера, или запускать парсинг в отдельном процессе с правильной event loop policy.
+
+### Альтернативные решения для исследования
+
+1. **Использовать синхронный API Playwright в отдельном потоке:**
+   - Использовать `playwright.sync_api` вместо `playwright.async_api`
+   - Запускать в отдельном потоке с собственным event loop
+
+2. **Подключение к Chrome CDP напрямую через WebSocket:**
+   - Избежать использования Playwright для запуска subprocess
+   - Использовать WebSocket для подключения к Chrome CDP напрямую
+
+3. **Использовать другой ASGI сервер:**
+   - Попробовать Hypercorn или другой ASGI сервер, который может лучше работать с event loop policy
+
+### Текущая конфигурация
+
+**`parser_service/run_api.py`:**
+```python
+import asyncio
+import sys
+
+if sys.platform == 'win32':
+    asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
+
+async def run_server():
+    from api import app
+    import uvicorn
+    config = uvicorn.Config(app=app, host="127.0.0.1", port=9003, log_level="info", access_log=True)
+    server = uvicorn.Server(config)
+    await server.serve()
+
+if __name__ == "__main__":
+    asyncio.run(run_server())
+```
+
+### Дата последнего обновления
 2025-12-26
 
----
+### Решение (рабочее)
 
-## Ошибка 2: ValidationError - `registration_date` ожидает строку, получает `datetime.date`
+**Проблема:** uvicorn/Hypercorn создает event loop, который не использует `WindowsProactorEventLoopPolicy`, необходимую для Playwright subprocess.
 
-### Описание проблемы
-- Endpoint `/moderator/suppliers` возвращает 500 Internal Server Error
-- В логах/ответе: `ValidationError: 1 validation error for ModeratorSupplierDTO registration_date Input should be a valid string [type=string_type, input_value=datetime.date(2005, 7, 15), input_type=date]`
-- Ошибка происходит в `backend/app/transport/routers/moderator_suppliers.py` на строке 121 при вызове `ModeratorSupplierDTO.model_validate(s)`
+**Решение:** Использовать подход из `temp/test_browser_connection.py` - запускать Playwright в отдельном потоке с собственным event loop через `asyncio.run()`.
 
-### Причина
-В модели БД (`ModeratorSupplierModel`) поле `registration_date` имеет тип `date` (SQLAlchemy `Date`), а в DTO (`ModeratorSupplierDTO`) поле `registrationDate` определено как `Optional[str]`. При использовании `model_validate()` с `from_attributes=True`, Pydantic получает объект `datetime.date` из модели, но ожидает строку.
+#### Как работает решение:
 
-### Решение
-Конвертировать `date` объект в строку ПЕРЕД валидацией в роутере:
+1. **В `temp/test_browser_connection.py`** используется рабочий подход:
+   - Устанавливается `WindowsProactorEventLoopPolicy` ДО импорта Playwright
+   - Используется `asyncio.run()` напрямую для создания собственного event loop
+   - Это позволяет Playwright создать subprocess без ошибки `NotImplementedError`
 
-```python
-# В backend/app/transport/routers/moderator_suppliers.py
-from datetime import date
+2. **В `parser_service/src/parser.py`** применен тот же подход:
+   - На Windows Playwright запускается в отдельном потоке через `ThreadPoolExecutor`
+   - В потоке устанавливается `WindowsProactorEventLoopPolicy`
+   - Используется `asyncio.run()` для создания нового event loop с правильной policy
+   - В этом loop запускается `async_playwright().start()` и подключение к Chrome CDP
+   - Результат (playwright и browser объекты) возвращаются в основной поток
 
-# В функции list_suppliers:
-supplier_dtos = []
-for s in suppliers:
-    # Convert date fields to strings before validation
-    registration_date_str = None
-    if s.registration_date:
-        if isinstance(s.registration_date, date):
-            registration_date_str = s.registration_date.isoformat()
-        else:
-            registration_date_str = str(s.registration_date)
-    
-    supplier_dict = {
-        'id': s.id,
-        'name': s.name,
-        # ... другие поля ...
-        'registration_date': registration_date_str,
-        # ... остальные поля ...
-    }
-    supplier_dtos.append(ModeratorSupplierDTO.model_validate(supplier_dict, from_attributes=False))
-```
-
-### Альтернативное решение (не использовано, но может быть полезно)
-Добавить `field_validator` в DTO:
+#### Код решения:
 
 ```python
-# В backend/app/transport/schemas/moderator_suppliers.py
-from datetime import date
-from pydantic import field_validator
-
-class ModeratorSupplierDTO(BaseDTO):
-    # ... поля ...
-    registrationDate: Optional[str] = Field(None, alias="registration_date")
+# В parser_service/src/parser.py, метод connect_browser()
+if sys.platform == 'win32':
+    from concurrent.futures import ThreadPoolExecutor
     
-    @field_validator('registrationDate', mode='before')
-    @classmethod
-    def convert_registration_date(cls, v):
-        """Convert date object to string."""
-        if isinstance(v, date):
-            return v.isoformat()
-        return v
-```
-
-**Примечание:** Этот подход может не работать с `from_attributes=True`, поэтому предпочтительнее конвертация в роутере.
-
-### Проверка
-```bash
-curl -H "Origin: http://localhost:3000" "http://127.0.0.1:8000/moderator/suppliers?limit=1&offset=0"
-```
-
-Ожидаемый результат: `200 OK` с данными, где `registrationDate` является строкой в формате ISO (например, `"2005-07-15"`).
-
-### Измененные файлы
-- `backend/app/transport/routers/moderator_suppliers.py` - добавлена конвертация `date` в строку
-- `backend/app/transport/schemas/moderator_suppliers.py` - добавлен импорт `date` (опционально, для валидатора)
-
-### Дата решения
-2025-12-26
-
----
-
-## Ошибка 3: CORS заголовки отсутствуют при 500 ошибке
-
-### Описание проблемы
-- При возникновении 500 ошибки CORS заголовки не добавляются к ответу
-- Frontend получает ошибку: `Access to fetch at '...' from origin '...' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present`
-
-### Причина
-CORS middleware добавляет заголовки только к успешным ответам. При возникновении исключения до того, как ответ проходит через middleware, заголовки не добавляются.
-
-### Решение
-Добавить глобальные обработчики исключений, которые добавляют CORS заголовки даже при ошибках:
-
-```python
-# В backend/app/main.py
-
-# 1. Добавить обработчик на уровне Starlette (ДО middleware)
-from starlette.requests import Request as StarletteRequest
-
-async def starlette_exception_handler(request: StarletteRequest, exc: Exception):
-    """Starlette-level exception handler."""
-    import sys
-    import traceback
-    print(f"=== STARLETTE EXCEPTION: {type(exc).__name__}: {exc} ===", file=sys.stderr, flush=True)
+    def run_playwright_in_thread(ws_url_param, chrome_cdp_url_param):
+        """Run Playwright in a separate thread with its own event loop using asyncio.run()."""
+        import asyncio
+        import sys
+        from playwright.async_api import async_playwright
+        
+        # Set event loop policy for this thread (same as test_browser_connection.py)
+        if sys.platform == 'win32':
+            asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
+        
+        async def connect_playwright():
+            playwright = await async_playwright().start()
+            connect_url = ws_url_param if "ws://" in ws_url_param else chrome_cdp_url_param
+            browser = await playwright.chromium.connect_over_cdp(connect_url)
+            return playwright, browser
+        
+        # Use asyncio.run() to create a new event loop with the correct policy
+        return asyncio.run(connect_playwright())
     
-    error_detail = f"{type(exc).__name__}: {str(exc)}"
-    if settings.ENV == "development":
-        error_detail += f"\n{traceback.format_exc()}"
-    
-    response = JSONResponse(
-        status_code=500,
-        content={"detail": error_detail}
+    # Run in thread pool executor
+    current_loop = asyncio.get_running_loop()
+    executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="playwright")
+    self.playwright, self.browser = await current_loop.run_in_executor(
+        executor, run_playwright_in_thread, ws_url, self.chrome_cdp_url
     )
-    
-    # Добавляем CORS заголовки вручную
-    origin = request.headers.get("origin")
-    if origin and origin in settings.cors_origins_list:
-        response.headers["Access-Control-Allow-Origin"] = origin
-        response.headers["Access-Control-Allow-Credentials"] = "true"
-        response.headers["Access-Control-Allow-Methods"] = "*"
-        response.headers["Access-Control-Allow-Headers"] = "*"
-    
-    return response
-
-app.add_exception_handler(Exception, starlette_exception_handler)
-
-# 2. Добавить middleware для обработки ошибок с CORS
-from starlette.middleware.base import BaseHTTPMiddleware
-
-class CORSExceptionMiddleware(BaseHTTPMiddleware):
-    """Middleware для добавления CORS заголовков к ошибкам."""
-    async def dispatch(self, request, call_next):
-        try:
-            response = await call_next(request)
-            # Убедимся, что CORS заголовки есть даже при ошибках
-            origin = request.headers.get("origin")
-            if origin and origin in settings.cors_origins_list:
-                if "Access-Control-Allow-Origin" not in response.headers:
-                    response.headers["Access-Control-Allow-Origin"] = origin
-                    response.headers["Access-Control-Allow-Credentials"] = "true"
-                    response.headers["Access-Control-Allow-Methods"] = "*"
-                    response.headers["Access-Control-Allow-Headers"] = "*"
-            return response
-        except Exception as exc:
-            # Обработка исключений на уровне middleware
-            import traceback
-            error_detail = f"{type(exc).__name__}: {str(exc)}"
-            if settings.ENV == "development":
-                error_detail += f"\n{traceback.format_exc()}"
-            
-            response = JSONResponse(
-                status_code=500,
-                content={"detail": error_detail}
-            )
-            
-            origin = request.headers.get("origin")
-            if origin and origin in settings.cors_origins_list:
-                response.headers["Access-Control-Allow-Origin"] = origin
-                response.headers["Access-Control-Allow-Credentials"] = "true"
-                response.headers["Access-Control-Allow-Methods"] = "*"
-                response.headers["Access-Control-Allow-Headers"] = "*"
-            
-            return response
-
-app.add_middleware(CORSExceptionMiddleware)
 ```
 
-**ВАЖНО:** Обработчики исключений должны быть зарегистрированы ДО включения роутеров!
+#### Проверка:
 
-### Проверка
-1. Создать endpoint, который вызывает исключение
-2. Запросить его с Frontend
-3. Проверить, что ответ содержит CORS заголовки
+1. Запустить Parser Service:
+   ```bash
+   cd parser_service
+   python run_api.py
+   ```
 
-### Измененные файлы
-- `backend/app/main.py` - добавлены обработчики исключений и CORSExceptionMiddleware
+2. Запустить тест парсинга:
+   ```bash
+   python temp/test_parser.py
+   ```
 
-### Дата решения
-2025-12-26
+3. Убедиться, что парсинг работает без `NotImplementedError`
+
+### Статус
+✅ Решение реализовано - используется подход из `test_browser_connection.py` с запуском Playwright в отдельном потоке
 
 ---
 
-## Общие рекомендации по отладке
-
-### Если endpoint возвращает 500, но логи не появляются:
-
-1. **Проверь, сколько процессов слушают порт:**
-   ```powershell
-   netstat -ano | Select-String ":8000"
-   ```
-
-2. **Останови все процессы и запусти только один:**
-   ```powershell
-   Get-Process | Where-Object {$_.ProcessName -like "*python*" -or $_.ProcessName -like "*uvicorn*"} | Stop-Process -Force
-   ```
-
-3. **Проверь, что изменения в коде применились:**
-   - Backend должен перезагрузиться автоматически при изменении файлов (если используется `--reload`)
-   - Если нет - перезапусти вручную
-
-### Если ошибка валидации Pydantic:
-
-1. **Проверь типы полей в модели БД и DTO:**
-   - Модель БД может возвращать `date`, а DTO ожидать `str`
-   - Модель БД может возвращать `datetime`, а DTO ожидать `str`
-
-2. **Конвертируй типы ПЕРЕД валидацией:**
-   - Используй `.isoformat()` для `date` и `datetime`
-   - Используй `str()` для других типов
-
-3. **Используй `from_attributes=False` при валидации словаря:**
-   ```python
-   ModeratorSupplierDTO.model_validate(supplier_dict, from_attributes=False)
-   ```
-
----
-
-## Ошибка 4: Парсер сервис не запускается / Chrome не запускается в режиме отладки
+## Ошибка: Chrome запускается в headless режиме, парсер не подключается к видимому браузеру
 
 ### Описание проблемы
-- Парсер сервис не запускается при выполнении `start-parser.bat`
-- Chrome не запускается в режиме отладки при выполнении `start-chrome.bat`
-- Ошибки не видны или не понятны из bat файлов
-- Несколько процессов на портах 9003 или 9222
+Парсер подключается к Chrome, но Chrome запущен в headless режиме (невидимый). В результате:
+- Пользователь не видит окно браузера
+- Невозможно решить CAPTCHA вручную
+- Парсер не может работать с видимым браузером пользователя
+
+При проверке через `curl http://127.0.0.1:9222/json/version` в User-Agent видно `HeadlessChrome`.
 
 ### Причина
-1. **Chrome CDP не запущен**: Парсер сервис требует, чтобы Chrome был запущен в режиме отладки на порту 9222
-2. **Порт занят**: Другой процесс уже использует порт 9003 (Parser Service) или 9222 (Chrome CDP)
-3. **Отсутствие зависимостей**: Playwright или другие зависимости не установлены
-4. **Проблемы с виртуальным окружением**: venv не создан или не активирован правильно
-5. **Chrome не найден**: Путь к Chrome неверный или Chrome не установлен
+Chrome был запущен в headless режиме (с флагом `--headless`) или подключился к неправильному процессу Chrome.
 
 ### Решение
 
-#### Шаг 1: Проверка Chrome CDP
-
-1. **Проверить, запущен ли Chrome CDP:**
+1. **Остановить все процессы Chrome:**
    ```powershell
+   Get-Process chrome -ErrorAction SilentlyContinue | Stop-Process -Force
+   ```
+
+2. **Запустить Chrome в видимом режиме через скрипт:**
+   ```bash
+   start-chrome.bat
+   ```
+   
+   Или вручную:
+   ```powershell
+   & "C:\Program Files\Google\Chrome\Application\chrome.exe" --remote-debugging-port=9222 --disable-gpu --no-sandbox --disable-dev-shm-usage
+   ```
+   
+   **ВАЖНО:** НЕ используйте флаг `--headless`!
+
+3. **Проверить, что Chrome запущен в видимом режиме:**
+   ```bash
+   python temp/check_chrome_mode.py
+   ```
+   
+   Должно быть: `[OK] Chrome запущен в ВИДИМОМ режиме`
+   
+   Если видно `HeadlessChrome` в User-Agent - Chrome запущен неправильно.
+
+4. **Убедиться, что окно Chrome видно:**
+   - После запуска должно открыться окно Chrome
+   - Если окна нет - Chrome запущен в headless режиме
+
+5. **Перезапустить Parser Service** (если он уже запущен):
+   ```bash
+   # Остановить процессы на порту 9003
+   netstat -ano | findstr ":9003"
+   taskkill /F /PID <PID>
+   
+   # Запустить заново
+   cd parser_service && python run_api.py
+   ```
+
+### Проверка
+1. Проверить режим Chrome:
+   ```bash
    curl http://127.0.0.1:9222/json/version
    ```
-   Если ответ получен - Chrome CDP работает. Если нет - запустить Chrome.
+   
+   В ответе `User-Agent` НЕ должен содержать `HeadlessChrome`.
 
-2. **Запустить Chrome в режиме отладки:**
+2. Запустить парсинг через фронтенд и убедиться, что:
+   - Окно Chrome видно
+   - Парсер подключается к этому окну
+   - При появлении CAPTCHA окно максимизируется для решения
+
+### Измененные файлы
+- `start-chrome.bat` - скрипт для запуска Chrome в видимом режиме
+- `temp/check_chrome_mode.py` - скрипт для проверки режима Chrome
+
+### Дата решения
+2025-12-26
+
+---
+
+## Ошибка: OSError [Errno 22] Invalid argument при запуске Backend на Windows
+
+### Описание проблемы
+При запуске Backend API на Windows возникает ошибка:
+```
+OSError: [Errno 22] Invalid argument
+```
+
+Ошибка возникает в middleware при попытке использовать `print(..., file=sys.stderr)` или `logging.StreamHandler(sys.stderr)` в контексте uvicorn.
+
+### Причина
+На Windows в контексте uvicorn `sys.stderr` может быть закрыт или недоступен для записи, что вызывает `OSError: [Errno 22] Invalid argument`. Это происходит потому, что uvicorn управляет потоками ввода-вывода и может закрывать стандартные потоки.
+
+### Решение
+
+1. **Убрать все `print(..., file=sys.stderr)` из кода:**
+   - Заменить на использование logger вместо print
+   - Убрать явные handlers для `sys.stderr` из `logging.basicConfig()`
+
+2. **Упростить настройку логирования:**
+   - Не использовать `logging.StreamHandler(sys.stderr)` в `lifespan`
+   - Позволить uvicorn самому управлять логированием
+   - Использовать только стандартный logger без явных handlers
+
+3. **Упростить логирование в middleware:**
+   - Убрать избыточное debug-логирование
+   - Обернуть логирование в try-except для безопасности
+
+#### Код решения:
+
+**В `backend/app/main.py`, функция `lifespan`:**
+```python
+# БЫЛО (вызывало ошибку):
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.StreamHandler(sys.stdout),
+        logging.StreamHandler(sys.stderr)  # ❌ Вызывало ошибку
+    ],
+    force=True
+)
+
+# СТАЛО (работает):
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    force=True  # ✅ Позволяем uvicorn управлять handlers
+)
+```
+
+**В `backend/app/main.py`, класс `CORSExceptionMiddleware`:**
+```python
+# БЫЛО (вызывало ошибку):
+print(f"=== MIDDLEWARE: Request to {request.url.path} ===", file=sys.stderr, flush=True)  # ❌
+logger.debug(f"=== MIDDLEWARE: Response status: {response.status_code} ===")  # ❌ Могло вызывать ошибку
+
+# СТАЛО (работает):
+# Убрано избыточное логирование, используется только необходимое
+# Логирование обернуто в try-except для безопасности
+```
+
+### Проверка
+
+1. **Проверить, что Backend запускается без ошибок:**
+   ```bash
+   cd backend
+   python -m uvicorn app.main:app --host 127.0.0.1 --port 8000
+   ```
+
+2. **Проверить health endpoint:**
+   ```bash
+   curl http://127.0.0.1:8000/health
+   ```
+   
+   Должен вернуть: `{"status":"ok"}`
+
+3. **Проверить, что нет ошибок в логах:**
+   - При запуске сервера не должно быть `OSError: [Errno 22] Invalid argument`
+   - Все запросы должны обрабатываться корректно
+
+### Измененные файлы
+- `backend/app/main.py` - убраны все `print(..., file=sys.stderr)`, упрощена настройка logging
+
+### Дата решения
+2025-01-27
+
+---
+
+## Настройка Parser Service
+
+### Описание
+Parser Service - это отдельный сервис для парсинга веб-сайтов через Chrome CDP. Он работает на порту 9003 и требует запущенного Chrome с включенным remote debugging.
+
+### Конфигурация портов
+
+- **Parser Service**: порт 9003 (настраивается в `parser_service/run_api.py`)
+- **Chrome CDP**: порт 9222 (настраивается в `parser_service/src/config.py`)
+- **Backend ожидает**: `http://127.0.0.1:9003` (настраивается в `backend/app/config.py`)
+
+### Запуск Chrome CDP
+
+**ВАЖНО:** Chrome должен быть запущен в ВИДИМОМ режиме (не headless), чтобы можно было решить CAPTCHA вручную.
+
+**Windows:**
+```powershell
+# Через скрипт
+.\start-chrome.bat
+
+# Или вручную
+& "C:\Program Files\Google\Chrome\Application\chrome.exe" --remote-debugging-port=9222 --disable-gpu --no-sandbox --disable-dev-shm-usage
+```
+
+**ВАЖНО:** НЕ используйте флаг `--headless`!
+
+### Запуск Parser Service
+
+```powershell
+cd parser_service
+python run_api.py
+```
+
+Или через скрипт:
+```powershell
+.\start-parser.bat
+```
+
+### Проверка работоспособности
+
+1. **Проверить Chrome CDP:**
+   ```powershell
+   Invoke-RestMethod http://127.0.0.1:9222/json/version
+   ```
+   Должен вернуть информацию о Chrome и WebSocket URL.
+
+2. **Проверить Parser Service:**
+   ```powershell
+   Invoke-RestMethod http://127.0.0.1:9003/health
+   ```
+   Должен вернуть: `{"status":"ok"}`
+
+3. **Полная диагностика:**
+   ```powershell
+   python temp/parser_service/diagnose_parser_full.py
+   ```
+   Скрипт проверит все компоненты и выполнит тестовый запрос на парсинг.
+
+### Тестовый запрос на парсинг
+
+```powershell
+$body = @{ keyword = "кирпич"; max_urls = 5; source = "yandex" } | ConvertTo-Json
+Invoke-RestMethod http://127.0.0.1:9003/parse -Method Post -ContentType "application/json; charset=utf-8" -Body $body
+```
+
+**ВАЖНО:** Используйте `Content-Type: application/json; charset=utf-8` для корректной обработки кириллицы.
+
+### Известные проблемы и решения
+
+#### Проблема: Кодировка кириллицы (Cyrillic mojibake)
+
+**Симптом:** Запросы с кириллицей превращаются в `?????`
+
+**Решение:** 
+- Backend автоматически добавляет `Content-Type: application/json; charset=utf-8` в запросы к parser_service
+- Если делаете запросы напрямую, обязательно указывайте charset
+
+**Проверка:**
+```powershell
+# Правильно (с charset)
+$body = @{ keyword = "кирпич" } | ConvertTo-Json
+Invoke-RestMethod http://127.0.0.1:9003/parse -Method Post -ContentType "application/json; charset=utf-8" -Body $body
+
+# Неправильно (без charset - может вызвать mojibake)
+Invoke-RestMethod http://127.0.0.1:9003/parse -Method Post -ContentType "application/json" -Body $body
+```
+
+#### Проблема: Ошибка подключения к Chrome CDP
+
+**Симптом:** `Cannot connect to Chrome CDP at http://127.0.0.1:9222`
+
+**Решение:**
+1. Убедитесь, что Chrome запущен с флагом `--remote-debugging-port=9222`
+2. Проверьте, что Chrome не запущен в headless режиме
+3. Проверьте доступность порта: `netstat -ano | findstr ":9222"`
+
+**Проверка:**
+```powershell
+# Проверить доступность Chrome CDP
+Invoke-RestMethod http://127.0.0.1:9222/json/version
+
+# Проверить режим Chrome (не должен быть HeadlessChrome)
+$response = Invoke-RestMethod http://127.0.0.1:9222/json/version
+$response.User-Agent  # Не должно содержать "HeadlessChrome"
+```
+
+#### Проблема: Parser Service возвращает 503
+
+**Симптом:** `503 Service Unavailable` при запросе к parser_service
+
+**Причина:** Parser Service не может подключиться к Chrome CDP
+
+**Решение:**
+1. Убедитесь, что Chrome запущен с remote debugging
+2. Проверьте, что порт 9222 доступен
+3. Проверьте логи parser_service для деталей ошибки
+
+#### Проблема: Chrome запущен, но CDP недоступен (Connection error: All connection attempts failed)
+
+**Симптом:** 
+- Ошибка: `Connection error in parse_keyword: Cannot connect to Chrome CDP at http://127.0.0.1:9222. Error: All connection attempts failed`
+- Chrome запущен (видно в диспетчере задач), но порт 9222 не слушается
+- `start-parser.bat` показывает: `[WARNING] Chrome CDP is not accessible on port 9222`
+
+**Причина:** 
+Chrome запущен БЕЗ флага `--remote-debugging-port=9222` или использует существующий профиль пользователя, который не поддерживает CDP. Обычно это происходит, если:
+- Chrome был запущен обычным способом (без CDP)
+- Chrome был запущен с другими параметрами
+- Chrome был запущен до запуска `start-chrome.bat`
+- Chrome пытается использовать существующий профиль пользователя, который уже занят другим процессом Chrome
+
+**Решение:**
+
+**Вариант 1 (Автоматический - Рекомендуемый):**
+Все скрипты проекта (`start-chrome.bat`, `start-parser.bat`, `start-all.bat`) теперь автоматически:
+1. Используют **единый профиль отладки** (`temp\chrome_debug_profile`)
+2. Проверяют доступность Chrome CDP перед запуском
+3. Автоматически запускают Chrome с CDP, если он не доступен
+4. Используют централизованную конфигурацию из `scripts\chrome_config.bat`
+
+**Вариант 2 (Ручной запуск):**
+1. Закройте ВСЕ окна Chrome
+2. Запустите `start-chrome.bat` - Chrome откроется с CDP на порту 9222 с единым профилем отладки
+3. Или запустите Chrome вручную с правильными параметрами:
+   ```cmd
+   "C:\Program Files\Google\Chrome\Application\chrome.exe" --remote-debugging-port=9222 --user-data-dir="D:\tryagain\temp\chrome_debug_profile" --disable-gpu --no-sandbox --disable-dev-shm-usage
+   ```
+
+**Вариант 3 (Использование start-all.bat):**
+`start-all.bat` автоматически проверяет доступность Chrome CDP:
+- Если Chrome CDP доступен - не перезапускает его
+- Если Chrome CDP недоступен - запускает Chrome с CDP и единым профилем
+
+**Проверка:**
+```cmd
+# Проверить доступность Chrome CDP
+curl http://127.0.0.1:9222/json/version
+
+# Или использовать скрипт диагностики
+scripts\check_chrome_cdp.bat
+
+# Проверить, слушается ли порт 9222
+netstat -ano | findstr ":9222"
+
+# Проверить процессы Chrome
+tasklist | findstr chrome.exe
+
+# Проверить, какой профиль использует Chrome
+wmic process where "name='chrome.exe'" get commandline | findstr user-data-dir
+```
+
+**Важно:**
+- **Все скрипты используют ОДИН И ТОТ ЖЕ профиль** (`temp\chrome_debug_profile`) для обеспечения консистентности
+- Если Chrome уже запущен без CDP, новый процесс Chrome с CDP может не запуститься из-за конфликта
+- В этом случае нужно закрыть все окна Chrome и запустить его заново с CDP
+- Chrome с CDP использует отдельный профиль отладки, чтобы избежать конфликтов с обычным Chrome
+
+**Измененные файлы:**
+- `scripts\chrome_config.bat` - централизованная конфигурация Chrome CDP (новый)
+- `start-parser.bat` - использует единый профиль и централизованную конфигурацию
+- `start-chrome.bat` - использует единый профиль и улучшенные проверки CDP
+- `start-all.bat` - использует единый профиль и централизованную конфигурацию
+- `stop-all.bat` - улучшена остановка Chrome с правильным профилем
+
+**Дата решения:**
+2025-12-26 (обновлено 2025-12-27)
+
+#### Проблема: NotImplementedError на Windows
+
+**Симптом:** `NotImplementedError` при запуске Playwright на Windows
+
+**Решение:** Уже решено в коде - используется отдельный поток с `asyncio.run()` и `WindowsProactorEventLoopPolicy`. Если проблема сохраняется, проверьте:
+1. Что используется правильная версия Python (3.12+)
+2. Что все зависимости установлены: `pip install -r parser_service/requirements.txt`
+
+### Порядок запуска сервисов
+
+1. **Сначала** запустите Chrome CDP:
    ```powershell
    .\start-chrome.bat
    ```
-   Или вручную:
-   ```powershell
-   # Chrome запускается в видимом режиме (не headless), чтобы можно было пройти капчу вручную
-   start "" "C:\Program Files\Google\Chrome\Application\chrome.exe" --remote-debugging-port=9222 --disable-gpu --no-sandbox --disable-dev-shm-usage
-   ```
 
-3. **Проверить, что Chrome CDP доступен:**
-   ```powershell
-   curl http://127.0.0.1:9222/json/version
-   ```
-   Должен вернуть JSON с информацией о Chrome.
-
-#### Шаг 2: Проверка портов
-
-1. **Проверить, какие процессы используют порты:**
-   ```powershell
-   netstat -ano | Select-String ":9003"
-   netstat -ano | Select-String ":9222"
-   ```
-
-2. **Остановить процессы, если нужно:**
-   ```powershell
-   # Найти PID процесса на порту 9003
-   $pid = (Get-NetTCPConnection -LocalPort 9003).OwningProcess
-   Stop-Process -Id $pid -Force
-   
-   # Найти PID процесса на порту 9222
-   $pid = (Get-NetTCPConnection -LocalPort 9222).OwningProcess
-   Stop-Process -Id $pid -Force
-   ```
-
-#### Шаг 3: Запуск Parser Service
-
-1. **Запустить Parser Service:**
+2. **Затем** запустите Parser Service:
    ```powershell
    .\start-parser.bat
    ```
 
-2. **Проверить, что Parser Service запущен:**
+3. **Затем** запустите Backend:
    ```powershell
-   curl http://127.0.0.1:9003/health
+   .\start-backend.bat
    ```
-   Должен вернуть `{"status":"ok"}`.
 
-#### Шаг 4: Диагностика (если проблемы остаются)
+4. **В последнюю очередь** запустите Frontend:
+   ```powershell
+   .\start-frontend.bat
+   ```
 
-Использовать диагностический скрипт:
+### Диагностический скрипт
+
+Для полной диагностики всех компонентов парсера используйте:
 ```powershell
-python temp\parser_service\diagnose_parser.py
+python temp/parser_service/diagnose_parser_full.py
 ```
 
 Скрипт проверит:
-- Доступность Chrome CDP
-- Доступность Parser Service
-- Использование портов
-- Подключение Parser Service к Chrome CDP
+- Доступность Chrome CDP (порт 9222)
+- Доступность Parser Service (порт 9003)
+- Доступность Backend (порт 8000)
+- Тестовый запрос на парсинг с кириллицей
+- Интеграцию Backend с Parser Service
+
+### Измененные файлы
+- `backend/app/adapters/parser_client.py` - добавлен `Content-Type: application/json; charset=utf-8`
+- `parser_service/src/parser.py` - улучшена обработка ошибок подключения к Chrome CDP
+- `parser_service/api.py` - улучшена обработка ошибок с информативными сообщениями
+- `temp/parser_service/diagnose_parser_full.py` - создан диагностический скрипт
+
+### Дата настройки
+2025-01-27
+
+## Рекомендации по работе с Chrome CDP
+
+### Общие рекомендации
+
+1. **Всегда используйте единый профиль отладки:**
+   - Все скрипты проекта используют один и тот же профиль: `temp\chrome_debug_profile`
+   - Это обеспечивает консистентность и предотвращает конфликты
+   - Профиль определяется в `scripts\chrome_config.bat`
+
+2. **Используйте скрипты проекта для запуска Chrome:**
+   - Не запускайте Chrome вручную без параметров CDP
+   - Используйте `start-chrome.bat`, `start-parser.bat` или `start-all.bat`
+   - Все скрипты автоматически проверяют доступность CDP перед запуском
+
+3. **Проверяйте доступность CDP перед использованием:**
+   - Используйте `scripts\check_chrome_cdp.bat` для диагностики
+   - Или проверьте вручную: `curl http://127.0.0.1:9222/json/version`
+   - Убедитесь, что Chrome запущен в видимом режиме (не headless) для возможности решения CAPTCHA
+
+4. **При проблемах с Chrome CDP:**
+   - Закройте все окна Chrome
+   - Запустите `stop-all.bat` для полной остановки всех сервисов
+   - Запустите `start-chrome.bat` для запуска Chrome с CDP
+   - Проверьте доступность CDP через `scripts\check_chrome_cdp.bat`
+
+5. **Централизованная конфигурация:**
+   - Все параметры Chrome CDP находятся в `scripts\chrome_config.bat`
+   - При необходимости изменить порт или путь к Chrome, обновите этот файл
+   - Все скрипты автоматически используют эту конфигурацию
+
+### Проверка работоспособности Chrome CDP
+
+**Быстрая проверка:**
+```cmd
+scripts\check_chrome_cdp.bat
+```
+
+**Ручная проверка:**
+```cmd
+# Проверить доступность CDP
+curl http://127.0.0.1:9222/json/version
+
+# Проверить порт
+netstat -ano | findstr ":9222"
+
+# Проверить профиль Chrome
+wmic process where "name='chrome.exe'" get commandline | findstr user-data-dir
+```
+
+**Ожидаемый результат:**
+- CDP доступен на порту 9222
+- Chrome запущен в видимом режиме (не headless)
+- Chrome использует профиль `temp\chrome_debug_profile`
+- WebSocket URL доступен для подключения
+
+### Измененные файлы
+
+- `scripts\chrome_config.bat` - централизованная конфигурация Chrome CDP
+- `scripts\check_chrome_cdp.bat` - скрипт диагностики Chrome CDP
+- `start-chrome.bat` - использует единый профиль и улучшенные проверки
+- `start-parser.bat` - использует единый профиль и централизованную конфигурацию
+- `start-all.bat` - использует единый профиль и централизованную конфигурацию
+- `stop-all.bat` - улучшена остановка Chrome с правильным профилем
+
+### Дата добавления рекомендаций
+2025-12-27
+
+---
+
+## Ошибка: Парсинг возвращает старые результаты, реальный парсинг не выполняется
+
+### Описание проблемы
+
+**Симптом:**
+- Парсинг запускается через Frontend или API, но возвращает старые результаты из базы данных
+- В браузере Chrome не видно открытия вкладок с поисковиками (Google/Yandex)
+- В истории браузера нет записей о посещении поисковиков
+- Парсинг завершается мгновенно, но результаты идентичны предыдущим запускам
+- Backend возвращает успешный ответ, но реальный парсинг не выполняется
+
+**Пример:**
+```bash
+# Запуск парсинга
+POST /parsing/start
+{
+  "keyword": "фланец",
+  "depth": 2,
+  "source": "google"
+}
+
+# Ответ успешный, но результаты старые
+{
+  "runId": "e35b244a-4b47-4f14-b71b-91123cff515a",
+  "keyword": "фланец",
+  "status": "running"
+}
+
+# Проверка результатов - те же 111 доменов, что и раньше
+GET /domains/queue?parsingRunId=e35b244a-4b47-4f14-b71b-91123cff515a
+# Возвращает старые данные из базы
+```
+
+### Причина
+
+**Parser Service не запущен или недоступен:**
+- Parser Service не запущен (порт 9003 не слушается)
+- Backend не может подключиться к Parser Service
+- Парсинг не выполняется реально, Backend возвращает старые данные из базы данных
+- Chrome CDP может быть запущен, но Parser Service не работает
+
+**Проверка:**
+```cmd
+# Проверить, слушается ли порт 9003
+netstat -ano | findstr ":9003"
+
+# Проверить доступность Parser Service
+curl http://127.0.0.1:9003/health
+
+# Если порт не слушается или health check не отвечает - Parser Service не запущен
+```
+
+### Решение
+
+**Шаг 1: Проверить статус Parser Service**
+```cmd
+# Проверить порт
+netstat -ano | findstr ":9003"
+
+# Проверить health check
+curl http://127.0.0.1:9003/health
+```
+
+**Шаг 2: Запустить Parser Service**
+
+**Вариант 1 (Рекомендуемый - через скрипт):**
+```cmd
+cd parser_service
+start-parser-service.bat
+```
+
+**Вариант 2 (Через start-all.bat):**
+```cmd
+start-all.bat
+# Скрипт автоматически запустит все сервисы, включая Parser Service
+```
+
+**Вариант 3 (Вручную):**
+```cmd
+cd parser_service
+python run_api.py
+```
+
+**Шаг 3: Проверить, что Parser Service запущен**
+```cmd
+# Должен вернуть {"status":"ok"}
+curl http://127.0.0.1:9003/health
+
+# Порт должен слушаться
+netstat -ano | findstr ":9003"
+```
+
+**Шаг 4: Запустить парсинг заново**
+После запуска Parser Service запустите парсинг снова. Теперь:
+- В браузере Chrome должны открыться вкладки с поисковиками
+- Парсинг будет выполняться реально
+- Результаты будут новыми
 
 ### Проверка
 
-1. **Chrome CDP:**
-   ```powershell
-   curl http://127.0.0.1:9222/json/version
-   ```
-   Ожидаемый результат: JSON с информацией о Chrome.
+**Успешный запуск Parser Service:**
+```cmd
+# Health check должен вернуть {"status":"ok"}
+curl http://127.0.0.1:9003/health
 
-2. **Parser Service:**
-   ```powershell
-   curl http://127.0.0.1:9003/health
-   ```
-   Ожидаемый результат: `{"status":"ok"}`.
+# Порт должен слушаться
+netstat -ano | findstr ":9003"
+# Должен показать: TCP    127.0.0.1:9003         0.0.0.0:0              LISTENING       <PID>
+```
 
-3. **Подключение Parser Service к Chrome:**
-   ```powershell
-   $body = @{keyword='test';max_urls=1} | ConvertTo-Json
-   Invoke-RestMethod -Uri 'http://127.0.0.1:9003/parse' -Method Post -Body $body -ContentType 'application/json'
-   ```
-   Ожидаемый результат: JSON с результатами парсинга (может быть пустым списком suppliers, но без ошибок).
+**Успешный реальный парсинг:**
+- В окне Chrome открываются вкладки с Google/Yandex поиском
+- В истории браузера появляются записи о посещении поисковиков
+- Парсинг занимает время (не мгновенный)
+- Результаты новые (отличаются от предыдущих запусков)
+
+### Важно
+
+**Порядок запуска сервисов:**
+1. **Сначала** Chrome CDP (`start-chrome.bat` или через `start-all.bat`)
+2. **Затем** Parser Service (`start-parser-service.bat` или через `start-all.bat`)
+3. **Затем** Backend (`start-backend.bat` или через `start-all.bat`)
+4. **В последнюю очередь** Frontend (`start-frontend.bat` или через `start-all.bat`)
+
+**Проверка перед парсингом:**
+- Chrome CDP доступен: `curl http://127.0.0.1:9222/json/version`
+- Parser Service доступен: `curl http://127.0.0.1:9003/health`
+- Backend доступен: `curl http://127.0.0.1:8000/health`
 
 ### Измененные файлы
-- `start-chrome.bat` - улучшена обработка ошибок и проверки, Chrome запускается в видимом режиме (не headless)
-- `start-parser.bat` - улучшена обработка ошибок и проверки
-- `start-all.bat` - Chrome запускается в видимом режиме (не headless)
-- `temp/parser_service/diagnose_parser.py` - добавлен диагностический скрипт
-- `docs/TROUBLESHOOTING.md` - обновлена документация
-- `README.md` - обновлены примеры запуска Chrome
-- `QUICK_START.md` - обновлены примеры запуска Chrome
 
-### Примечание о режиме Chrome
-
-**Важно:** Chrome запускается в **видимом режиме** (не headless) по умолчанию. Это позволяет вручную пройти капчу, если это потребуется. Окно Chrome будет видно на экране.
-
-Если вы хотите запустить Chrome в headless режиме (без окна), добавьте флаг `--headless` в команду запуска. Но учтите, что в этом случае вы не сможете вручную пройти капчу.
+- `parser_service/start-parser-service.bat` - скрипт запуска Parser Service
+- `start-all.bat` - автоматический запуск всех сервисов
+- `start-parser.bat` - запуск Parser Service через общий скрипт
 
 ### Дата решения
-2025-12-26
+2025-12-27
 
 ---
 
-## История изменений
+## Успех: Парсинг работает корректно в видимом режиме Chrome
 
-- **2025-12-26**: Создан документ с первыми тремя критическими ошибками и их решениями
-- **2025-12-26**: Добавлена ошибка 11 - ProgrammingError: столбец parsing_runs.keyword не существует
-- **2025-12-26**: Добавлены рекомендации после реализации функциональности удаления parsing runs
-- **2025-12-26**: Добавлена ошибка 4 - Парсер сервис не запускается / Chrome не запускается в режиме отладки
+### Описание успеха
 
----
+**Что работает:**
+- ✅ Chrome запускается в видимом режиме (не headless)
+- ✅ Парсер подключается к Chrome через CDP
+- ✅ Открываются вкладки с поисковиками (Google/Yandex) в окне Chrome
+- ✅ Парсинг выполняется реально, собираются новые результаты
+- ✅ Результаты сохраняются в базу данных
+- ✅ Frontend может запускать парсинг через API
 
-## 💡 Рекомендации после добавления функциональности удаления parsing runs (2025-12-26)
+**Проверено:**
+- Ключевое слово: "кирпич"
+- Глубина: 1
+- Источник: "google"
+- Результат: найдено 119 доменов
+- Вкладки с Google поиском открывались в браузере
 
-**Высокий приоритет:**
+### Текущая конфигурация
 
-1. **Заменить `confirm()` на AlertDialog компонент:**
-   - Сейчас используется нативный `confirm()`, который не соответствует дизайну приложения
-   - В проекте уже установлен `@radix-ui/react-alert-dialog`
-   - Создать компонент `components/ui/alert-dialog.tsx` (если еще нет)
-   - Использовать AlertDialog для всех операций удаления
-   - Улучшает UX и консистентность интерфейса
+**Chrome CDP:**
+- Порт: 9222
+- Режим: видимый (не headless)
+- Профиль: `temp\chrome_debug_profile` (единый для всех скриптов)
+- Конфигурация: `scripts\chrome_config.bat`
 
-2. **Добавить Toast уведомления для операций:**
-   - Установить `sonner` или использовать существующий toast компонент
-   - Показывать успешные уведомления при удалении
-   - Показывать ошибки в toast вместо только в состоянии error
-   - Улучшает обратную связь с пользователем
+**Parser Service:**
+- Порт: 9003
+- URL: `http://127.0.0.1:9003`
+- Health check: `http://127.0.0.1:9003/health`
 
-3. **Добавить оптимистичные обновления:**
-   - Удалять запись из UI сразу после клика, не дожидаясь ответа сервера
-   - Откатывать изменения при ошибке
-   - Улучшает воспринимаемую производительность
+**Backend:**
+- Порт: 8000
+- URL: `http://127.0.0.1:8000`
+- Parser Service URL: настраивается через `settings.parser_service_url`
 
-**Средний приоритет:**
+### Известные ограничения
 
-4. **Добавить пагинацию:**
-   - Сейчас загружаются все записи (limit=100)
-   - Добавить кнопки "Предыдущая" / "Следующая"
-   - Показывать общее количество записей
-   - Сохранять текущую страницу в URL параметрах
+**⚠️ ТРЕБУЕТ РАБОТЫ: CAPTCHA**
 
-5. **Добавить фильтрацию и поиск:**
-   - Фильтр по статусу (running, completed, failed)
-   - Поиск по keyword
-   - Фильтр по дате создания
-   - Сохранять фильтры в URL параметрах
+**Проблема:**
+- При парсинге Google/Yandex может появляться CAPTCHA
+- Парсер ожидает, что пользователь решит CAPTCHA вручную в видимом окне Chrome
+- Если CAPTCHA не решена в течение 5 минут - парсинг может завершиться с ошибкой
 
-6. **Добавить массовое удаление:**
-   - Чекбоксы для выбора нескольких записей
-   - Кнопка "Удалить выбранные"
-   - Подтверждение с количеством выбранных записей
-   - Endpoint для массового удаления: `DELETE /parsing/runs/bulk`
+**Текущее поведение:**
+- Парсер обнаруживает CAPTCHA и ждет до 5 минут
+- Выводит сообщения в консоль: `[WAIT] GOOGLE: Waiting for CAPTCHA to be solved...`
+- Пользователь должен вручную решить CAPTCHA в окне Chrome
+- После решения CAPTCHA парсинг продолжается автоматически
 
-7. **Улучшить обработку ошибок:**
-   - Более детальные сообщения об ошибках
-   - Разные сообщения для разных типов ошибок (404, 500, network)
-   - Автоматический retry для сетевых ошибок
+**Что нужно сделать в будущем:**
+- [ ] Интеграция с сервисами решения CAPTCHA (2captcha, anti-captcha и т.д.)
+- [ ] Автоматическое определение и решение CAPTCHA
+- [ ] Улучшенная обработка CAPTCHA с уведомлениями пользователю
+- [ ] Возможность пропускать страницы с CAPTCHA и продолжать парсинг
 
-**Низкий приоритет:**
+**Приоритет:** Средний (парсинг работает, но требует ручного вмешательства при CAPTCHA)
 
-8. **Добавить экспорт данных:**
-   - Кнопка "Экспорт в CSV/Excel"
-   - Экспорт всех записей или только отфильтрованных
-
-9. **Добавить сортировку:**
-   - Сортировка по колонкам (ID, keyword, status, дата создания)
-   - Индикация текущей сортировки
-
-10. **Добавить детальную страницу запуска:**
-    - Страница `/parsing-runs/[runId]` с подробной информацией
-    - Логи выполнения
-    - Список найденных URL
-    - Графики и статистика
-
-11. **Добавить автоматическую очистку старых записей:**
-    - Настройка для автоматического удаления записей старше N дней
-    - Cron job или scheduled task
-
+### Дата фиксации успеха
+2025-12-27

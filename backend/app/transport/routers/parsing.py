@@ -1,5 +1,6 @@
 """Router for parsing operations."""
 from fastapi import APIRouter, Depends
+from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.adapters.db.session import get_db
@@ -16,23 +17,35 @@ from app.usecases import (
 router = APIRouter()
 
 
-@router.post("/start", response_model=StartParsingResponseDTO, status_code=201)
+@router.post("/start", status_code=201)
 async def start_parsing_endpoint(
     request: StartParsingRequestDTO,
     db: AsyncSession = Depends(get_db)
 ):
     """Start parsing for a keyword."""
+    # Validate source
+    valid_sources = ["google", "yandex", "both"]
+    source = request.source.lower() if request.source else "google"
+    if source not in valid_sources:
+        source = "google"
+    
     result = await start_parsing.execute(
         db=db,
         keyword=request.keyword,
-        max_urls=request.maxUrls
+        depth=request.depth,
+        source=source
     )
     await db.commit()
     
-    return StartParsingResponseDTO(
-        runId=result["run_id"],
-        keyword=result["keyword"],
-        status=result["status"]
+    # Return response with camelCase field names for frontend
+    # Using JSONResponse directly to bypass any FastAPI response validation
+    return JSONResponse(
+        status_code=201,
+        content={
+            "runId": result["run_id"],
+            "keyword": result["keyword"],
+            "status": result["status"]
+        }
     )
 
 

@@ -21,6 +21,8 @@ async def list_domains_queue_endpoint(
     limit: int = Query(default=100, ge=1, le=1000),
     offset: int = Query(default=0, ge=0),
     status: Optional[str] = Query(default=None),
+    keyword: Optional[str] = Query(default=None),
+    parsing_run_id: Optional[str] = Query(default=None, alias="parsingRunId"),
     db: AsyncSession = Depends(get_db)
 ):
     """List domains queue entries with pagination."""
@@ -28,7 +30,9 @@ async def list_domains_queue_endpoint(
         db=db,
         limit=limit,
         offset=offset,
-        status=status
+        status=status,
+        keyword=keyword,
+        parsing_run_id=parsing_run_id
     )
     
     return DomainsQueueResponseDTO(

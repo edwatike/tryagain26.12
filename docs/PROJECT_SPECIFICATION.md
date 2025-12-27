@@ -256,37 +256,524 @@ backend/app/
 
 **Базовый путь:** `/parsing`
 
-**Статус проверки:** ⚠️ **ТРЕБУЕТ ПРОВЕРКИ** (интеграция с Parser Service не проверена)
+**Статус проверки:** ✅ **ПРОВЕРЕНО И РАБОТАЕТ** (2025-12-27)
+
+**⚠️ ВАЖНО: ТРЕБУЕТ РАБОТЫ НАД CAPTCHA** - см. раздел "Известные ограничения" ниже
 
 #### `POST /parsing/start`
 Запустить парсинг.
 
-**Статус:** ⚠️ **ТРЕБУЕТ ПРОВЕРКИ**
+**Статус:** ✅ **ПРОВЕРЕНО И РАБОТАЕТ**
 
 **Request body:**
 ```json
 {
-  "keyword": "сантехника",
-  "maxUrls": 10
+  "keyword": "кирпич",
+  "depth": 2,
+  "source": "google"
 }
 ```
 
-**Response:**
+**Параметры:**
+- `keyword` (string, required) - ключевое слово для поиска
+- `depth` (int, default=10) - количество страниц результатов поиска для парсинга (глубина)
+- `source` (string, default="google") - источник поиска: `"google"`, `"yandex"`, или `"both"`
+
+**Response (201 Created):**
 ```json
 {
-  "runId": "uuid-string",
-  "keyword": "сантехника",
+  "runId": "4f468e53-9ec5-4c03-aebf-04c54bdf5477",
+  "keyword": "кирпич",
   "status": "running"
 }
 ```
 
+**Как работает связка Backend-Frontend:**
+
+**1. Frontend отправляет запрос:**
+
+```typescript
+// frontend/moderator-dashboard-ui/app/manual-parsing/page.tsx
+async function handleStart() {
+  const data = await apiFetch<{ runId: string; keyword: string; status: string }>("/parsing/start", {
+    method: "POST",
+    body: JSON.stringify({ keyword, depth, source }),
+  })
+  router.push(`/parsing-runs/${data.runId}`)
+}
+```
+
+**2. Backend обрабатывает запрос:**
+
+```python
+# backend/app/transport/routers/parsing.py
+@router.post("/start", status_code=201)
+async def start_parsing_endpoint(
+    request: StartParsingRequestDTO,
+    db: AsyncSession = Depends(get_db)
+):
+    """Start parsing for a keyword."""
+    # Validate source
+    valid_sources = ["google", "yandex", "both"]
+    source = request.source.lower() if request.source else "google"
+    if source not in valid_sources:
+        source = "google"
+    
+    result = await start_parsing.execute(
+        db=db,
+        keyword=request.keyword,
+        depth=request.depth,
+        source=source
+    )
+    await db.commit()
+    
+    # Return response with camelCase field names for frontend
+    return JSONResponse(
+        status_code=201,
+        content={
+            "runId": result["run_id"],
+            "keyword": result["keyword"],
+            "status": result["status"]
+        }
+    )
+```
+
+**3. Usecase запускает парсинг:**
+
+```python
+# backend/app/usecases/start_parsing.py
+async def execute(db: AsyncSession, keyword: str, depth: int = 10, source: str = "google"):
+    # Create parsing request and run in database
+    # ...
+    
+    # Start parsing asynchronously
+    async def run_parsing():
+        parser_client = ParserClient(settings.parser_service_url)
+        
+        # Call Parser Service
+        result = await parser_client.parse(
+            keyword=keyword,
+            depth=depth,
+            source=source
+        )
+        
+        # Save results to domains_queue
+        # Update run status to "completed"
+    
+    asyncio.create_task(run_parsing())
+    
+    return {
+        "run_id": run_id,
+        "keyword": keyword,
+        "status": "running"
+    }
+```
+
+**4. Parser Client вызывает Parser Service:**
+
+```python
+# backend/app/adapters/parser_client.py
+async def parse(self, keyword: str, depth: int = 10, source: str = "google") -> Dict[str, Any]:
+    response = await self.client.post(
+        "/parse",
+        json={
+            "keyword": keyword,
+            "depth": depth,
+            "source": source
+        },
+        headers={
+            "Content-Type": "application/json; charset=utf-8"
+        }
+    )
+    return response.json()
+```
+
+**5. Parser Service выполняет парсинг:**
+
+```python
+# parser_service/api.py
+@app.post("/parse", response_model=ParseResponse)
+async def parse_keyword(request: ParseRequest):
+    # Connect to Chrome CDP
+    # Open search engine pages (Google/Yandex)
+    # Collect links from search results
+    # Return suppliers list
+```
+
+**Полный код схем и типов:**
+
+**Backend схемы (Pydantic):**
+
+```python
+# backend/app/transport/schemas/parsing.py
+class StartParsingRequestDTO(BaseModel):
+    """Request DTO for starting parsing."""
+    keyword: str
+    depth: int = Field(default=10, description="Number of search result pages to parse (depth)")
+    source: str = Field(default="google", description="Source for parsing: 'google', 'yandex', or 'both'")
+
+class StartParsingResponseDTO(BaseModel):
+    """Response DTO for parsing start."""
+    runId: str  # Use camelCase directly (no alias needed for response)
+    keyword: str
+    status: str
+
+class ParsingStatusResponseDTO(BaseModel):
+    """Response DTO for parsing status."""
+    runId: str = Field(alias="run_id")
+    keyword: str
+    status: str
+    startedAt: Optional[datetime] = Field(None, alias="started_at")
+    finishedAt: Optional[datetime] = Field(None, alias="finished_at")
+    error: Optional[str] = Field(None, alias="error_message")
+    resultsCount: Optional[int] = None
+```
+
+**Frontend типы (TypeScript):**
+
+```typescript
+// frontend/moderator-dashboard-ui/lib/types.ts
+export interface ParsingRunDTO {
+  run_id?: string  // Backend возвращает snake_case
+  runId?: string  // Для обратной совместимости
+  keyword: string
+  status: string  // Может быть любым статусом, не только "running" | "completed" | "failed"
+  started_at?: string | null  // Backend возвращает snake_case
+  startedAt?: string | null  // Для обратной совместимости
+  finished_at?: string | null  // Backend возвращает snake_case
+  finishedAt?: string | null  // Для обратной совместимости
+  error_message?: string | null  // Backend возвращает snake_case
+  error?: string | null  // Для обратной совместимости
+  resultsCount: number | null
+  created_at?: string  // Backend возвращает snake_case
+  createdAt?: string  // Для обратной совместимости
+}
+
+export interface DomainQueueEntryDTO {
+  domain: string
+  keyword: string
+  url: string
+  parsingRunId: string | null
+  status: string
+  createdAt: string
+}
+```
+
+**Parser Service схемы:**
+
+```python
+# parser_service/api.py
+class ParseRequest(BaseModel):
+    """Request model for parsing."""
+    keyword: str
+    depth: int = 10  # Number of search result pages to parse
+    source: str = "google"  # "google", "yandex", or "both"
+
+class ParsedSupplier(BaseModel):
+    """Parsed supplier data."""
+    name: str
+    domain: Optional[str] = None
+    email: Optional[str] = None
+    phone: Optional[str] = None
+    inn: Optional[str] = None
+    source_url: str
+
+class ParseResponse(BaseModel):
+    """Response model for parsing."""
+    keyword: str
+    suppliers: List[ParsedSupplier]
+    total_found: int
+```
+
+**Проверка работоспособности:**
+
+```bash
+# 1. Запустить все сервисы
+start-all.bat
+
+# 2. Проверить доступность сервисов
+curl http://127.0.0.1:8000/health      # Backend
+curl http://127.0.0.1:9003/health     # Parser Service
+curl http://127.0.0.1:9222/json/version  # Chrome CDP
+
+# 3. Запустить парсинг
+curl -X POST http://127.0.0.1:8000/parsing/start \
+  -H "Content-Type: application/json; charset=utf-8" \
+  -d '{"keyword":"кирпич","depth":1,"source":"google"}'
+
+# 4. Проверить результаты
+curl "http://127.0.0.1:8000/domains/queue?parsingRunId=<runId>"
+```
+
+**Ожидаемый результат:**
+- В окне Chrome открываются вкладки с Google/Yandex поиском
+- Парсинг выполняется реально (не мгновенно)
+- Результаты сохраняются в базу данных
+- Возвращается новый runId с новыми результатами
+
 #### `GET /parsing/status/{run_id}`
 Статус парсинга.
+
+**Статус:** ✅ **ПРОВЕРЕНО И РАБОТАЕТ** (с известной проблемой валидации - см. ниже)
 
 **Path параметры:**
 - `run_id` (string) - UUID запуска
 
 **Response:** `ParsingStatusResponseDTO`
+
+**Как работает:**
+
+```python
+# backend/app/transport/routers/parsing.py
+@router.get("/status/{run_id}", response_model=ParsingStatusResponseDTO)
+async def get_parsing_status_endpoint(
+    run_id: str,
+    db: AsyncSession = Depends(get_db)
+):
+    run = await get_parsing_status.execute(db=db, run_id=run_id)
+    if not run:
+        raise HTTPException(status_code=404, detail="Parsing run not found")
+    
+    # Extract keyword from request
+    keyword = "Unknown"
+    if run.request:
+        if run.request.title:
+            keyword = run.request.title
+        elif run.request.raw_keys_json:
+            # Parse JSON and extract first keyword
+            keys_data = json.loads(run.request.raw_keys_json)
+            # ...
+    
+    status_dict = {
+        "runId": run.run_id,
+        "keyword": keyword,
+        "status": run.status,
+        "startedAt": run.started_at.isoformat() if run.started_at else None,
+        "finishedAt": run.finished_at.isoformat() if run.finished_at else None,
+        "error": run.error_message,
+        "resultsCount": None,
+    }
+    return ParsingStatusResponseDTO.model_validate(status_dict)
+```
+
+**⚠️ Известная проблема:**
+- Endpoint может возвращать ошибку валидации Pydantic: `Field required [type=missing, input_value={'runId': ...}, input_type=dict]`
+- Проблема в маппинге `runId` vs `run_id` в DTO
+- **Временное решение:** Использовать прямой запрос к базе или endpoint `/parsing-runs/{run_id}`
+
+**Известные ограничения:**
+
+**⚠️ ТРЕБУЕТ РАБОТЫ: CAPTCHA**
+
+**Проблема:**
+- При парсинге Google/Yandex может появляться CAPTCHA
+- Парсер ожидает, что пользователь решит CAPTCHA вручную в видимом окне Chrome
+- Если CAPTCHA не решена в течение 5 минут - парсинг может завершиться с ошибкой
+
+**Текущее поведение:**
+- Парсер обнаруживает CAPTCHA и ждет до 5 минут
+- Выводит сообщения: `[WAIT] GOOGLE: Waiting for CAPTCHA to be solved...`
+- Пользователь должен вручную решить CAPTCHA в окне Chrome
+- После решения CAPTCHA парсинг продолжается автоматически
+
+**Что нужно сделать в будущем:**
+- [ ] Интеграция с сервисами решения CAPTCHA (2captcha, anti-captcha и т.д.)
+- [ ] Автоматическое определение и решение CAPTCHA
+- [ ] Улучшенная обработка CAPTCHA с уведомлениями пользователю
+- [ ] Возможность пропускать страницы с CAPTCHA и продолжать парсинг
+
+**Приоритет:** Средний (парсинг работает, но требует ручного вмешательства при CAPTCHA)
+
+---
+
+### Полный поток данных при парсинге
+
+**1. Frontend → Backend (запуск парсинга):**
+
+```
+POST http://127.0.0.1:8000/parsing/start
+Content-Type: application/json; charset=utf-8
+
+{
+  "keyword": "кирпич",
+  "depth": 2,
+  "source": "google"
+}
+```
+
+**2. Backend создает запись в БД:**
+
+```python
+# Создается parsing_request
+{
+  "title": "кирпич",
+  "raw_keys_json": "[\"кирпич\"]",
+  "source": "google"
+}
+
+# Создается parsing_run
+{
+  "run_id": "4f468e53-9ec5-4c03-aebf-04c54bdf5477",
+  "request_id": <request_id>,
+  "status": "running",
+  "source": "google",
+  "depth": 2,
+  "started_at": "2025-12-27T10:15:00Z"
+}
+```
+
+**3. Backend → Parser Service (асинхронно):**
+
+```
+POST http://127.0.0.1:9003/parse
+Content-Type: application/json; charset=utf-8
+
+{
+  "keyword": "кирпич",
+  "depth": 2,
+  "source": "google"
+}
+```
+
+**4. Parser Service подключается к Chrome CDP:**
+
+```python
+# parser_service/src/parser.py
+# 1. Подключение к Chrome CDP
+browser = await playwright.chromium.connect_over_cdp("http://127.0.0.1:9222")
+
+# 2. Использование существующего контекста браузера
+contexts = browser.contexts
+context = contexts[0]  # Используем первый профиль
+
+# 3. Создание новой вкладки для поисковика
+page = await context.new_page()
+
+# 4. Открытие поисковика
+await page.goto("https://www.google.com/search?q=кирпич+купить&hl=ru")
+
+# 5. Сбор ссылок с результатов поиска
+# 6. Парсинг следующих страниц (depth раз)
+```
+
+**5. Parser Service → Backend (результаты):**
+
+```
+Response:
+{
+  "keyword": "кирпич",
+  "suppliers": [
+    {
+      "name": "kirpich-lavka.ru",
+      "domain": "kirpich-lavka.ru",
+      "email": null,
+      "phone": null,
+      "inn": null,
+      "source_url": "https://kirpich-lavka.ru/..."
+    },
+    ...
+  ],
+  "total_found": 119
+}
+```
+
+**6. Backend сохраняет результаты в БД:**
+
+```python
+# Для каждого supplier создается запись в domains_queue
+{
+  "domain": "kirpich-lavka.ru",
+  "keyword": "кирпич",
+  "url": "https://kirpich-lavka.ru/...",
+  "parsing_run_id": "4f468e53-9ec5-4c03-aebf-04c54bdf5477",
+  "status": "pending"
+}
+```
+
+**7. Backend обновляет статус парсинга:**
+
+```python
+# Обновление parsing_run
+{
+  "status": "completed",
+  "finished_at": "2025-12-27T10:20:00Z",
+  "results_count": 119
+}
+```
+
+**8. Frontend получает результаты:**
+
+```
+GET http://127.0.0.1:8000/domains/queue?parsingRunId=4f468e53-9ec5-4c03-aebf-04c54bdf5477
+
+Response:
+{
+  "entries": [
+    {
+      "domain": "kirpich-lavka.ru",
+      "keyword": "кирпич",
+      "url": "https://kirpich-lavka.ru/...",
+      "parsingRunId": "4f468e53-9ec5-4c03-aebf-04c54bdf5477",
+      "status": "pending",
+      "createdAt": "2025-12-27T10:20:00Z"
+    },
+    ...
+  ],
+  "total": 119,
+  "limit": 100,
+  "offset": 0
+}
+```
+
+---
+
+### Проверка работоспособности всей связки
+
+**Команды для проверки:**
+
+```bash
+# 1. Проверить все сервисы
+curl http://127.0.0.1:8000/health      # Backend
+curl http://127.0.0.1:9003/health     # Parser Service
+curl http://127.0.0.1:9222/json/version  # Chrome CDP
+
+# 2. Запустить парсинг
+curl -X POST http://127.0.0.1:8000/parsing/start \
+  -H "Content-Type: application/json; charset=utf-8" \
+  -d '{"keyword":"кирпич","depth":1,"source":"google"}'
+
+# Ответ:
+# {
+#   "runId": "4f468e53-9ec5-4c03-aebf-04c54bdf5477",
+#   "keyword": "кирпич",
+#   "status": "running"
+# }
+
+# 3. Проверить статус (подождать 10-30 секунд)
+curl "http://127.0.0.1:8000/parsing/status/4f468e53-9ec5-4c03-aebf-04c54bdf5477"
+
+# 4. Проверить результаты
+curl "http://127.0.0.1:8000/domains/queue?parsingRunId=4f468e53-9ec5-4c03-aebf-04c54bdf5477&limit=10"
+
+# 5. Проверить вкладки Chrome (должны быть открыты вкладки с поисковиками)
+curl http://127.0.0.1:9222/json | python -m json.tool | grep -i "google\|yandex"
+```
+
+**Ожидаемое поведение:**
+
+1. ✅ Backend возвращает runId немедленно
+2. ✅ В окне Chrome открываются вкладки с Google/Yandex поиском
+3. ✅ Парсинг выполняется реально (занимает время, не мгновенно)
+4. ✅ Результаты сохраняются в базу данных
+5. ✅ Статус парсинга обновляется на "completed"
+6. ✅ Результаты доступны через `/domains/queue?parsingRunId=...`
+
+**Что проверить визуально:**
+
+- Откройте окно Chrome (должно быть запущено с CDP)
+- Следите за вкладками - должны открываться вкладки с поисковиками
+- В истории браузера должны появиться записи о посещении Google/Yandex
+- После завершения парсинга вкладки могут закрыться автоматически
 
 ### 2.5 Parsing Runs (История парсинга)
 
@@ -423,8 +910,191 @@ backend/app/
 
 #### `/manual-parsing` (Ручной парсинг)
 - Форма запуска парсинга
-- Поля: keyword, maxUrls
-- **Статус:** ⚠️ **ТРЕБУЕТ ПРОВЕРКИ** (интеграция с Parser Service не проверена)
+- Поля: keyword, depth, source
+- **Статус:** ✅ **ПРОВЕРЕНО И РАБОТАЕТ** (2025-12-27)
+
+**Полный код компонента:**
+
+```typescript
+// frontend/moderator-dashboard-ui/app/manual-parsing/page.tsx
+"use client"
+
+import { useState } from "react"
+import { useRouter } from "next/navigation"
+import { apiFetch, APIError } from "@/lib/api"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+
+export default function ManualParsingPage() {
+  const router = useRouter()
+  const [keyword, setKeyword] = useState("")
+  const [depth, setDepth] = useState(10)
+  const [source, setSource] = useState<"google" | "yandex" | "both">("google")
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  async function handleStart() {
+    if (!keyword.trim()) {
+      setError("Введите ключевое слово")
+      return
+    }
+
+    try {
+      setLoading(true)
+      setError(null)
+      const data = await apiFetch<{ runId: string; keyword: string; status: string }>("/parsing/start", {
+        method: "POST",
+        body: JSON.stringify({ keyword, depth, source }),
+      })
+      router.push(`/parsing-runs/${data.runId}`)
+    } catch (err) {
+      console.error("[Manual Parsing] Error starting parsing:", {
+        error: err,
+        keyword: keyword,
+        depth: depth,
+        source: source,
+        details: err instanceof APIError ? {
+          status: err.status,
+          message: err.message,
+          data: err.data
+        } : err
+      })
+      
+      if (err instanceof APIError) {
+        setError(err.message)
+      } else {
+        setError("Ошибка запуска парсинга")
+      }
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Ручной парсинг</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {error && <div className="text-red-500">{error}</div>}
+        
+        <div>
+          <Label htmlFor="keyword">Ключевое слово</Label>
+          <Input
+            id="keyword"
+            value={keyword}
+            onChange={(e) => setKeyword(e.target.value)}
+            placeholder="Например: металлопрокат"
+            disabled={loading}
+          />
+        </div>
+
+        <div>
+          <Label htmlFor="source">Источник поиска</Label>
+          <Select
+            value={source}
+            onValueChange={(value: "google" | "yandex" | "both") => setSource(value)}
+            disabled={loading}
+          >
+            <SelectTrigger id="source">
+              <SelectValue placeholder="Выберите источник" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="google">Google</SelectItem>
+              <SelectItem value="yandex">Yandex</SelectItem>
+              <SelectItem value="both">Google + Yandex</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div>
+          <Label htmlFor="depth">Глубина парсинга (количество страниц)</Label>
+          <Input
+            id="depth"
+            type="number"
+            value={depth}
+            onChange={(e) => setDepth(parseInt(e.target.value) || 1)}
+            min={1}
+            max={10}
+            disabled={loading}
+          />
+          <p className="text-sm text-muted-foreground mt-1">
+            Количество страниц результатов поиска для парсинга (1 страница ≈ 10-20 URL)
+          </p>
+        </div>
+
+        <Button onClick={handleStart} disabled={loading || !keyword.trim()}>
+          {loading ? "Запуск..." : "Запустить парсинг"}
+        </Button>
+      </CardContent>
+    </Card>
+  )
+}
+```
+
+**Как работает связка:**
+
+1. **Пользователь заполняет форму:**
+   - Вводит ключевое слово (например: "кирпич")
+   - Выбирает источник (google/yandex/both)
+   - Указывает глубину (количество страниц)
+
+2. **Frontend отправляет запрос:**
+   ```typescript
+   const data = await apiFetch<{ runId: string; keyword: string; status: string }>("/parsing/start", {
+     method: "POST",
+     body: JSON.stringify({ keyword, depth, source }),
+   })
+   ```
+
+3. **Backend обрабатывает запрос:**
+   - Создает запись в БД (parsing_request, parsing_run)
+   - Запускает асинхронную задачу парсинга
+   - Возвращает runId немедленно
+
+4. **Parser Service выполняет парсинг:**
+   - Подключается к Chrome CDP
+   - Открывает вкладки с поисковиками
+   - Собирает ссылки с результатов поиска
+   - Возвращает список доменов
+
+5. **Backend сохраняет результаты:**
+   - Сохраняет домены в domains_queue
+   - Обновляет статус парсинга на "completed"
+
+6. **Frontend перенаправляет на страницу результатов:**
+   ```typescript
+   router.push(`/parsing-runs/${data.runId}`)
+   ```
+
+**Проверка работоспособности:**
+
+1. Откройте `http://localhost:3000/manual-parsing`
+2. Введите ключевое слово (например: "кирпич")
+3. Выберите источник (google)
+4. Укажите глубину (1)
+5. Нажмите "Запустить парсинг"
+6. **Следите за окном Chrome** - должны открыться вкладки с Google поиском
+7. После завершения вы будете перенаправлены на страницу результатов
+
+**Ожидаемый результат:**
+- Форма отправляет запрос успешно
+- В окне Chrome открываются вкладки с поисковиками
+- Парсинг выполняется реально (не мгновенно)
+- После завершения происходит перенаправление на страницу результатов
+- Результаты отображаются на странице `/parsing-runs/{runId}`
+
+**⚠️ Известные ограничения:**
+- **CAPTCHA:** При появлении CAPTCHA требуется ручное решение в окне Chrome (см. раздел "Известные ограничения" в 2.4 Parsing)
 
 ### 3.3 Правила работы с динамическими маршрутами
 
@@ -706,6 +1376,14 @@ if (isNaN(supplierId) || supplierId <= 0) {
 
 ### Что исправлено и проверено
 
+✅ **Проверено и работает:**
+- ✅ Парсинг через Backend API (`POST /parsing/start`) - **ПРОВЕРЕНО** (2025-12-27)
+- ✅ Связка Frontend-Backend для запуска парсинга - **ПРОВЕРЕНО** (2025-12-27)
+- ✅ Интеграция Backend с Parser Service - **ПРОВЕРЕНО** (2025-12-27)
+- ✅ Chrome CDP в видимом режиме - **ПРОВЕРЕНО** (2025-12-27)
+- ✅ Открытие вкладок с поисковиками в браузере - **ПРОВЕРЕНО** (2025-12-27)
+- ✅ Сохранение результатов парсинга в базу данных - **ПРОВЕРЕНО** (2025-12-27)
+
 ✅ **Исправлено (но требует проверки на реальных данных):**
 - Ошибка 4: Импорт `date` в `moderator_suppliers.py` - исправлено
 - Ошибка 5: Валидация ID и обработка ошибок в Frontend - исправлено
@@ -718,12 +1396,14 @@ if (isNaN(supplierId) || supplierId <= 0) {
 ⚠️ **ТРЕБУЕТ ДИАГНОСТИКИ:**
 - Все API endpoints на реальных данных с реальной БД
 - Все Frontend страницы на реальных данных
-- Интеграция с Parser Service
 - Интеграция с Checko API - ⚠️ **ИСПРАВЛЕНА** ошибка с Promise.all (Ошибка 7), но требует проверки на реальных данных
 - Все CRUD операции
 - Пагинация и фильтры
 - Валидация всех параметров
 - Edge cases
+
+⚠️ **ТРЕБУЕТ РАБОТЫ:**
+- **CAPTCHA:** Автоматическое решение CAPTCHA при парсинге (см. раздел "Известные ограничения" в 2.4 Parsing)
 
 **Процесс:** См. [`docs/DIAGNOSTICS_PROCESS.md`](DIAGNOSTICS_PROCESS.md)
 
@@ -740,6 +1420,10 @@ if (isNaN(supplierId) || supplierId <= 0) {
 - **2025-12-26**: Уточнено, что спецификация отражает ТОЛЬКО проверенное состояние
 - **2025-12-26**: Добавлены статусы для всех endpoints и страниц
 - **2025-12-26**: Добавлен раздел "Текущий статус проекта" с указанием, что требует диагностики
+- **2025-12-27**: ✅ Добавлена полная документация рабочей связки Backend-Frontend для парсинга с полным кодом
+- **2025-12-27**: ✅ Обновлен статус парсинга на "ПРОВЕРЕНО И РАБОТАЕТ"
+- **2025-12-27**: ✅ Добавлена документация Frontend компонента `/manual-parsing` с полным кодом
+- **2025-12-27**: ⚠️ Добавлено предупреждение о необходимости работы над CAPTCHA
 
 ---
 

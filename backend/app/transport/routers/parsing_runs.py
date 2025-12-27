@@ -73,6 +73,19 @@ async def list_parsing_runs_endpoint(
                     except (json.JSONDecodeError, KeyError, IndexError):
                         pass
             
+            # Get results_count from run or calculate from domains_queue
+            results_count = run.results_count
+            if results_count is None:
+                # Calculate from domains_queue
+                from app.adapters.db.repositories import DomainQueueRepository
+                domain_queue_repo = DomainQueueRepository(db)
+                _, count = await domain_queue_repo.list(
+                    limit=1,
+                    offset=0,
+                    parsing_run_id=run.run_id
+                )
+                results_count = count if count > 0 else None
+            
             # Create DTO with extracted keyword
             run_dict = {
                 "runId": run.run_id,
@@ -81,7 +94,7 @@ async def list_parsing_runs_endpoint(
                 "startedAt": run.started_at.isoformat() if run.started_at else None,
                 "finishedAt": run.finished_at.isoformat() if run.finished_at else None,
                 "error": run.error_message,
-                "resultsCount": None,
+                "resultsCount": results_count,
                 "createdAt": run.created_at.isoformat() if run.created_at else None,
             }
             run_dto = ParsingRunDTO.model_validate(run_dict)
@@ -132,6 +145,19 @@ async def get_parsing_run_endpoint(
                 except (json.JSONDecodeError, KeyError, IndexError):
                     pass
         
+        # Get results_count from run or calculate from domains_queue
+        results_count = run.results_count
+        if results_count is None:
+            # Calculate from domains_queue
+            from app.adapters.db.repositories import DomainQueueRepository
+            domain_queue_repo = DomainQueueRepository(db)
+            _, count = await domain_queue_repo.list(
+                limit=1,
+                offset=0,
+                parsing_run_id=run_id
+            )
+            results_count = count if count > 0 else None
+        
         # Create DTO with extracted keyword
         run_dict = {
             "runId": run.run_id,
@@ -140,7 +166,7 @@ async def get_parsing_run_endpoint(
             "startedAt": run.started_at.isoformat() if run.started_at else None,
             "finishedAt": run.finished_at.isoformat() if run.finished_at else None,
             "error": run.error_message,
-            "resultsCount": None,
+            "resultsCount": results_count,
             "createdAt": run.created_at.isoformat() if run.created_at else None,
         }
         return ParsingRunDTO.model_validate(run_dict)

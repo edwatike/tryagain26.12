@@ -44,6 +44,12 @@ logs/
 storage/
 *.tmp
 
+# Chrome debug profile (contains user data)
+temp/chrome_debug_profile/
+
+# Temporary files and experiments
+temp_start_all_output.txt
+
 # GitHub Actions
 .github/workflows/*.local.yml
 

@@ -9,14 +9,19 @@ from app.transport.schemas.common import BaseDTO
 class StartParsingRequestDTO(BaseModel):
     """Request DTO for starting parsing."""
     keyword: str
-    maxUrls: int = Field(default=10, alias="max_urls")
+    depth: int = Field(default=10, description="Number of search result pages to parse (depth)")
+    source: str = Field(default="google", description="Source for parsing: 'google', 'yandex', or 'both'")
 
 
 class StartParsingResponseDTO(BaseModel):
     """Response DTO for parsing start."""
-    runId: str = Field(alias="run_id")
+    runId: str  # Use camelCase directly (no alias needed for response)
     keyword: str
     status: str
+    
+    model_config = ConfigDict(
+        populate_by_name=True,
+    )
 
 
 class ParsingStatusResponseDTO(BaseModel):

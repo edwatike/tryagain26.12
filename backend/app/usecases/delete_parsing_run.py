@@ -8,3 +8,5 @@ async def execute(db: AsyncSession, run_id: str) -> bool:
     repo = ParsingRunRepository(db)
     return await repo.delete(run_id)
 
+
+

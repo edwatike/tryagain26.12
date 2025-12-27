@@ -70,3 +70,5 @@ python ../scripts/check_data_integrity.py
 3. Установите триггер на ежедневное выполнение в 2:00
 4. Установите действие: запуск `backup_database.bat`
 
+
+

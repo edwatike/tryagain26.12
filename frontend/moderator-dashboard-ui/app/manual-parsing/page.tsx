@@ -7,11 +7,19 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
 export default function ManualParsingPage() {
   const router = useRouter()
   const [keyword, setKeyword] = useState("")
-  const [maxUrls, setMaxUrls] = useState(10)
+  const [depth, setDepth] = useState(10)
+  const [source, setSource] = useState<"google" | "yandex" | "both">("google")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -24,16 +32,32 @@ export default function ManualParsingPage() {
     try {
       setLoading(true)
       setError(null)
-      const data = await apiFetch<{ runId: string }>("/parsing/start", {
+      const data = await apiFetch<{ runId: string; keyword: string; status: string }>("/parsing/start", {
         method: "POST",
-        body: JSON.stringify({ keyword, maxUrls }),
+        body: JSON.stringify({ keyword, depth, source }),
       })
       router.push(`/parsing-runs/${data.runId}`)
     } catch (err) {
+      // Log detailed error to console (visible in F12)
+      console.error("[Manual Parsing] Error starting parsing:", {
+        error: err,
+        keyword: keyword,
+        depth: depth,
+        source: source,
+        details: err instanceof APIError ? {
+          status: err.status,
+          message: err.message,
+          data: err.data
+        } : err
+      })
+      
       if (err instanceof APIError) {
         setError(err.message)
+        console.error(`[Manual Parsing] API Error ${err.status}:`, err.message, err.data)
       } else {
-        setError("Ошибка запуска парсинга")
+        const errorMsg = "Ошибка запуска парсинга"
+        setError(errorMsg)
+        console.error("[Manual Parsing] Unexpected error:", err)
       }
     } finally {
       setLoading(false)
@@ -60,16 +84,37 @@ export default function ManualParsingPage() {
         </div>
 
         <div>
-          <Label htmlFor="maxUrls">Максимум URL</Label>
+          <Label htmlFor="source">Источник поиска</Label>
+          <Select
+            value={source}
+            onValueChange={(value: "google" | "yandex" | "both") => setSource(value)}
+            disabled={loading}
+          >
+            <SelectTrigger id="source">
+              <SelectValue placeholder="Выберите источник" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="google">Google</SelectItem>
+              <SelectItem value="yandex">Yandex</SelectItem>
+              <SelectItem value="both">Google + Yandex</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div>
+          <Label htmlFor="depth">Глубина парсинга (количество страниц)</Label>
           <Input
-            id="maxUrls"
+            id="depth"
             type="number"
-            value={maxUrls}
-            onChange={(e) => setMaxUrls(parseInt(e.target.value) || 10)}
+            value={depth}
+            onChange={(e) => setDepth(parseInt(e.target.value) || 1)}
             min={1}
-            max={100}
+            max={10}
             disabled={loading}
           />
+          <p className="text-sm text-muted-foreground mt-1">
+            Количество страниц результатов поиска для парсинга (1 страница ≈ 10-20 URL)
+          </p>
         </div>
 
         <Button onClick={handleStart} disabled={loading || !keyword.trim()}>

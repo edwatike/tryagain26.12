@@ -53,3 +53,5 @@ async def log_audit(
         # Не прерываем выполнение при ошибке аудита, только логируем
         logger.error(f"Failed to create audit log entry: {e}", exc_info=True)
 
+
+

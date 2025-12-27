@@ -14,26 +14,70 @@ class ParserClient:
             timeout=300.0  # 5 minutes for parsing operations
         )
     
-    async def parse(self, keyword: str, max_urls: int = 10) -> Dict[str, Any]:
+    async def parse(self, keyword: str, depth: int = 10, source: str = "google") -> Dict[str, Any]:
         """
         Start parsing for a keyword.
         
         Args:
             keyword: Search keyword
-            max_urls: Maximum number of URLs to parse
+            depth: Number of search result pages to parse (depth)
+            source: Source for parsing - "google", "yandex", or "both" (default: "google")
             
         Returns:
             Dictionary with parsing results
+            
+        Raises:
+            httpx.HTTPStatusError: If the request fails, with detailed error message from Parser Service
         """
-        response = await self.client.post(
-            "/parse",
-            json={
-                "keyword": keyword,
-                "max_urls": max_urls
-            }
-        )
-        response.raise_for_status()
-        return response.json()
+        import logging
+        logger = logging.getLogger(__name__)
+        
+        # Use explicit Content-Type with charset=utf-8 to prevent Cyrillic mojibake
+        # This fixes the issue where Cyrillic queries become '?????' (from HANDOFF.md)
+        try:
+            response = await self.client.post(
+                "/parse",
+                json={
+                    "keyword": keyword,
+                    "depth": depth,
+                    "source": source
+                },
+                headers={
+                    "Content-Type": "application/json; charset=utf-8"
+                }
+            )
+            
+            # Extract detailed error message before raising exception
+            if not response.is_success:
+                error_detail = "Unknown error"
+                try:
+                    error_data = response.json()
+                    error_detail = error_data.get("detail", error_data.get("message", str(response.status_code)))
+                except Exception:
+                    try:
+                        error_detail = f"HTTP {response.status_code}: {response.text[:500]}"  # Limit text length
+                    except:
+                        error_detail = f"HTTP {response.status_code}: {response.status_text}"
+                
+                logger.error(f"Parser Service error ({response.status_code}): {error_detail}")
+                
+                # Raise HTTPStatusError with detailed message
+                # The error_detail will be accessible via e.response.json()["detail"]
+                response.raise_for_status()  # This will raise HTTPStatusError
+            
+            return response.json()
+        except httpx.HTTPStatusError as e:
+            # Re-raise with original details
+            raise
+        except httpx.RequestError as e:
+            # Network/connection errors (503, connection refused, etc.)
+            error_msg = f"Failed to connect to Parser Service at {self.base_url}: {str(e)}"
+            logger.error(f"Parser Service connection error: {error_msg}")
+            # Raise as HTTPStatusError-like exception so it can be caught and handled properly
+            raise Exception(error_msg)
+        except Exception as e:
+            logger.error(f"Unexpected error in parser_client.parse: {e}", exc_info=True)
+            raise
     
     async def health_check(self) -> Dict[str, Any]:
         """Check Parser Service health."""
