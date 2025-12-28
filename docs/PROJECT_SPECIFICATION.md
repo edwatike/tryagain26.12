@@ -256,14 +256,16 @@ backend/app/
 
 **Базовый путь:** `/parsing`
 
-**Статус проверки:** ✅ **ПРОВЕРЕНО И РАБОТАЕТ** (2025-12-27)
+**Статус проверки:** ✅ **ПРОВЕРЕНО И РАБОТАЕТ** (2025-12-28)
 
 **⚠️ ВАЖНО: ТРЕБУЕТ РАБОТЫ НАД CAPTCHA** - см. раздел "Известные ограничения" ниже
 
 #### `POST /parsing/start`
 Запустить парсинг.
 
-**Статус:** ✅ **ПРОВЕРЕНО И РАБОТАЕТ**
+**Статус:** ✅ **ПРОВЕРЕНО И РАБОТАЕТ** (2025-12-28)
+
+**✅ ИСПРАВЛЕНО: Дублирование вкладок** - добавлена многоуровневая защита от дублирования задач парсинга. Теперь при запуске парсинга с одним источником (google/yandex) открывается только одна вкладка.
 
 **Request body:**
 ```json
@@ -338,29 +340,41 @@ async def start_parsing_endpoint(
     )
 ```
 
-**3. Usecase запускает парсинг:**
+**3. Usecase запускает парсинг (с защитой от дублирования):**
 
 ```python
 # backend/app/usecases/start_parsing.py
-async def execute(db: AsyncSession, keyword: str, depth: int = 10, source: str = "google"):
+# Глобальный set для отслеживания активных задач
+_running_parsing_tasks = set()
+
+async def execute(db: AsyncSession, keyword: str, depth: int = 10, source: str = "google", background_tasks=None):
     # Create parsing request and run in database
+    run_id = str(uuid.uuid4())
     # ...
     
     # Start parsing asynchronously
     async def run_parsing():
+        # Дополнительная защита внутри функции
+        if run_id in _running_parsing_tasks:
+            if run_id in start_parsing_module._processing_tasks:
+                logger.warning(f"[DUPLICATE DETECTED] Task {run_id} already processing, skipping")
+                return
+            start_parsing_module._processing_tasks.add(run_id)
+        
         parser_client = ParserClient(settings.parser_service_url)
-        
-        # Call Parser Service
-        result = await parser_client.parse(
-            keyword=keyword,
-            depth=depth,
-            source=source
-        )
-        
+        result = await parser_client.parse(keyword=keyword, depth=depth, source=source)
         # Save results to domains_queue
         # Update run status to "completed"
     
-    asyncio.create_task(run_parsing())
+    # ЗАЩИТА ОТ ДУБЛИРОВАНИЯ: Проверка ПЕРЕД добавлением в BackgroundTasks
+    if background_tasks is not None:
+        if run_id in _running_parsing_tasks:
+            logger.warning(f"[DUPLICATE PREVENTION] run_id {run_id} already in running tasks, skipping")
+            return result
+        
+        # Добавление ПЕРЕД background_tasks.add_task для предотвращения гонки условий
+        _running_parsing_tasks.add(run_id)
+        background_tasks.add_task(run_parsing)
     
     return {
         "run_id": run_id,
@@ -388,16 +402,33 @@ async def parse(self, keyword: str, depth: int = 10, source: str = "google") -> 
     return response.json()
 ```
 
-**5. Parser Service выполняет парсинг:**
+**5. Parser Service выполняет парсинг (с защитой от дублирования):**
 
 ```python
 # parser_service/api.py
+_running_parse_requests = set()
+_parse_lock = asyncio.Lock()
+
 @app.post("/parse", response_model=ParseResponse)
 async def parse_keyword(request: ParseRequest):
-    # Connect to Chrome CDP
-    # Open search engine pages (Google/Yandex)
-    # Collect links from search results
-    # Return suppliers list
+    request_key = f"{request.keyword}_{request.depth}_{request.source}"
+    
+    # ЗАЩИТА ОТ ДУБЛИРОВАНИЯ: Проверка с блокировкой
+    async with _parse_lock:
+        if request_key in _running_parse_requests:
+            logger.warning(f"[DUPLICATE DETECTED] Request '{request_key}' already running, skipping")
+            return ParseResponse(keyword=request.keyword, suppliers=[], total_found=0)
+        _running_parse_requests.add(request_key)
+    
+    try:
+        # Connect to Chrome CDP
+        # Open search engine pages (Google/Yandex)
+        # Collect links from search results
+        # Return suppliers list
+        return ParseResponse(keyword=request.keyword, suppliers=suppliers, total_found=len(suppliers))
+    finally:
+        async with _parse_lock:
+            _running_parse_requests.discard(request_key)
 ```
 
 **Полный код схем и типов:**
@@ -799,6 +830,132 @@ curl http://127.0.0.1:9222/json | python -m json.tool | grep -i "google\|yandex"
 **Ошибки:**
 - `404` - запуск не найден
 
+#### `DELETE /parsing/runs/{run_id}`
+Удалить один запуск парсинга.
+
+**Статус:** ✅ **ПРОВЕРЕНО И РАБОТАЕТ** (2025-12-28)
+
+**Path параметры:**
+- `run_id` (string) - UUID запуска
+
+**Response:** `204 No Content` (пустое тело)
+
+**Ошибки:**
+- `404` - запуск не найден
+- `500` - ошибка при удалении
+
+**Как работает:**
+1. Frontend вызывает `DELETE /parsing/runs/{run_id}` через `apiFetch`
+2. Backend выполняет прямой SQL `DELETE FROM parsing_runs WHERE run_id = :run_id`
+3. Backend делает `commit()` транзакции
+4. Backend возвращает `204 No Content`
+5. Frontend обновляет список через `loadRuns()` с текущими параметрами URL
+
+**Проверка работоспособности:**
+```powershell
+# 1. Получить список runs
+curl "http://127.0.0.1:8000/parsing/runs?limit=5&offset=0"
+
+# 2. Удалить один run
+curl -X DELETE "http://127.0.0.1:8000/parsing/runs/{run_id}"
+
+# 3. Проверить, что run удален
+curl "http://127.0.0.1:8000/parsing/runs?limit=10&offset=0"
+# Удаленный run не должен присутствовать в списке
+```
+
+**Ожидаемый результат:**
+- Endpoint возвращает `204 No Content`
+- Запись удаляется из базы данных
+- Frontend обновляется и не показывает удаленную запись
+
+#### `DELETE /parsing/runs/bulk`
+Массовое удаление запусков парсинга.
+
+**Статус:** ✅ **ПРОВЕРЕНО И РАБОТАЕТ** (2025-12-28)
+
+**Request body:**
+```json
+["run-id-1", "run-id-2", "run-id-3"]
+```
+или
+```json
+{
+  "run_ids": ["run-id-1", "run-id-2", "run-id-3"]
+}
+```
+
+**Response:**
+- **200 OK** (если все удалены успешно):
+  ```json
+  {
+    "deleted": 3,
+    "total": 3
+  }
+  ```
+- **207 Multi-Status** (если есть ошибки):
+  ```json
+  {
+    "deleted": 2,
+    "total": 3,
+    "errors": ["Error deleting run-id-3: ..."]
+  }
+  ```
+
+**Ошибки:**
+- `400` - неверный формат body (не список или пустой список)
+
+**Как работает:**
+1. Frontend собирает `runIds` из выделенных записей
+2. Frontend вызывает `DELETE /parsing/runs/bulk` с массивом `runIds` через `apiFetch`
+3. Backend для каждого `run_id`:
+   - Создает отдельную сессию БД
+   - Выполняет прямой SQL `DELETE FROM parsing_runs WHERE run_id = :run_id`
+   - Делает `commit()` в отдельной сессии
+   - Логирует в audit_log ПОСЛЕ commit (в отдельной сессии)
+4. Backend возвращает `200` или `207` с результатами
+5. Frontend обновляет список через `loadRuns()` с текущими параметрами URL
+6. Frontend обновляет пагинацию, если текущая страница стала пустой
+
+**Критически важные детали реализации:**
+- **Отдельные сессии для каждого удаления** - предотвращает `InFailedSQLTransactionError`
+- **Audit log ПОСЛЕ commit** - ошибки аудита не откатывают удаление
+- **Проверка удаления через новую сессию** - чтение из БД, а не из кэша сессии
+- **Порядок маршрутов** - `/runs/bulk` ДО `/runs/{run_id}` в FastAPI router
+
+**Проверка работоспособности:**
+```powershell
+# 1. Получить список runs со статусом "failed"
+curl "http://127.0.0.1:8000/parsing/runs?status=failed&limit=5&offset=0"
+
+# 2. Удалить несколько runs
+curl -X DELETE "http://127.0.0.1:8000/parsing/runs/bulk" \
+  -H "Content-Type: application/json" \
+  -d '["run-id-1", "run-id-2", "run-id-3"]'
+
+# 3. Проверить, что runs удалены
+curl "http://127.0.0.1:8000/parsing/runs?status=failed&limit=10&offset=0"
+# Удаленные runs не должны присутствовать в списке
+```
+
+**Проверка через Frontend:**
+1. Открыть `http://localhost:3000/parsing-runs`
+2. Выбрать статус "Ошибка" в Select - список должен обновиться
+3. Выделить все записи со статусом "Ошибка" (или несколько записей)
+4. Нажать кнопку "Удалить"
+5. Убедиться, что:
+   - Записи удалены из списка
+   - Список обновился автоматически
+   - Пагинация скорректирована, если текущая страница стала пустой
+   - В консоли браузера нет ошибок
+
+**Ожидаемый результат:**
+- Endpoint возвращает `200` или `207` с корректным `deleted` count
+- Все записи удаляются из базы данных
+- Frontend обновляется и не показывает удаленные записи
+- Select статуса работает корректно (сразу обновляет URL)
+- В логах Backend видны сообщения "Committed deletion" и "Verified: Run ... deleted successfully"
+
 ### 2.6 Blacklist (Черный список)
 
 **Базовый путь:** `/moderator/blacklist`
@@ -904,6 +1061,63 @@ curl http://127.0.0.1:9222/json | python -m json.tool | grep -i "google\|yandex"
 - **Статус:** ⚠️ **ТРЕБУЕТ ПРОВЕРКИ**
 
 #### `/parsing-runs` (История парсинга)
+
+**Статус:** ✅ **ПРОВЕРЕНО И РАБОТАЕТ** (2025-12-28)
+
+**Функциональность:**
+- ✅ Отображение списка parsing runs с пагинацией
+- ✅ Фильтрация по статусу (все, выполняется, завершен, ошибка)
+- ✅ Поиск по ключевому слову
+- ✅ Сортировка (по дате создания, статусу)
+- ✅ Удаление одной записи
+- ✅ Массовое удаление записей
+- ✅ Обновление списка после удаления
+- ✅ Корректировка пагинации при удалении всех записей на странице
+
+**Связка Backend-Frontend для удаления:**
+
+**Single Delete:**
+1. Пользователь нажимает кнопку удаления для одной записи
+2. Frontend вызывает `DELETE /parsing/runs/{run_id}` через `apiFetch`
+3. Backend удаляет запись и возвращает `204 No Content`
+4. Frontend обновляет список через `loadRuns()` с текущими параметрами URL
+5. Frontend корректирует пагинацию, если текущая страница стала пустой
+
+**Bulk Delete:**
+1. Пользователь выделяет несколько записей (чекбоксы)
+2. Пользователь нажимает кнопку "Удалить"
+3. Frontend собирает `runIds` из выделенных записей
+4. Frontend вызывает `DELETE /parsing/runs/bulk` с массивом `runIds` через `apiFetch`
+5. Backend удаляет все записи (каждая в отдельной сессии) и возвращает `200` или `207`
+6. Frontend обновляет список через `loadRuns()` с текущими параметрами URL
+7. Frontend корректирует пагинацию, если текущая страница стала пустой
+
+**Фильтрация по статусу:**
+1. Пользователь выбирает статус в Select компоненте
+2. Frontend сразу обновляет URL через `router.push()` с новым параметром `status`
+3. `useEffect` реагирует на изменение `searchParams` и вызывает `loadRuns()`
+4. Backend возвращает отфильтрованный список
+5. Frontend обновляет таблицу с новыми данными
+
+**Проверка работоспособности:**
+1. Открыть `http://localhost:3000/parsing-runs`
+2. Проверить, что список загружается и отображается
+3. Выбрать статус "Ошибка" в Select - список должен обновиться
+4. Выделить одну запись и удалить - запись должна исчезнуть
+5. Выделить несколько записей и удалить - записи должны исчезнуть
+6. Проверить, что пагинация работает корректно
+7. Проверить консоль браузера (F12) - не должно быть ошибок
+
+**Ожидаемый результат:**
+- Список parsing runs отображается корректно
+- Фильтрация по статусу работает (Select сразу обновляет URL)
+- Удаление одной записи работает
+- Массовое удаление работает
+- Список обновляется после удаления
+- Пагинация корректируется при удалении всех записей на странице
+- В консоли браузера нет ошибок
+
+#### `/parsing-runs` (История парсинга) - Старая версия документации
 - Список запусков парсинга
 - Детали каждого запуска
 - **Статус:** ⚠️ **ТРЕБУЕТ ПРОВЕРКИ**
@@ -1061,9 +1275,11 @@ export default function ManualParsingPage() {
    - Запускает асинхронную задачу парсинга
    - Возвращает runId немедленно
 
-4. **Parser Service выполняет парсинг:**
+4. **Parser Service выполняет парсинг (с защитой от дублирования):**
+   - Проверяет, не выполняется ли уже запрос с такими же параметрами (keyword + depth + source)
+   - Если запрос дублируется - возвращает пустой результат без выполнения парсинга
    - Подключается к Chrome CDP
-   - Открывает вкладки с поисковиками
+   - Открывает **ТОЛЬКО ОДНУ** вкладку для каждого источника (google/yandex/both)
    - Собирает ссылки с результатов поиска
    - Возвращает список доменов
 
@@ -1083,13 +1299,28 @@ export default function ManualParsingPage() {
 3. Выберите источник (google)
 4. Укажите глубину (1)
 5. Нажмите "Запустить парсинг"
-6. **Следите за окном Chrome** - должны открыться вкладки с Google поиском
+6. **✅ КРИТИЧНО: Проверьте, что открывается только ОДНА вкладка в Chrome** (не две!)
 7. После завершения вы будете перенаправлены на страницу результатов
 
 **Ожидаемый результат:**
 - Форма отправляет запрос успешно
-- В окне Chrome открываются вкладки с поисковиками
+- В окне Chrome открывается **ТОЛЬКО ОДНА** вкладка для каждого источника (google/yandex)
 - Парсинг выполняется реально (не мгновенно)
+- В логах Backend видно один "[DUPLICATE PREVENTION] Checking" и один "Background task added"
+- В логах Parser Service видно один "[DUPLICATE CHECK] Marked request" и один "=== PARSE REQUEST ==="
+
+**Команды для проверки:**
+```powershell
+# Проверить логи Backend - должен быть один Background task added для каждого run_id
+Get-Content "logs\Backend-*.log" -Tail 100 | Select-String -Pattern "DUPLICATE PREVENTION|Background task added"
+
+# Проверить логи Parser Service - должен быть один PARSE REQUEST для каждого запроса
+Get-Content "logs\Parser Service-*.log" -Tail 100 | Select-String -Pattern "DUPLICATE|PARSE REQUEST"
+
+# Проверить через API
+$body = @{ keyword = "тест"; depth = 1; source = "google" } | ConvertTo-Json
+Invoke-RestMethod http://127.0.0.1:8000/parsing/start -Method Post -ContentType "application/json; charset=utf-8" -Body $body
+```
 - После завершения происходит перенаправление на страницу результатов
 - Результаты отображаются на странице `/parsing-runs/{runId}`
 

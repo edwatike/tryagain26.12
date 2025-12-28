@@ -23,29 +23,84 @@ if not exist "%CHROME_PATH%" (
 )
 
 REM Check if Chrome CDP is already accessible
-curl -s %CHROME_CDP_VERSION_URL% >nul 2>&1
-if %errorlevel% == 0 (
+REM Try multiple times to ensure CDP is really accessible
+echo [DEBUG] Checking if Chrome CDP is already accessible...
+echo [DEBUG] CDP URL: %CHROME_CDP_VERSION_URL%
+set CHROME_CDP_ACCESSIBLE=0
+for /L %%i in (1,1,5) do (
+    echo [DEBUG] Attempt %%i/5: Checking Chrome CDP...
+    curl -s %CHROME_CDP_VERSION_URL% >nul 2>&1
+    if not errorlevel 1 (
+        echo [DEBUG] Chrome CDP is accessible on attempt %%i
+        set CHROME_CDP_ACCESSIBLE=1
+        goto chrome_cdp_check_ok
+    ) else (
+        echo [DEBUG] Chrome CDP not accessible on attempt %%i (curl errorlevel: %errorlevel%)
+    )
+    if %%i LSS 5 (
+        timeout /t 1 /nobreak >nul
+    )
+)
+:chrome_cdp_check_ok
+if "%CHROME_CDP_ACCESSIBLE%"=="1" (
     echo [OK] Chrome CDP is already running and accessible
     echo You can check it at %CHROME_CDP_VERSION_URL%
     echo.
     echo Chrome CDP is ready for use!
-    pause
+    echo Chrome will NOT be restarted - using existing instance
+    echo.
+    REM Exit with success code (0) - Chrome is already running
     exit /b 0
+) else (
+    echo [DEBUG] Chrome CDP is NOT accessible after 5 attempts
 )
 
 REM Check if port is already in use (but CDP not accessible)
+REM This means Chrome might be starting or running without CDP
+echo [DEBUG] Checking if port %CHROME_CDP_PORT% is in use...
 netstat -ano | findstr ":%CHROME_CDP_PORT%" >nul 2>&1
 if %errorlevel% == 0 (
-    echo [WARNING] Port %CHROME_CDP_PORT% is already in use but Chrome CDP is not accessible
+    echo [INFO] Port %CHROME_CDP_PORT% is already in use
+    echo [INFO] Waiting a bit more for Chrome CDP to become accessible...
+    REM Wait a bit more and check again (Chrome might still be starting)
+    timeout /t 3 /nobreak >nul
+    echo [DEBUG] Re-checking Chrome CDP after waiting...
+    curl -s %CHROME_CDP_VERSION_URL% >nul 2>&1
+    if not errorlevel 1 (
+        echo [OK] Chrome CDP became accessible after waiting
+        echo Chrome CDP is ready for use!
+        exit /b 0
+    ) else (
+        echo [DEBUG] Chrome CDP still not accessible after waiting (curl errorlevel: %errorlevel%)
+    )
+    echo [WARNING] Port %CHROME_CDP_PORT% is in use but Chrome CDP is still not accessible
     echo This may mean Chrome is running but without --remote-debugging-port=%CHROME_CDP_PORT%
     echo.
-    echo Please:
-    echo   1. Close all Chrome windows
-    echo   2. Run this script again
-    echo   3. Or manually start Chrome with: --remote-debugging-port=%CHROME_CDP_PORT%
+    echo IMPORTANT: Before starting Chrome, checking CDP one more time...
+    REM Final check before attempting to start Chrome
+    curl -s %CHROME_CDP_VERSION_URL% >nul 2>&1
+    if not errorlevel 1 (
+        echo [OK] Chrome CDP is NOW accessible - will NOT start Chrome
+        exit /b 0
+    )
+    echo Options:
+    echo   1. Close Chrome and run this script again
+    echo   2. Manually start Chrome with: --remote-debugging-port=%CHROME_CDP_PORT%
+    echo   3. Continue anyway (Chrome may start CDP later)
     echo.
-    pause
-    exit /b 1
+    echo Continuing to start Chrome with CDP...
+    REM Don't exit - try to start Chrome anyway
+) else (
+    echo [DEBUG] Port %CHROME_CDP_PORT% is NOT in use
+)
+
+REM Final check: Is Chrome CDP accessible NOW?
+echo [DEBUG] Final check before starting Chrome...
+curl -s %CHROME_CDP_VERSION_URL% >nul 2>&1
+if not errorlevel 1 (
+    echo [OK] Chrome CDP is accessible - will NOT start Chrome
+    echo Chrome CDP is ready for use!
+    exit /b 0
 )
 
 REM Start Chrome (visible mode - not headless, so you can pass CAPTCHA if needed)
@@ -53,16 +108,60 @@ echo [1/2] Starting Chrome with remote debugging on port %CHROME_CDP_PORT%...
 echo NOTE: Chrome will be visible (not headless) so you can pass CAPTCHA manually if needed
 echo NOTE: Chrome will use a separate debug profile to avoid conflicts
 echo Debug profile: %CHROME_DEBUG_PROFILE%
-REM Use separate user-data-dir for debug profile to ensure CDP works correctly
-REM This prevents conflicts with existing Chrome instances
-REM All scripts use the SAME profile to ensure consistency
-if not exist "%CHROME_DEBUG_PROFILE%" mkdir "%CHROME_DEBUG_PROFILE%"
-start "" "%CHROME_PATH%" --remote-debugging-port=%CHROME_CDP_PORT% --user-data-dir="%CHROME_DEBUG_PROFILE%" --disable-gpu --no-sandbox --disable-dev-shm-usage
-if %errorlevel% neq 0 (
-    echo [ERROR] Failed to start Chrome
+echo [DEBUG] Chrome path: %CHROME_PATH%
+echo [DEBUG] Chrome path exists: 
+if exist "%CHROME_PATH%" (
+    echo [DEBUG] YES - Chrome executable exists
+) else (
+    echo [DEBUG] NO - Chrome executable NOT found!
+    echo [ERROR] Chrome not found at: %CHROME_PATH%
     pause
     exit /b 1
 )
+REM Use separate user-data-dir for debug profile to ensure CDP works correctly
+REM This prevents conflicts with existing Chrome instances
+REM All scripts use the SAME profile to ensure consistency
+if not exist "%CHROME_DEBUG_PROFILE%" (
+    echo [DEBUG] Creating debug profile directory...
+    mkdir "%CHROME_DEBUG_PROFILE%"
+) else (
+    echo [DEBUG] Debug profile directory already exists
+)
+echo [DEBUG] Attempting to start Chrome...
+echo [DEBUG] Command: start "" "%CHROME_PATH%" --remote-debugging-port=%CHROME_CDP_PORT% --user-data-dir="%CHROME_DEBUG_PROFILE%" --disable-gpu --no-sandbox --disable-dev-shm-usage
+start "" "%CHROME_PATH%" --remote-debugging-port=%CHROME_CDP_PORT% --user-data-dir="%CHROME_DEBUG_PROFILE%" --disable-gpu --no-sandbox --disable-dev-shm-usage
+set START_RESULT=%errorlevel%
+echo [DEBUG] Start command returned errorlevel: %START_RESULT%
+REM Note: start command may return errorlevel even if Chrome starts successfully
+REM Check if Chrome process was actually started instead
+timeout /t 2 /nobreak >nul
+curl -s %CHROME_CDP_VERSION_URL% >nul 2>&1
+if not errorlevel 1 (
+    echo [OK] Chrome started successfully (CDP is now accessible)
+    REM Chrome started successfully, even if start returned errorlevel
+    goto chrome_started_ok
+)
+if %START_RESULT% neq 0 (
+    echo [WARNING] Start command returned errorlevel %START_RESULT%, but checking if Chrome is running...
+    REM Check if Chrome process exists
+    tasklist | findstr /i chrome.exe >nul 2>&1
+    if not errorlevel 1 (
+        echo [INFO] Chrome process found - may have started despite errorlevel
+        echo [INFO] Waiting for CDP to become accessible...
+        REM Wait and check CDP
+        timeout /t 3 /nobreak >nul
+        curl -s %CHROME_CDP_VERSION_URL% >nul 2>&1
+        if not errorlevel 1 (
+            echo [OK] Chrome started successfully (CDP is now accessible)
+            goto chrome_started_ok
+        )
+    )
+    echo [ERROR] Failed to start Chrome or Chrome CDP is not accessible
+    echo [ERROR] Please check Chrome manually
+    pause
+    exit /b 1
+)
+:chrome_started_ok
 
 REM Wait for Chrome to start and CDP to become available
 echo [2/2] Waiting for Chrome to start and CDP to become available...

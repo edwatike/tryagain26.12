@@ -53,3 +53,6 @@ temp_start_all_output.txt
 # GitHub Actions
 .github/workflows/*.local.yml
 
+# Logs directory (created by Tabby scripts)
+logs/
+

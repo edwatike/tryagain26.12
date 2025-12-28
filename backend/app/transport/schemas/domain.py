@@ -17,8 +17,18 @@ class DomainQueueEntryDTO(BaseDTO):
     
     model_config = ConfigDict(
         from_attributes=True,
-        populate_by_name=True
+        populate_by_name=True,
+        # Use by_alias=True for JSON serialization to return camelCase
+        json_encoders={
+            datetime: lambda v: v.isoformat() if v else None
+        }
     )
+    
+    def model_dump(self, **kwargs):
+        """Override model_dump to use by_alias=True by default for JSON serialization."""
+        kwargs.setdefault("by_alias", True)
+        kwargs.setdefault("mode", "json")
+        return super().model_dump(**kwargs)
 
 
 class DomainsQueueResponseDTO(BaseModel):

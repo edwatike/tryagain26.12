@@ -4,6 +4,7 @@ from sqlalchemy import select, func, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
+from app.adapters.db.base_repository import BaseRepository
 from app.adapters.db.models import (
     ModeratorSupplierModel,
     KeywordModel,
@@ -282,7 +283,8 @@ class ParsingRunRepository:
         # Remove any invalid fields that might be passed by mistake
         valid_fields = {
             'id', 'run_id', 'request_id', 'parser_task_id', 'status', 
-            'depth', 'source', 'created_at', 'started_at', 'finished_at', 'error_message'
+            'depth', 'source', 'created_at', 'started_at', 'finished_at', 
+            'error_message', 'results_count'
         }
         
         # Log input data for debugging
@@ -315,15 +317,55 @@ class ParsingRunRepository:
     async def get_by_id(self, run_id: str) -> Optional[ParsingRunModel]:
         """Get parsing run by ID."""
         from app.adapters.db.models import ParsingRequestModel
+        from sqlalchemy import text
         
-        # Join with parsing_requests and eager load relationship
-        result = await self.session.execute(
-            select(ParsingRunModel)
-            .join(ParsingRequestModel, ParsingRunModel.request_id == ParsingRequestModel.id)
-            .options(selectinload(ParsingRunModel.request))
-            .where(ParsingRunModel.run_id == run_id)
+        # CRITICAL FIX: Always use direct SQL to avoid AttributeError
+        # SQLAlchemy tries to load all columns including results_count when using select(ParsingRunModel)
+        # Even if model doesn't have results_count, SQLAlchemy will try to load it from DB
+        # This causes AttributeError if the model was loaded without the field
+        
+        # Use direct SQL to get data without triggering SQLAlchemy's column loading
+        sql_result = await self.session.execute(
+            text("""
+                SELECT pr.id, pr.run_id, pr.request_id, pr.parser_task_id, 
+                       pr.status, pr.depth, pr.source, pr.created_at, 
+                       pr.started_at, pr.finished_at, pr.error_message
+                FROM parsing_runs pr
+                WHERE pr.run_id = :run_id
+            """),
+            {"run_id": run_id}
         )
-        return result.scalar_one_or_none()
+        row = sql_result.fetchone()
+        if not row:
+            return None
+        
+        # CRITICAL FIX: Use SimpleNamespace instead of ParsingRunModel to completely avoid SQLAlchemy
+        # Even object.__new__(ParsingRunModel) triggers SQLAlchemy's column loading when accessing attributes
+        from types import SimpleNamespace
+        run = SimpleNamespace()
+        run.id = row[0]
+        run.run_id = row[1]
+        run.request_id = row[2]
+        run.parser_task_id = row[3]
+        run.status = row[4]
+        run.depth = row[5]
+        run.source = row[6]
+        run.created_at = row[7]
+        run.started_at = row[8]
+        run.finished_at = row[9]
+        run.error_message = row[10]
+        
+        # Load request separately using select (this should work)
+        try:
+            request_result = await self.session.execute(
+                select(ParsingRequestModel).where(ParsingRequestModel.id == row[2])
+            )
+            run.request = request_result.scalar_one_or_none()
+        except Exception:
+            # If loading request fails, set to None
+            run.request = None
+        
+        return run
     
     async def list(
         self,
@@ -388,46 +430,114 @@ class ParsingRunRepository:
     
     async def update(self, run_id: str, run_data: dict) -> Optional[ParsingRunModel]:
         """Update parsing run."""
-        run = await self.get_by_id(run_id)
-        if not run:
-            return None
+        from sqlalchemy import text
         
-        for key, value in run_data.items():
-            setattr(run, key, value)
+        # CRITICAL FIX: Use direct SQL UPDATE because get_by_id() returns SimpleNamespace
+        # SimpleNamespace is not a SQLAlchemy model, so setattr() won't update the database
+        # We need to use direct SQL UPDATE to actually update the database
         
+        if not run_data:
+            # If no data to update, just return the existing run
+            return await self.get_by_id(run_id)
+        
+        # Build UPDATE query dynamically
+        valid_fields = {
+            'status', 'parser_task_id', 'depth', 'source', 
+            'started_at', 'finished_at', 'error_message', 'results_count'
+        }
+        
+        # Filter out invalid fields
+        filtered_data = {k: v for k, v in run_data.items() if k in valid_fields}
+        
+        if not filtered_data:
+            # No valid fields to update
+            return await self.get_by_id(run_id)
+        
+        # Build SET clause
+        set_clauses = []
+        params = {"run_id": run_id}
+        
+        for key, value in filtered_data.items():
+            param_name = f"val_{key}"
+            set_clauses.append(f"{key} = :{param_name}")
+            params[param_name] = value
+        
+        set_clause = ", ".join(set_clauses)
+        
+        # Execute UPDATE
+        await self.session.execute(
+            text(f"""
+                UPDATE parsing_runs 
+                SET {set_clause}
+                WHERE run_id = :run_id
+            """),
+            params
+        )
         await self.session.flush()
-        await self.session.refresh(run)
-        return run
+        
+        # Return updated run
+        return await self.get_by_id(run_id)
     
     async def delete(self, run_id: str) -> bool:
         """Delete parsing run by run_id."""
-        run = await self.get_by_id(run_id)
-        if not run:
-            return False
+        from sqlalchemy import text
         
-        await self.session.delete(run)
+        # CRITICAL FIX: Use direct SQL to delete, because get_by_id returns SimpleNamespace
+        # which cannot be used with session.delete()
+        result = await self.session.execute(
+            text("DELETE FROM parsing_runs WHERE run_id = :run_id"),
+            {"run_id": run_id}
+        )
         await self.session.flush()
-        return True
+        
+        # Check if any row was deleted
+        return result.rowcount > 0
 
 
-class DomainQueueRepository:
+class DomainQueueRepository(BaseRepository):
     """Repository for domains queue."""
     
-    def __init__(self, session: AsyncSession):
-        self.session = session
-    
     async def create(self, queue_data: dict) -> DomainQueueModel:
-        """Add domain to queue."""
-        queue_entry = DomainQueueModel(**queue_data)
-        self.session.add(queue_entry)
-        await self.session.flush()
-        await self.session.refresh(queue_entry)
-        return queue_entry
+        """Add domain to queue with automatic sequence error handling."""
+        try:
+            queue_entry = DomainQueueModel(**queue_data)
+            self.session.add(queue_entry)
+            await self.session.flush()
+            await self.session.refresh(queue_entry)
+            return queue_entry
+        except Exception as e:
+            # Use base class method to handle sequence errors
+            if await self._handle_sequence_error(e, "domains_queue"):
+                # Retry create after fixing permissions
+                queue_entry = DomainQueueModel(**queue_data)
+                self.session.add(queue_entry)
+                await self.session.flush()
+                await self.session.refresh(queue_entry)
+                return queue_entry
+            else:
+                # Not a sequence error or couldn't fix it
+                raise
     
     async def get_by_domain(self, domain: str) -> Optional[DomainQueueModel]:
-        """Get queue entry by domain."""
+        """Get queue entry by domain (returns first match, use list() for filtering by keyword/run_id)."""
         result = await self.session.execute(
-            select(DomainQueueModel).where(DomainQueueModel.domain == domain)
+            select(DomainQueueModel).where(DomainQueueModel.domain == domain).limit(1)
+        )
+        return result.scalar_one_or_none()
+    
+    async def get_by_domain_keyword_run(
+        self, 
+        domain: str, 
+        keyword: str, 
+        parsing_run_id: str
+    ) -> Optional[DomainQueueModel]:
+        """Get queue entry by domain, keyword, and parsing_run_id."""
+        result = await self.session.execute(
+            select(DomainQueueModel).where(
+                DomainQueueModel.domain == domain,
+                DomainQueueModel.keyword == keyword,
+                DomainQueueModel.parsing_run_id == parsing_run_id
+            )
         )
         return result.scalar_one_or_none()
     
@@ -439,21 +549,53 @@ class DomainQueueRepository:
         keyword: Optional[str] = None,
         parsing_run_id: Optional[str] = None  # Added parsing_run_id filter
     ) -> tuple[List[DomainQueueModel], int]:
-        """List queue entries with pagination."""
+        """List queue entries with pagination.
+        
+        IMPORTANT: Filtering logic:
+        - If parsing_run_id is provided, filter ONLY by parsing_run_id (most specific)
+        - If keyword is provided (and no parsing_run_id), filter by keyword
+        - If both are provided, filter by BOTH (AND condition)
+        - Status filter is always applied if provided
+        """
+        import logging
+        logger = logging.getLogger(__name__)
+        
         query = select(DomainQueueModel)
         count_query = select(func.count()).select_from(DomainQueueModel)
         
+        filters_applied = []
+        
+        # Filter by status (always applied if provided)
         if status:
-            query = query.where(DomainQueueModel.status == status)
-            count_query = count_query.where(DomainQueueModel.status == status)
+            status = status.strip() if isinstance(status, str) else status
+            if status:
+                query = query.where(DomainQueueModel.status == status)
+                count_query = count_query.where(DomainQueueModel.status == status)
+                filters_applied.append(f"status={status}")
         
+        # Filter by parsing_run_id (most specific filter - takes priority)
+        if parsing_run_id:
+            parsing_run_id = parsing_run_id.strip() if isinstance(parsing_run_id, str) else parsing_run_id
+            if parsing_run_id:
+                query = query.where(DomainQueueModel.parsing_run_id == parsing_run_id)
+                count_query = count_query.where(DomainQueueModel.parsing_run_id == parsing_run_id)
+                filters_applied.append(f"parsing_run_id={parsing_run_id}")
+                logger.info(f"DomainQueueRepository.list: filtering by parsing_run_id={parsing_run_id}")
+        
+        # Filter by keyword (applied if provided, AND with parsing_run_id if both provided)
         if keyword:
-            query = query.where(DomainQueueModel.keyword.ilike(f"%{keyword}%"))
-            count_query = count_query.where(DomainQueueModel.keyword.ilike(f"%{keyword}%"))
+            keyword = keyword.strip() if isinstance(keyword, str) else keyword
+            if keyword:
+                query = query.where(DomainQueueModel.keyword.ilike(f"%{keyword}%"))
+                count_query = count_query.where(DomainQueueModel.keyword.ilike(f"%{keyword}%"))
+                filters_applied.append(f"keyword={keyword}")
+                logger.info(f"DomainQueueRepository.list: filtering by keyword={keyword}")
         
-        if parsing_run_id:  # Filter by parsing_run_id
-            query = query.where(DomainQueueModel.parsing_run_id == parsing_run_id)
-            count_query = count_query.where(DomainQueueModel.parsing_run_id == parsing_run_id)
+        # Log applied filters
+        if filters_applied:
+            logger.info(f"DomainQueueRepository.list: applied filters: {', '.join(filters_applied)}")
+        else:
+            logger.warning("DomainQueueRepository.list: NO FILTERS APPLIED - returning ALL entries!")
         
         query = query.order_by(DomainQueueModel.created_at.desc())
         
@@ -464,6 +606,8 @@ class DomainQueueRepository:
         
         count_result = await self.session.execute(count_query)
         total = count_result.scalar() or 0
+        
+        logger.info(f"DomainQueueRepository.list: returning {len(entries)} entries (total={total}) with filters: {filters_applied}")
         
         return list(entries), total
     

@@ -20,8 +20,8 @@ export async function apiFetch<T>(
   const url = `${API_BASE_URL}${endpoint}`
   
   // Для DELETE запросов с body нужно явно указать Content-Type
-  const headers: HeadersInit = {
-    ...options?.headers,
+  const headers: Record<string, string> = {
+    ...(options?.headers as Record<string, string> || {}),
   }
   
   // Добавляем Content-Type только если есть body и метод не GET
@@ -37,6 +37,13 @@ export async function apiFetch<T>(
       ...options,
       headers,
     })
+    
+    // Для DELETE запросов со статусом 204 (No Content) возвращаем пустой объект
+    // Для статуса 200 с body - парсим JSON (например, bulk delete возвращает {deleted, total})
+    if (response.status === 204 && options?.method === "DELETE") {
+      console.log(`[API Fetch] Success: ${response.status} for ${endpoint}`)
+      return {} as T
+    }
     
     if (!response.ok) {
       let errorData
@@ -69,11 +76,6 @@ export async function apiFetch<T>(
         response.status,
         errorData
       )
-    }
-    
-    // Для DELETE запросов без body может не быть JSON ответа
-    if (response.status === 204) {
-      return {} as T
     }
     
     // Пытаемся получить JSON, если есть

@@ -23,6 +23,14 @@ async def get_db() -> AsyncSession:
         async with AsyncSessionLocal() as session:
             try:
                 yield session
+                # Commit any pending changes if no exception occurred
+                # Note: Individual endpoints should handle their own commits/rollbacks
+                # This is a safety net for uncommitted changes
+                if session.in_transaction():
+                    try:
+                        await session.commit()
+                    except Exception:
+                        await session.rollback()
             finally:
                 await session.close()
     except Exception as e:

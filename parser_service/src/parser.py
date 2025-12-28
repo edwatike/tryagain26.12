@@ -272,18 +272,41 @@ class Parser:
                 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
             })
             
+            # Normalize source parameter (lowercase, strip whitespace)
+            source_normalized = str(source).lower().strip() if source else "google"
+            logger.info(f"Source (original): '{source}', source (normalized): '{source_normalized}'")
+            
             # Run search engines in parallel
             tasks = []
             
-            if source in ["yandex", "both"]:
+            # Create pages only for requested sources (use elif to ensure only one branch executes)
+            if source_normalized == "yandex":
+                logger.info("Creating Yandex page only (source=yandex)")
                 yandex_page = await self.context.new_page()
                 yandex_engine = YandexEngine()
                 tasks.append(yandex_engine.parse(yandex_page, query, depth, collected_links))
-            
-            if source in ["google", "both"]:
+            elif source_normalized == "google":
+                logger.info("Creating Google page only (source=google)")
                 google_page = await self.context.new_page()
                 google_engine = GoogleEngine()
                 tasks.append(google_engine.parse(google_page, query, depth, collected_links))
+            elif source_normalized == "both":
+                logger.info("Creating both Yandex and Google pages (source=both)")
+                yandex_page = await self.context.new_page()
+                yandex_engine = YandexEngine()
+                tasks.append(yandex_engine.parse(yandex_page, query, depth, collected_links))
+                
+                google_page = await self.context.new_page()
+                google_engine = GoogleEngine()
+                tasks.append(google_engine.parse(google_page, query, depth, collected_links))
+            else:
+                # Default to Google if source is invalid
+                logger.warning(f"Invalid source '{source_normalized}', defaulting to Google")
+                google_page = await self.context.new_page()
+                google_engine = GoogleEngine()
+                tasks.append(google_engine.parse(google_page, query, depth, collected_links))
+            
+            logger.info(f"Created {len(tasks)} task(s) for parsing")
             
             # Wait for all search engines to complete
             if tasks:

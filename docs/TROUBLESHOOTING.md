@@ -1,821 +1,809 @@
 # Библия ошибок и решений
 
-## Ошибка: NotImplementedError при запуске Playwright на Windows
+## ОБЯЗАТЕЛЬНЫЕ ПРОВЕРКИ
 
-### Описание проблемы
-При запуске парсинга через Parser Service возникает ошибка:
-```
-NotImplementedError
-Failed to connect to Chrome CDP at http://127.0.0.1:9222
-```
+**⚠️ КРИТИЧЕСКИ ВАЖНО: Перед началом работы ОБЯЗАТЕЛЬНО:**
 
-Ошибка возникает при вызове `async_playwright().start()`, когда Playwright пытается создать subprocess для запуска драйвера.
+1. **Проверь состояние всех сервисов:**
+   - Chrome CDP доступен на порту 9222
+   - Parser Service отвечает на `http://127.0.0.1:9003/health`
+   - Backend отвечает на `http://127.0.0.1:8000/health`
+   - Frontend доступен на `http://localhost:3000`
 
-### Причина
-На Windows Playwright требует использования `WindowsProactorEventLoopPolicy` для asyncio, чтобы поддерживать subprocess. Проблема в том, что uvicorn.Server создает свой собственный event loop внутри `serve()`, который может не использовать установленную policy.
+2. **Проверь логи последних ошибок:**
+   - `logs/Backend-*.log`
+   - `logs/Parser Service-*.log`
+   - `logs/Frontend-*.log`
 
-### Текущее состояние решения
-
-**Попытки решения:**
-1. ✅ Установка `WindowsProactorEventLoopPolicy` в `parser_service/run_api.py` ДО всех импортов
-2. ✅ Установка policy в `parser_service/api.py` 
-3. ✅ Использование `asyncio.run()` для запуска uvicorn сервера (как в `temp/test_browser_connection.py`, который работает)
-4. ✅ Использование `uvicorn.Server` с явным указанием event loop
-
-**Проблема:** Даже при использовании `asyncio.run()` uvicorn.Server создает свой event loop внутри `serve()`, который не использует установленную policy.
-
-**Рабочее решение для тестов:**
-`temp/test_browser_connection.py` работает, потому что использует `asyncio.run()` напрямую для тестовой функции, а не через uvicorn.
-
-### Временное решение
-
-Использовать `temp/test_browser_connection.py` как основу для тестирования парсера, или запускать парсинг в отдельном процессе с правильной event loop policy.
-
-### Альтернативные решения для исследования
-
-1. **Использовать синхронный API Playwright в отдельном потоке:**
-   - Использовать `playwright.sync_api` вместо `playwright.async_api`
-   - Запускать в отдельном потоке с собственным event loop
-
-2. **Подключение к Chrome CDP напрямую через WebSocket:**
-   - Избежать использования Playwright для запуска subprocess
-   - Использовать WebSocket для подключения к Chrome CDP напрямую
-
-3. **Использовать другой ASGI сервер:**
-   - Попробовать Hypercorn или другой ASGI сервер, который может лучше работать с event loop policy
-
-### Текущая конфигурация
-
-**`parser_service/run_api.py`:**
-```python
-import asyncio
-import sys
-
-if sys.platform == 'win32':
-    asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
-
-async def run_server():
-    from api import app
-    import uvicorn
-    config = uvicorn.Config(app=app, host="127.0.0.1", port=9003, log_level="info", access_log=True)
-    server = uvicorn.Server(config)
-    await server.serve()
-
-if __name__ == "__main__":
-    asyncio.run(run_server())
-```
-
-### Дата последнего обновления
-2025-12-26
-
-### Решение (рабочее)
-
-**Проблема:** uvicorn/Hypercorn создает event loop, который не использует `WindowsProactorEventLoopPolicy`, необходимую для Playwright subprocess.
-
-**Решение:** Использовать подход из `temp/test_browser_connection.py` - запускать Playwright в отдельном потоке с собственным event loop через `asyncio.run()`.
-
-#### Как работает решение:
-
-1. **В `temp/test_browser_connection.py`** используется рабочий подход:
-   - Устанавливается `WindowsProactorEventLoopPolicy` ДО импорта Playwright
-   - Используется `asyncio.run()` напрямую для создания собственного event loop
-   - Это позволяет Playwright создать subprocess без ошибки `NotImplementedError`
-
-2. **В `parser_service/src/parser.py`** применен тот же подход:
-   - На Windows Playwright запускается в отдельном потоке через `ThreadPoolExecutor`
-   - В потоке устанавливается `WindowsProactorEventLoopPolicy`
-   - Используется `asyncio.run()` для создания нового event loop с правильной policy
-   - В этом loop запускается `async_playwright().start()` и подключение к Chrome CDP
-   - Результат (playwright и browser объекты) возвращаются в основной поток
-
-#### Код решения:
-
-```python
-# В parser_service/src/parser.py, метод connect_browser()
-if sys.platform == 'win32':
-    from concurrent.futures import ThreadPoolExecutor
-    
-    def run_playwright_in_thread(ws_url_param, chrome_cdp_url_param):
-        """Run Playwright in a separate thread with its own event loop using asyncio.run()."""
-        import asyncio
-        import sys
-        from playwright.async_api import async_playwright
-        
-        # Set event loop policy for this thread (same as test_browser_connection.py)
-        if sys.platform == 'win32':
-            asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
-        
-        async def connect_playwright():
-            playwright = await async_playwright().start()
-            connect_url = ws_url_param if "ws://" in ws_url_param else chrome_cdp_url_param
-            browser = await playwright.chromium.connect_over_cdp(connect_url)
-            return playwright, browser
-        
-        # Use asyncio.run() to create a new event loop with the correct policy
-        return asyncio.run(connect_playwright())
-    
-    # Run in thread pool executor
-    current_loop = asyncio.get_running_loop()
-    executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="playwright")
-    self.playwright, self.browser = await current_loop.run_in_executor(
-        executor, run_playwright_in_thread, ws_url, self.chrome_cdp_url
-    )
-```
-
-#### Проверка:
-
-1. Запустить Parser Service:
-   ```bash
-   cd parser_service
-   python run_api.py
-   ```
-
-2. Запустить тест парсинга:
-   ```bash
-   python temp/test_parser.py
-   ```
-
-3. Убедиться, что парсинг работает без `NotImplementedError`
-
-### Статус
-✅ Решение реализовано - используется подход из `test_browser_connection.py` с запуском Playwright в отдельном потоке
+3. **Проверь, что все сервисы запущены:**
+   - `Get-Process | Where-Object {$_.ProcessName -like "*python*" -or $_.ProcessName -like "*node*"}`
+   - `netstat -ano | findstr ":8000 :9003 :3000 :9222"`
 
 ---
 
-## Ошибка: Chrome запускается в headless режиме, парсер не подключается к видимому браузеру
+## Ошибка: Дублирование вкладок при парсинге
 
 ### Описание проблемы
-Парсер подключается к Chrome, но Chrome запущен в headless режиме (невидимый). В результате:
-- Пользователь не видит окно браузера
-- Невозможно решить CAPTCHA вручную
-- Парсер не может работать с видимым браузером пользователя
+При запуске парсинга с одним источником (Google или Yandex) открываются две одинаковые вкладки вместо одной.
 
-При проверке через `curl http://127.0.0.1:9222/json/version` в User-Agent видно `HeadlessChrome`.
-
-### Причина
-Chrome был запущен в headless режиме (с флагом `--headless`) или подключился к неправильному процессу Chrome.
-
-### Решение
-
-1. **Остановить все процессы Chrome:**
-   ```powershell
-   Get-Process chrome -ErrorAction SilentlyContinue | Stop-Process -Force
-   ```
-
-2. **Запустить Chrome в видимом режиме через скрипт:**
-   ```bash
-   start-chrome.bat
-   ```
-   
-   Или вручную:
-   ```powershell
-   & "C:\Program Files\Google\Chrome\Application\chrome.exe" --remote-debugging-port=9222 --disable-gpu --no-sandbox --disable-dev-shm-usage
-   ```
-   
-   **ВАЖНО:** НЕ используйте флаг `--headless`!
-
-3. **Проверить, что Chrome запущен в видимом режиме:**
-   ```bash
-   python temp/check_chrome_mode.py
-   ```
-   
-   Должно быть: `[OK] Chrome запущен в ВИДИМОМ режиме`
-   
-   Если видно `HeadlessChrome` в User-Agent - Chrome запущен неправильно.
-
-4. **Убедиться, что окно Chrome видно:**
-   - После запуска должно открыться окно Chrome
-   - Если окна нет - Chrome запущен в headless режиме
-
-5. **Перезапустить Parser Service** (если он уже запущен):
-   ```bash
-   # Остановить процессы на порту 9003
-   netstat -ano | findstr ":9003"
-   taskkill /F /PID <PID>
-   
-   # Запустить заново
-   cd parser_service && python run_api.py
-   ```
-
-### Проверка
-1. Проверить режим Chrome:
-   ```bash
-   curl http://127.0.0.1:9222/json/version
-   ```
-   
-   В ответе `User-Agent` НЕ должен содержать `HeadlessChrome`.
-
-2. Запустить парсинг через фронтенд и убедиться, что:
-   - Окно Chrome видно
-   - Парсер подключается к этому окну
-   - При появлении CAPTCHA окно максимизируется для решения
-
-### Измененные файлы
-- `start-chrome.bat` - скрипт для запуска Chrome в видимом режиме
-- `temp/check_chrome_mode.py` - скрипт для проверки режима Chrome
-
-### Дата решения
-2025-12-26
-
----
-
-## Ошибка: OSError [Errno 22] Invalid argument при запуске Backend на Windows
-
-### Описание проблемы
-При запуске Backend API на Windows возникает ошибка:
-```
-OSError: [Errno 22] Invalid argument
-```
-
-Ошибка возникает в middleware при попытке использовать `print(..., file=sys.stderr)` или `logging.StreamHandler(sys.stderr)` в контексте uvicorn.
+**Симптомы:**
+- В браузере открываются две идентичные вкладки с одним и тем же поисковым запросом
+- В логах Parser Service видно два одинаковых "=== PARSE REQUEST ===" для одного запроса
+- В логах Backend видно два "Background task started" для одного `run_id`
 
 ### Причина
-На Windows в контексте uvicorn `sys.stderr` может быть закрыт или недоступен для записи, что вызывает `OSError: [Errno 22] Invalid argument`. Это происходит потому, что uvicorn управляет потоками ввода-вывода и может закрывать стандартные потоки.
+**Корневая причина:** FastAPI BackgroundTasks может вызывать async функцию дважды из-за особенностей выполнения фоновых задач. Проблема усугублялась тем, что:
+1. Функция `run_parsing` определяется внутри `execute`, создавая новую функцию при каждом вызове
+2. Отсутствовала защита от дублирования на уровне добавления задачи в BackgroundTasks
+3. Отсутствовала защита от дублирования на уровне Parser Service
 
-### Решение
+**Неудачные попытки исправления (зафиксировано для предотвращения повторов):**
+1. ❌ Удаление `asyncio.create_task` из Backend - не помогло (дублирование происходило на уровне BackgroundTasks)
+2. ❌ Добавление защиты только внутри `run_parsing` - не помогло (защита срабатывала слишком поздно)
+3. ❌ Использование только `_running_parsing_tasks` без проверки перед `add_task` - не помогло (гонка условий)
+4. ❌ Использование блокировки `asyncio.Lock` только в Parser Service - не помогло (проблема была в Backend)
 
-1. **Убрать все `print(..., file=sys.stderr)` из кода:**
-   - Заменить на использование logger вместо print
-   - Убрать явные handlers для `sys.stderr` из `logging.basicConfig()`
+### Решение ✅
+Добавлена многоуровневая защита от дублирования:
 
-2. **Упростить настройку логирования:**
-   - Не использовать `logging.StreamHandler(sys.stderr)` в `lifespan`
-   - Позволить uvicorn самому управлять логированием
-   - Использовать только стандартный logger без явных handlers
-
-3. **Упростить логирование в middleware:**
-   - Убрать избыточное debug-логирование
-   - Обернуть логирование в try-except для безопасности
-
-#### Код решения:
-
-**В `backend/app/main.py`, функция `lifespan`:**
+**1. Защита на уровне Backend (перед добавлением в BackgroundTasks):**
 ```python
-# БЫЛО (вызывало ошибку):
-logging.basicConfig(
-    level=logging.DEBUG,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.StreamHandler(sys.stdout),
-        logging.StreamHandler(sys.stderr)  # ❌ Вызывало ошибку
-    ],
-    force=True
-)
-
-# СТАЛО (работает):
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    force=True  # ✅ Позволяем uvicorn управлять handlers
-)
+# backend/app/usecases/start_parsing.py
+if background_tasks is not None:
+    # CRITICAL: Check if task is already running BEFORE adding to BackgroundTasks
+    if run_id in _running_parsing_tasks:
+        logger.warning(f"[DUPLICATE PREVENTION] run_id {run_id} already in running tasks, skipping")
+        return result
+    
+    # CRITICAL: Add run_id BEFORE adding to BackgroundTasks to prevent race condition
+    _running_parsing_tasks.add(run_id)
+    background_tasks.add_task(run_parsing)
 ```
 
-**В `backend/app/main.py`, класс `CORSExceptionMiddleware`:**
+**2. Защита внутри `run_parsing` (дополнительный уровень безопасности):**
 ```python
-# БЫЛО (вызывало ошибку):
-print(f"=== MIDDLEWARE: Request to {request.url.path} ===", file=sys.stderr, flush=True)  # ❌
-logger.debug(f"=== MIDDLEWARE: Response status: {response.status_code} ===")  # ❌ Могло вызывать ошибку
+# Использование _processing_tasks для отслеживания задач, которые уже начали обработку
+if run_id in _running_parsing_tasks:
+    if run_id in start_parsing_module._processing_tasks:
+        logger.warning(f"[DUPLICATE DETECTED] Parsing task for run_id {run_id} is already PROCESSING, skipping")
+        return
+    start_parsing_module._processing_tasks.add(run_id)
+```
 
-# СТАЛО (работает):
-# Убрано избыточное логирование, используется только необходимое
-# Логирование обернуто в try-except для безопасности
+**3. Защита на уровне Parser Service:**
+```python
+# parser_service/api.py
+_running_parse_requests = set()
+_parse_lock = asyncio.Lock()
+
+async def parse_keyword(request: ParseRequest):
+    request_key = f"{request.keyword}_{request.depth}_{request.source}"
+    
+    async with _parse_lock:
+        if request_key in _running_parse_requests:
+            logger.warning(f"[DUPLICATE DETECTED] Parse request for '{request_key}' is already running, skipping")
+            return ParseResponse(keyword=request.keyword, suppliers=[], total_found=0)
+        
+        _running_parse_requests.add(request_key)
+    
+    try:
+        # ... parsing logic ...
+    finally:
+        async with _parse_lock:
+            _running_parse_requests.discard(request_key)
 ```
 
 ### Проверка
-
-1. **Проверить, что Backend запускается без ошибок:**
-   ```bash
-   cd backend
-   python -m uvicorn app.main:app --host 127.0.0.1 --port 8000
-   ```
-
-2. **Проверить health endpoint:**
-   ```bash
-   curl http://127.0.0.1:8000/health
-   ```
-   
-   Должен вернуть: `{"status":"ok"}`
-
-3. **Проверить, что нет ошибок в логах:**
-   - При запуске сервера не должно быть `OSError: [Errno 22] Invalid argument`
-   - Все запросы должны обрабатываться корректно
-
-### Измененные файлы
-- `backend/app/main.py` - убраны все `print(..., file=sys.stderr)`, упрощена настройка logging
-
-### Дата решения
-2025-01-27
-
----
-
-## Настройка Parser Service
-
-### Описание
-Parser Service - это отдельный сервис для парсинга веб-сайтов через Chrome CDP. Он работает на порту 9003 и требует запущенного Chrome с включенным remote debugging.
-
-### Конфигурация портов
-
-- **Parser Service**: порт 9003 (настраивается в `parser_service/run_api.py`)
-- **Chrome CDP**: порт 9222 (настраивается в `parser_service/src/config.py`)
-- **Backend ожидает**: `http://127.0.0.1:9003` (настраивается в `backend/app/config.py`)
-
-### Запуск Chrome CDP
-
-**ВАЖНО:** Chrome должен быть запущен в ВИДИМОМ режиме (не headless), чтобы можно было решить CAPTCHA вручную.
-
-**Windows:**
 ```powershell
-# Через скрипт
-.\start-chrome.bat
+# Проверить логи Backend - должны быть записи DUPLICATE PREVENTION и только один Background task added
+Get-Content "logs\Backend-*.log" -Tail 100 | Select-String -Pattern "DUPLICATE PREVENTION|DUPLICATE CHECK|Background task added|Marked run_id"
 
-# Или вручную
-& "C:\Program Files\Google\Chrome\Application\chrome.exe" --remote-debugging-port=9222 --disable-gpu --no-sandbox --disable-dev-shm-usage
-```
+# Проверить логи Parser Service - должен быть только один PARSE REQUEST для каждого запроса
+Get-Content "logs\Parser Service-*.log" -Tail 100 | Select-String -Pattern "DUPLICATE|PARSE REQUEST|CREATING PAGES"
 
-**ВАЖНО:** НЕ используйте флаг `--headless`!
-
-### Запуск Parser Service
-
-```powershell
-cd parser_service
-python run_api.py
-```
-
-Или через скрипт:
-```powershell
-.\start-parser.bat
-```
-
-### Проверка работоспособности
-
-1. **Проверить Chrome CDP:**
-   ```powershell
-   Invoke-RestMethod http://127.0.0.1:9222/json/version
-   ```
-   Должен вернуть информацию о Chrome и WebSocket URL.
-
-2. **Проверить Parser Service:**
-   ```powershell
-   Invoke-RestMethod http://127.0.0.1:9003/health
-   ```
-   Должен вернуть: `{"status":"ok"}`
-
-3. **Полная диагностика:**
-   ```powershell
-   python temp/parser_service/diagnose_parser_full.py
-   ```
-   Скрипт проверит все компоненты и выполнит тестовый запрос на парсинг.
-
-### Тестовый запрос на парсинг
-
-```powershell
-$body = @{ keyword = "кирпич"; max_urls = 5; source = "yandex" } | ConvertTo-Json
-Invoke-RestMethod http://127.0.0.1:9003/parse -Method Post -ContentType "application/json; charset=utf-8" -Body $body
-```
-
-**ВАЖНО:** Используйте `Content-Type: application/json; charset=utf-8` для корректной обработки кириллицы.
-
-### Известные проблемы и решения
-
-#### Проблема: Кодировка кириллицы (Cyrillic mojibake)
-
-**Симптом:** Запросы с кириллицей превращаются в `?????`
-
-**Решение:** 
-- Backend автоматически добавляет `Content-Type: application/json; charset=utf-8` в запросы к parser_service
-- Если делаете запросы напрямую, обязательно указывайте charset
-
-**Проверка:**
-```powershell
-# Правильно (с charset)
-$body = @{ keyword = "кирпич" } | ConvertTo-Json
-Invoke-RestMethod http://127.0.0.1:9003/parse -Method Post -ContentType "application/json; charset=utf-8" -Body $body
-
-# Неправильно (без charset - может вызвать mojibake)
-Invoke-RestMethod http://127.0.0.1:9003/parse -Method Post -ContentType "application/json" -Body $body
-```
-
-#### Проблема: Ошибка подключения к Chrome CDP
-
-**Симптом:** `Cannot connect to Chrome CDP at http://127.0.0.1:9222`
-
-**Решение:**
-1. Убедитесь, что Chrome запущен с флагом `--remote-debugging-port=9222`
-2. Проверьте, что Chrome не запущен в headless режиме
-3. Проверьте доступность порта: `netstat -ano | findstr ":9222"`
-
-**Проверка:**
-```powershell
-# Проверить доступность Chrome CDP
-Invoke-RestMethod http://127.0.0.1:9222/json/version
-
-# Проверить режим Chrome (не должен быть HeadlessChrome)
-$response = Invoke-RestMethod http://127.0.0.1:9222/json/version
-$response.User-Agent  # Не должно содержать "HeadlessChrome"
-```
-
-#### Проблема: Parser Service возвращает 503
-
-**Симптом:** `503 Service Unavailable` при запросе к parser_service
-
-**Причина:** Parser Service не может подключиться к Chrome CDP
-
-**Решение:**
-1. Убедитесь, что Chrome запущен с remote debugging
-2. Проверьте, что порт 9222 доступен
-3. Проверьте логи parser_service для деталей ошибки
-
-#### Проблема: Chrome запущен, но CDP недоступен (Connection error: All connection attempts failed)
-
-**Симптом:** 
-- Ошибка: `Connection error in parse_keyword: Cannot connect to Chrome CDP at http://127.0.0.1:9222. Error: All connection attempts failed`
-- Chrome запущен (видно в диспетчере задач), но порт 9222 не слушается
-- `start-parser.bat` показывает: `[WARNING] Chrome CDP is not accessible on port 9222`
-
-**Причина:** 
-Chrome запущен БЕЗ флага `--remote-debugging-port=9222` или использует существующий профиль пользователя, который не поддерживает CDP. Обычно это происходит, если:
-- Chrome был запущен обычным способом (без CDP)
-- Chrome был запущен с другими параметрами
-- Chrome был запущен до запуска `start-chrome.bat`
-- Chrome пытается использовать существующий профиль пользователя, который уже занят другим процессом Chrome
-
-**Решение:**
-
-**Вариант 1 (Автоматический - Рекомендуемый):**
-Все скрипты проекта (`start-chrome.bat`, `start-parser.bat`, `start-all.bat`) теперь автоматически:
-1. Используют **единый профиль отладки** (`temp\chrome_debug_profile`)
-2. Проверяют доступность Chrome CDP перед запуском
-3. Автоматически запускают Chrome с CDP, если он не доступен
-4. Используют централизованную конфигурацию из `scripts\chrome_config.bat`
-
-**Вариант 2 (Ручной запуск):**
-1. Закройте ВСЕ окна Chrome
-2. Запустите `start-chrome.bat` - Chrome откроется с CDP на порту 9222 с единым профилем отладки
-3. Или запустите Chrome вручную с правильными параметрами:
-   ```cmd
-   "C:\Program Files\Google\Chrome\Application\chrome.exe" --remote-debugging-port=9222 --user-data-dir="D:\tryagain\temp\chrome_debug_profile" --disable-gpu --no-sandbox --disable-dev-shm-usage
-   ```
-
-**Вариант 3 (Использование start-all.bat):**
-`start-all.bat` автоматически проверяет доступность Chrome CDP:
-- Если Chrome CDP доступен - не перезапускает его
-- Если Chrome CDP недоступен - запускает Chrome с CDP и единым профилем
-
-**Проверка:**
-```cmd
-# Проверить доступность Chrome CDP
-curl http://127.0.0.1:9222/json/version
-
-# Или использовать скрипт диагностики
-scripts\check_chrome_cdp.bat
-
-# Проверить, слушается ли порт 9222
-netstat -ano | findstr ":9222"
-
-# Проверить процессы Chrome
-tasklist | findstr chrome.exe
-
-# Проверить, какой профиль использует Chrome
-wmic process where "name='chrome.exe'" get commandline | findstr user-data-dir
-```
-
-**Важно:**
-- **Все скрипты используют ОДИН И ТОТ ЖЕ профиль** (`temp\chrome_debug_profile`) для обеспечения консистентности
-- Если Chrome уже запущен без CDP, новый процесс Chrome с CDP может не запуститься из-за конфликта
-- В этом случае нужно закрыть все окна Chrome и запустить его заново с CDP
-- Chrome с CDP использует отдельный профиль отладки, чтобы избежать конфликтов с обычным Chrome
-
-**Измененные файлы:**
-- `scripts\chrome_config.bat` - централизованная конфигурация Chrome CDP (новый)
-- `start-parser.bat` - использует единый профиль и централизованную конфигурацию
-- `start-chrome.bat` - использует единый профиль и улучшенные проверки CDP
-- `start-all.bat` - использует единый профиль и централизованную конфигурацию
-- `stop-all.bat` - улучшена остановка Chrome с правильным профилем
-
-**Дата решения:**
-2025-12-26 (обновлено 2025-12-27)
-
-#### Проблема: NotImplementedError на Windows
-
-**Симптом:** `NotImplementedError` при запуске Playwright на Windows
-
-**Решение:** Уже решено в коде - используется отдельный поток с `asyncio.run()` и `WindowsProactorEventLoopPolicy`. Если проблема сохраняется, проверьте:
-1. Что используется правильная версия Python (3.12+)
-2. Что все зависимости установлены: `pip install -r parser_service/requirements.txt`
-
-### Порядок запуска сервисов
-
-1. **Сначала** запустите Chrome CDP:
-   ```powershell
-   .\start-chrome.bat
-   ```
-
-2. **Затем** запустите Parser Service:
-   ```powershell
-   .\start-parser.bat
-   ```
-
-3. **Затем** запустите Backend:
-   ```powershell
-   .\start-backend.bat
-   ```
-
-4. **В последнюю очередь** запустите Frontend:
-   ```powershell
-   .\start-frontend.bat
-   ```
-
-### Диагностический скрипт
-
-Для полной диагностики всех компонентов парсера используйте:
-```powershell
-python temp/parser_service/diagnose_parser_full.py
-```
-
-Скрипт проверит:
-- Доступность Chrome CDP (порт 9222)
-- Доступность Parser Service (порт 9003)
-- Доступность Backend (порт 8000)
-- Тестовый запрос на парсинг с кириллицей
-- Интеграцию Backend с Parser Service
-
-### Измененные файлы
-- `backend/app/adapters/parser_client.py` - добавлен `Content-Type: application/json; charset=utf-8`
-- `parser_service/src/parser.py` - улучшена обработка ошибок подключения к Chrome CDP
-- `parser_service/api.py` - улучшена обработка ошибок с информативными сообщениями
-- `temp/parser_service/diagnose_parser_full.py` - создан диагностический скрипт
-
-### Дата настройки
-2025-01-27
-
-## Рекомендации по работе с Chrome CDP
-
-### Общие рекомендации
-
-1. **Всегда используйте единый профиль отладки:**
-   - Все скрипты проекта используют один и тот же профиль: `temp\chrome_debug_profile`
-   - Это обеспечивает консистентность и предотвращает конфликты
-   - Профиль определяется в `scripts\chrome_config.bat`
-
-2. **Используйте скрипты проекта для запуска Chrome:**
-   - Не запускайте Chrome вручную без параметров CDP
-   - Используйте `start-chrome.bat`, `start-parser.bat` или `start-all.bat`
-   - Все скрипты автоматически проверяют доступность CDP перед запуском
-
-3. **Проверяйте доступность CDP перед использованием:**
-   - Используйте `scripts\check_chrome_cdp.bat` для диагностики
-   - Или проверьте вручную: `curl http://127.0.0.1:9222/json/version`
-   - Убедитесь, что Chrome запущен в видимом режиме (не headless) для возможности решения CAPTCHA
-
-4. **При проблемах с Chrome CDP:**
-   - Закройте все окна Chrome
-   - Запустите `stop-all.bat` для полной остановки всех сервисов
-   - Запустите `start-chrome.bat` для запуска Chrome с CDP
-   - Проверьте доступность CDP через `scripts\check_chrome_cdp.bat`
-
-5. **Централизованная конфигурация:**
-   - Все параметры Chrome CDP находятся в `scripts\chrome_config.bat`
-   - При необходимости изменить порт или путь к Chrome, обновите этот файл
-   - Все скрипты автоматически используют эту конфигурацию
-
-### Проверка работоспособности Chrome CDP
-
-**Быстрая проверка:**
-```cmd
-scripts\check_chrome_cdp.bat
-```
-
-**Ручная проверка:**
-```cmd
-# Проверить доступность CDP
-curl http://127.0.0.1:9222/json/version
-
-# Проверить порт
-netstat -ano | findstr ":9222"
-
-# Проверить профиль Chrome
-wmic process where "name='chrome.exe'" get commandline | findstr user-data-dir
+# Проверить, что открывается только одна вкладка в браузере
+# Запустить парсинг с source="google" и убедиться, что открывается только одна вкладка Google
 ```
 
 **Ожидаемый результат:**
-- CDP доступен на порту 9222
-- Chrome запущен в видимом режиме (не headless)
-- Chrome использует профиль `temp\chrome_debug_profile`
-- WebSocket URL доступен для подключения
+- В логах Backend: один "[DUPLICATE PREVENTION] Checking run_id", один "Background task added"
+- В логах Parser Service: один "[DUPLICATE CHECK] Marked request", один "=== PARSE REQUEST ==="
+- В браузере: открывается только одна вкладка для каждого источника
 
 ### Измененные файлы
-
-- `scripts\chrome_config.bat` - централизованная конфигурация Chrome CDP
-- `scripts\check_chrome_cdp.bat` - скрипт диагностики Chrome CDP
-- `start-chrome.bat` - использует единый профиль и улучшенные проверки
-- `start-parser.bat` - использует единый профиль и централизованную конфигурацию
-- `start-all.bat` - использует единый профиль и централизованную конфигурацию
-- `stop-all.bat` - улучшена остановка Chrome с правильным профилем
-
-### Дата добавления рекомендаций
-2025-12-27
-
----
-
-## Ошибка: Парсинг возвращает старые результаты, реальный парсинг не выполняется
-
-### Описание проблемы
-
-**Симптом:**
-- Парсинг запускается через Frontend или API, но возвращает старые результаты из базы данных
-- В браузере Chrome не видно открытия вкладок с поисковиками (Google/Yandex)
-- В истории браузера нет записей о посещении поисковиков
-- Парсинг завершается мгновенно, но результаты идентичны предыдущим запускам
-- Backend возвращает успешный ответ, но реальный парсинг не выполняется
-
-**Пример:**
-```bash
-# Запуск парсинга
-POST /parsing/start
-{
-  "keyword": "фланец",
-  "depth": 2,
-  "source": "google"
-}
-
-# Ответ успешный, но результаты старые
-{
-  "runId": "e35b244a-4b47-4f14-b71b-91123cff515a",
-  "keyword": "фланец",
-  "status": "running"
-}
-
-# Проверка результатов - те же 111 доменов, что и раньше
-GET /domains/queue?parsingRunId=e35b244a-4b47-4f14-b71b-91123cff515a
-# Возвращает старые данные из базы
-```
-
-### Причина
-
-**Parser Service не запущен или недоступен:**
-- Parser Service не запущен (порт 9003 не слушается)
-- Backend не может подключиться к Parser Service
-- Парсинг не выполняется реально, Backend возвращает старые данные из базы данных
-- Chrome CDP может быть запущен, но Parser Service не работает
-
-**Проверка:**
-```cmd
-# Проверить, слушается ли порт 9003
-netstat -ano | findstr ":9003"
-
-# Проверить доступность Parser Service
-curl http://127.0.0.1:9003/health
-
-# Если порт не слушается или health check не отвечает - Parser Service не запущен
-```
-
-### Решение
-
-**Шаг 1: Проверить статус Parser Service**
-```cmd
-# Проверить порт
-netstat -ano | findstr ":9003"
-
-# Проверить health check
-curl http://127.0.0.1:9003/health
-```
-
-**Шаг 2: Запустить Parser Service**
-
-**Вариант 1 (Рекомендуемый - через скрипт):**
-```cmd
-cd parser_service
-start-parser-service.bat
-```
-
-**Вариант 2 (Через start-all.bat):**
-```cmd
-start-all.bat
-# Скрипт автоматически запустит все сервисы, включая Parser Service
-```
-
-**Вариант 3 (Вручную):**
-```cmd
-cd parser_service
-python run_api.py
-```
-
-**Шаг 3: Проверить, что Parser Service запущен**
-```cmd
-# Должен вернуть {"status":"ok"}
-curl http://127.0.0.1:9003/health
-
-# Порт должен слушаться
-netstat -ano | findstr ":9003"
-```
-
-**Шаг 4: Запустить парсинг заново**
-После запуска Parser Service запустите парсинг снова. Теперь:
-- В браузере Chrome должны открыться вкладки с поисковиками
-- Парсинг будет выполняться реально
-- Результаты будут новыми
-
-### Проверка
-
-**Успешный запуск Parser Service:**
-```cmd
-# Health check должен вернуть {"status":"ok"}
-curl http://127.0.0.1:9003/health
-
-# Порт должен слушаться
-netstat -ano | findstr ":9003"
-# Должен показать: TCP    127.0.0.1:9003         0.0.0.0:0              LISTENING       <PID>
-```
-
-**Успешный реальный парсинг:**
-- В окне Chrome открываются вкладки с Google/Yandex поиском
-- В истории браузера появляются записи о посещении поисковиков
-- Парсинг занимает время (не мгновенный)
-- Результаты новые (отличаются от предыдущих запусков)
-
-### Важно
-
-**Порядок запуска сервисов:**
-1. **Сначала** Chrome CDP (`start-chrome.bat` или через `start-all.bat`)
-2. **Затем** Parser Service (`start-parser-service.bat` или через `start-all.bat`)
-3. **Затем** Backend (`start-backend.bat` или через `start-all.bat`)
-4. **В последнюю очередь** Frontend (`start-frontend.bat` или через `start-all.bat`)
-
-**Проверка перед парсингом:**
-- Chrome CDP доступен: `curl http://127.0.0.1:9222/json/version`
-- Parser Service доступен: `curl http://127.0.0.1:9003/health`
-- Backend доступен: `curl http://127.0.0.1:8000/health`
-
-### Измененные файлы
-
-- `parser_service/start-parser-service.bat` - скрипт запуска Parser Service
-- `start-all.bat` - автоматический запуск всех сервисов
-- `start-parser.bat` - запуск Parser Service через общий скрипт
+- `backend/app/usecases/start_parsing.py` - добавлена защита от дублирования на двух уровнях
+- `parser_service/api.py` - добавлена защита от дублирования с блокировкой
 
 ### Дата решения
-2025-12-27
+2025-12-28 ✅ **РЕШЕНО И ПРОВЕРЕНО**
 
 ---
 
-## Успех: Парсинг работает корректно в видимом режиме Chrome
+## Рекомендации для предотвращения проблем
 
-### Описание успеха
+### 1. Защита от дублирования задач
 
-**Что работает:**
-- ✅ Chrome запускается в видимом режиме (не headless)
-- ✅ Парсер подключается к Chrome через CDP
-- ✅ Открываются вкладки с поисковиками (Google/Yandex) в окне Chrome
-- ✅ Парсинг выполняется реально, собираются новые результаты
-- ✅ Результаты сохраняются в базу данных
-- ✅ Frontend может запускать парсинг через API
+**Проблема:** FastAPI BackgroundTasks может вызывать async функцию дважды.
 
-**Проверено:**
-- Ключевое слово: "кирпич"
-- Глубина: 1
-- Источник: "google"
-- Результат: найдено 119 доменов
-- Вкладки с Google поиском открывались в браузере
+**Решение:**
+- Всегда добавляйте защиту на уровне `background_tasks.add_task` ПЕРЕД добавлением задачи
+- Используйте глобальный set для отслеживания активных задач
+- Добавляйте идентификатор задачи в set ПЕРЕД `add_task`, а не после
+- Используйте дополнительную защиту внутри функции для отслеживания задач, которые уже начали обработку
 
-### Текущая конфигурация
+**Шаблон кода:**
+```python
+# Глобальный set для отслеживания активных задач
+_running_tasks = set()
 
-**Chrome CDP:**
-- Порт: 9222
-- Режим: видимый (не headless)
-- Профиль: `temp\chrome_debug_profile` (единый для всех скриптов)
-- Конфигурация: `scripts\chrome_config.bat`
+async def execute(background_tasks):
+    task_id = str(uuid.uuid4())
+    
+    # ЗАЩИТА: Проверка ПЕРЕД добавлением в BackgroundTasks
+    if task_id in _running_tasks:
+        logger.warning(f"Task {task_id} already running, skipping")
+        return result
+    
+    # ЗАЩИТА: Добавление ПЕРЕД background_tasks.add_task
+    _running_tasks.add(task_id)
+    background_tasks.add_task(run_task, task_id)
+    
+    async def run_task(task_id):
+        # Дополнительная защита внутри функции
+        import module as mod
+        if not hasattr(mod, '_processing_tasks'):
+            mod._processing_tasks = set()
+        
+        if task_id in mod._processing_tasks:
+            logger.warning(f"Task {task_id} already processing, skipping")
+            return
+        
+        mod._processing_tasks.add(task_id)
+        try:
+            # ... выполнение задачи ...
+        finally:
+            mod._processing_tasks.discard(task_id)
+            _running_tasks.discard(task_id)
+```
 
-**Parser Service:**
-- Порт: 9003
-- URL: `http://127.0.0.1:9003`
-- Health check: `http://127.0.0.1:9003/health`
+### 2. Защита от дублирования HTTP запросов
 
-**Backend:**
-- Порт: 8000
-- URL: `http://127.0.0.1:8000`
-- Parser Service URL: настраивается через `settings.parser_service_url`
+**Проблема:** Один и тот же HTTP запрос может быть обработан дважды.
 
-### Известные ограничения
+**Решение:**
+- Используйте уникальный ключ запроса (keyword + depth + source)
+- Используйте блокировку `asyncio.Lock` для предотвращения гонки условий
+- Проверяйте наличие запроса в set ПЕРЕД началом обработки
+- Всегда очищайте set в блоке `finally`
 
-**⚠️ ТРЕБУЕТ РАБОТЫ: CAPTCHA**
+**Шаблон кода:**
+```python
+_running_requests = set()
+_request_lock = asyncio.Lock()
 
-**Проблема:**
-- При парсинге Google/Yandex может появляться CAPTCHA
-- Парсер ожидает, что пользователь решит CAPTCHA вручную в видимом окне Chrome
-- Если CAPTCHA не решена в течение 5 минут - парсинг может завершиться с ошибкой
+async def handle_request(request):
+    request_key = f"{request.keyword}_{request.depth}_{request.source}"
+    
+    async with _request_lock:
+        if request_key in _running_requests:
+            return empty_response()
+        _running_requests.add(request_key)
+    
+    try:
+        # ... обработка запроса ...
+    finally:
+        async with _request_lock:
+            _running_requests.discard(request_key)
+```
 
-**Текущее поведение:**
-- Парсер обнаруживает CAPTCHA и ждет до 5 минут
-- Выводит сообщения в консоль: `[WAIT] GOOGLE: Waiting for CAPTCHA to be solved...`
-- Пользователь должен вручную решить CAPTCHA в окне Chrome
-- После решения CAPTCHA парсинг продолжается автоматически
+### 3. Обязательная проверка перезапуска сервисов
 
-**Что нужно сделать в будущем:**
-- [ ] Интеграция с сервисами решения CAPTCHA (2captcha, anti-captcha и т.д.)
-- [ ] Автоматическое определение и решение CAPTCHA
-- [ ] Улучшенная обработка CAPTCHA с уведомлениями пользователю
-- [ ] Возможность пропускать страницы с CAPTCHA и продолжать парсинг
+**Проблема:** Изменения в коде не применяются, если сервис не перезапущен.
 
-**Приоритет:** Средний (парсинг работает, но требует ручного вмешательства при CAPTCHA)
+**Решение:**
+- Всегда проверяйте, что сервис перезапустился после изменений кода
+- Проверяйте логи на наличие новых записей (например, новых логов "[DUPLICATE PREVENTION]")
+- Используйте временные метки в логах для проверки, что код обновился
+- Для Backend с `--reload` проверяйте сообщения "WatchFiles detected changes"
 
-### Дата фиксации успеха
-2025-12-27
+**Команды для проверки:**
+```powershell
+# Проверить, что Backend перезапустился
+Get-Content "logs\Backend-*.log" -Tail 20 | Select-String -Pattern "Started server|Application startup|WatchFiles detected"
+
+# Проверить, что новый код работает
+Get-Content "logs\Backend-*.log" -Tail 100 | Select-String -Pattern "DUPLICATE PREVENTION|NEW_FEATURE_LOG"
+```
+
+---
+
+## Рекомендации для быстрой диагностики проблем
+
+### 1. Проверка состояния системы (ОБЯЗАТЕЛЬНО ПЕРВЫМ!)
+
+**Перед диагностикой любой проблемы ОБЯЗАТЕЛЬНО проверьте:**
+
+```powershell
+# 1. Проверка портов и процессов
+netstat -ano | findstr ":8000 :9003 :3000 :9222"
+Get-Process | Where-Object {$_.ProcessName -like "*python*" -or $_.ProcessName -like "*node*"}
+
+# 2. Проверка health endpoints
+curl http://127.0.0.1:8000/health
+curl http://127.0.0.1:9003/health
+curl http://localhost:3000
+
+# 3. Проверка Chrome CDP
+curl http://127.0.0.1:9222/json/version
+
+# 4. Проверка последних ошибок в логах
+Get-Content "logs\Backend-*.log" -Tail 50 | Select-String -Pattern "ERROR|Exception|Traceback"
+Get-Content "logs\Parser Service-*.log" -Tail 50 | Select-String -Pattern "ERROR|Exception|Traceback"
+```
+
+### 2. Проверка логов для конкретного run_id
+
+**Если проблема связана с конкретным запросом:**
+
+```powershell
+# Найти run_id из ответа API или логов
+$runId = "f6cc389b-3be0-488e-a950-190bc4e0c76d"
+
+# Проверить все логи для этого run_id
+Get-Content "logs\Backend-*.log" | Select-String -Pattern $runId
+Get-Content "logs\Parser Service-*.log" | Select-String -Pattern $runId
+
+# Проверить последовательность событий
+Get-Content "logs\Backend-*.log" | Select-String -Pattern $runId | Select-Object -Last 30
+```
+
+### 3. Проверка дублирования задач
+
+**Если подозреваете дублирование:**
+
+```powershell
+# Backend: проверить дублирование задач
+Get-Content "logs\Backend-*.log" -Tail 200 | Select-String -Pattern "DUPLICATE|Background task|run_id" | Select-Object -Last 30
+
+# Parser Service: проверить дублирование запросов
+Get-Content "logs\Parser Service-*.log" -Tail 200 | Select-String -Pattern "DUPLICATE|PARSE REQUEST|CREATING PAGES" | Select-Object -Last 30
+
+# Подсчитать количество вызовов для одного run_id
+$runId = "your-run-id"
+(Get-Content "logs\Backend-*.log" | Select-String -Pattern $runId).Count
+```
+
+### 4. Проверка работоспособности связки Backend-Frontend
+
+**Если проблема в отображении данных:**
+
+```powershell
+# 1. Проверить, что Backend возвращает данные
+$runId = "your-run-id"
+Invoke-RestMethod "http://127.0.0.1:8000/parsing/runs/$runId"
+
+# 2. Проверить, что Frontend получает данные
+# Откройте браузер DevTools (F12) -> Network -> проверьте запросы к /parsing/runs/{runId}
+
+# 3. Проверить логи Backend на наличие запросов от Frontend
+Get-Content "logs\Backend-*.log" -Tail 100 | Select-String -Pattern "GET.*parsing/runs|POST.*parsing/start"
+```
+
+### 5. Быстрая проверка изменений в коде
+
+**Если внесли изменения, но они не работают:**
+
+```powershell
+# 1. Проверить, что файл действительно изменился
+Get-Content "backend/app/usecases/start_parsing.py" | Select-String -Pattern "DUPLICATE PREVENTION"
+
+# 2. Проверить, что сервис перезапустился
+Get-Content "logs\Backend-*.log" -Tail 20 | Select-String -Pattern "Started server|WatchFiles detected"
+
+# 3. Проверить, что новый код выполняется
+Get-Content "logs\Backend-*.log" -Tail 100 | Select-String -Pattern "DUPLICATE PREVENTION"
+```
+
+### 6. Использование скриптов мониторинга
+
+**Для комплексной диагностики используйте:**
+
+```powershell
+# Запустить полный мониторинг всех сервисов
+powershell.exe -ExecutionPolicy Bypass -File 'scripts\monitor-services.ps1' -ProjectRoot 'D:\tryagain'
+
+# Проверить состояние через скрипт
+.\scripts\check-services-status.ps1
+```
+
+### 7. Чеклист диагностики
+
+**При любой проблеме проверьте по порядку:**
+
+1. ✅ Все сервисы запущены? (порты 8000, 9003, 3000, 9222)
+2. ✅ Health endpoints отвечают? (`/health` для каждого сервиса)
+3. ✅ Нет ошибок в последних логах? (ERROR, Exception, Traceback)
+4. ✅ Сервисы перезапустились после изменений? (проверить логи на новые записи)
+5. ✅ Код действительно изменился? (grep по новым логам/меткам)
+6. ✅ Нет дублирования задач? (проверить логи на дублирование)
+7. ✅ База данных доступна? (проверить подключение)
+8. ✅ Chrome CDP запущен? (проверить порт 9222)
+
+---
+
+## Ошибка: 404 при bulk delete parsing runs
+
+### Описание проблемы
+При попытке удалить выделенные записи через bulk delete endpoint возникает ошибка 404:
+- `Failed to load resource: the server 127.0.0.1:8000/parsing/runs/bulk:1 responded with a status of 404 (Not Found)`
+- `Error bulk deleting parsing runs: APIError: Parsing run not found`
+- В логах видно: `Deleting parsing run: bulk` вместо `Bulk deleting X parsing runs`
+
+### Причина
+**Порядок маршрутов в FastAPI**: Параметризованный маршрут `/runs/{run_id}` был определен ПЕРЕД конкретным маршрутом `/runs/bulk`. FastAPI пытается сопоставить `/runs/bulk` с `/runs/{run_id}`, где `run_id = "bulk"`, что приводит к попытке удалить несуществующий parsing run с ID "bulk" вместо вызова bulk delete endpoint.
+
+**Важно**: В FastAPI порядок регистрации маршрутов критически важен. Конкретные маршруты (например, `/runs/bulk`) должны быть определены ПЕРЕД параметризованными маршрутами (например, `/runs/{run_id}`), иначе FastAPI будет сопоставлять запросы с параметризованным маршрутом.
+
+### Решение ✅
+Переместить endpoint `/runs/bulk` ПЕРЕД `/runs/{run_id}` в файле `backend/app/transport/routers/parsing_runs.py`:
+
+**Правильный порядок:**
+1. `@router.delete("/runs/bulk")` - конкретный маршрут ПЕРВЫМ
+2. `@router.delete("/runs/{run_id}")` - параметризованный маршрут ВТОРЫМ
+
+**Изменения в файле:**
+- Перемещен `bulk_delete_parsing_runs_endpoint` перед `delete_parsing_run_endpoint`
+- Исправлено логирование в bulk delete endpoint (строка 272)
+
+### Проверка
+```powershell
+# 1. Проверить, что сервис перезапустился
+Get-Content "logs\Backend-*.log" -Tail 20 | Select-String -Pattern "Started server|WatchFiles detected"
+
+# 2. Проверить доступность endpoint через curl
+curl -X DELETE "http://127.0.0.1:8000/parsing/runs/bulk" -H "Content-Type: application/json" -d '[]'
+# Ожидаемый результат: 400 "run_ids must be a non-empty list" (не 404!)
+
+# 3. Проверить логи Backend
+Get-Content "logs\Backend-*.log" -Tail 50 | Select-String -Pattern "Bulk deleting|Deleting parsing run: bulk"
+# Ожидаемый результат: "Bulk deleting X parsing runs" (не "Deleting parsing run: bulk")
+
+# 4. Проверить через Frontend:
+# - Открыть страницу /parsing-runs
+# - Выделить несколько записей
+# - Нажать "Удалить"
+# - Убедиться, что удаление работает без ошибок 404
+```
+
+**Ожидаемый результат:**
+- Endpoint `/parsing/runs/bulk` доступен и возвращает 200/207/400 вместо 404
+- Bulk delete работает корректно через Frontend
+- В логах видно корректные сообщения "Bulk deleting X parsing runs" вместо "Deleting parsing run: bulk"
+
+### Измененные файлы
+- `backend/app/transport/routers/parsing_runs.py` - изменен порядок маршрутов DELETE
+
+### Дата решения
+2025-12-28 ✅ **РЕШЕНО**
+
+**Важное замечание**: После изменения порядка маршрутов может потребоваться полный перезапуск Backend (не только перезагрузка через WatchFiles), чтобы изменения вступили в силу. Если проблема сохраняется после перезапуска, проверьте порядок маршрутов в файле еще раз.
+
+---
+
+## Ошибка: UnmappedInstanceError при удалении parsing run
+
+### Описание проблемы
+При попытке удалить parsing run через endpoint `DELETE /parsing/runs/{run_id}` возникает ошибка 500:
+- `UnmappedInstanceError: Class 'types.SimpleNamespace' is not mapped`
+- `AttributeError: 'types.SimpleNamespace' object has no attribute '_sa_instance_state'`
+- В логах видно: `Error deleting parsing run {run_id}: UnmappedInstanceError`
+
+**Симптомы:**
+- Backend возвращает 500 Internal Server Error при удалении
+- В логах видна ошибка `UnmappedInstanceError: Class 'types.SimpleNamespace' is not mapped`
+- Запись не удаляется из базы данных
+- Frontend показывает ошибку удаления
+
+### Причина
+**Корневая причина:** Метод `ParsingRunRepository.delete` пытался использовать `session.delete(run)`, где `run` был объектом `SimpleNamespace` (возвращенным методом `get_by_id`), а не SQLAlchemy-моделью. SQLAlchemy не может удалить объекты, которые не являются ORM-моделями.
+
+**Детали:**
+1. `ParsingRunRepository.get_by_id` возвращает `SimpleNamespace` объект (не ORM-модель)
+2. `ParsingRunRepository.delete` пытался использовать `session.delete(run)` с `SimpleNamespace`
+3. SQLAlchemy требует ORM-модель для `session.delete()`
+
+### Решение ✅
+Использовать прямой SQL-запрос для удаления вместо `session.delete()`:
+
+**1. Исправлен `backend/app/usecases/delete_parsing_run.py`:**
+```python
+async def execute(db: AsyncSession, run_id: str) -> bool:
+    """Delete parsing run by run_id."""
+    # CRITICAL FIX: Use direct SQL to delete, bypassing repository
+    # This avoids the SimpleNamespace issue completely
+    logger.info(f"Deleting parsing run {run_id} using direct SQL")
+    
+    # First, check if run exists
+    check_result = await db.execute(
+        text("SELECT COUNT(*) FROM parsing_runs WHERE run_id = :run_id"),
+        {"run_id": run_id}
+    )
+    count_before = check_result.scalar()
+    logger.info(f"Runs with run_id {run_id} before delete: {count_before}")
+    
+    if count_before == 0:
+        logger.warning(f"Run {run_id} not found in database")
+        return False
+    
+    # Delete the run using direct SQL
+    result = await db.execute(
+        text("DELETE FROM parsing_runs WHERE run_id = :run_id"),
+        {"run_id": run_id}
+    )
+    await db.flush()
+    
+    deleted_count = result.rowcount
+    logger.info(f"Delete query executed - rowcount: {deleted_count}")
+    
+    # Verify deletion
+    check_result_after = await db.execute(
+        text("SELECT COUNT(*) FROM parsing_runs WHERE run_id = :run_id"),
+        {"run_id": run_id}
+    )
+    count_after = check_result_after.scalar()
+    logger.info(f"Runs with run_id {run_id} after delete (before commit): {count_after}")
+    
+    return deleted_count > 0
+```
+
+**2. Исправлен `backend/app/transport/routers/parsing_runs.py`:**
+- Добавлено логирование вызова `delete_parsing_run.execute`
+- Добавлена проверка после коммита
+- Добавлен принудительный flush после коммита
+- Добавлена повторная попытка удаления, если запись все еще существует
+
+**3. Исправлен `frontend/moderator-dashboard-ui/lib/api.ts`:**
+- Критическое исправление: проверка статуса 204 для DELETE запросов происходит ДО проверки `response.ok`
+- Это предотвращает обработку успешного DELETE как ошибки
+
+### Проверка
+```powershell
+# 1. Проверить, что сервис перезапустился
+Get-Content "logs\Backend-*.log" -Tail 20 | Select-String -Pattern "Started server|WatchFiles detected"
+
+# 2. Проверить удаление через API
+python -c "import requests; r1 = requests.get('http://127.0.0.1:8000/parsing/runs?limit=1&offset=0'); d1 = r1.json(); rid = d1['runs'][0].get('runId') or d1['runs'][0].get('run_id'); print(f'Deleting: {rid}'); r2 = requests.delete(f'http://127.0.0.1:8000/parsing/runs/{rid}'); print(f'Status: {r2.status_code}')"
+# Ожидаемый результат: Status 204 (не 500!)
+
+# 3. Проверить, что запись удалена
+python -c "import requests; import time; r1 = requests.get('http://127.0.0.1:8000/parsing/runs?limit=5&offset=0'); d1 = r1.json(); rid = 'test-id'; r2 = requests.delete(f'http://127.0.0.1:8000/parsing/runs/{rid}'); time.sleep(2); r3 = requests.get('http://127.0.0.1:8000/parsing/runs?limit=5&offset=0'); d2 = r3.json(); ids = [r.get('runId') or r.get('run_id') for r in d2['runs']]; print(f'Still exists: {rid in ids}')"
+# Ожидаемый результат: Still exists: False (запись удалена)
+
+# 4. Проверить логи Backend
+Get-Content "logs\Backend-*.log" -Tail 100 | Select-String -Pattern "Deleting parsing run|using direct SQL|rowcount|Successfully deleted|Transaction committed"
+# Ожидаемый результат: Видны логи "Deleting parsing run {run_id} using direct SQL" и "Successfully deleted"
+```
+
+**Ожидаемый результат:**
+- Endpoint `DELETE /parsing/runs/{run_id}` возвращает 204 вместо 500
+- Запись удаляется из базы данных
+- Frontend корректно обрабатывает успешное удаление
+- В логах нет ошибок `UnmappedInstanceError`
+
+### Измененные файлы
+- `backend/app/usecases/delete_parsing_run.py` - использует прямой SQL вместо `session.delete()`
+- `backend/app/transport/routers/parsing_runs.py` - улучшено логирование и проверка после коммита
+- `backend/app/adapters/db/session.py` - добавлен автоматический коммит в `get_db` как страховка
+- `frontend/moderator-dashboard-ui/lib/api.ts` - исправлена обработка статуса 204 для DELETE запросов
+- `frontend/moderator-dashboard-ui/app/parsing-runs/page.tsx` - улучшена обработка удаления и обновление состояния
+
+### Дата решения
+2025-12-28 ✅ **РЕШЕНО**
+
+**Важное замечание**: После исправления ОБЯЗАТЕЛЬНО перезапустить Backend полностью (остановить все процессы Python и запустить заново), чтобы изменения вступили в силу. Если проблема сохраняется после перезапуска, проверьте, что код действительно использует прямой SQL (проверить через `python -c "from app.usecases.delete_parsing_run import execute; import inspect; print(inspect.getsource(execute))"`).
+
+---
+
+## Ошибка: Bulk delete не удаляет записи (возвращает успех, но записи остаются)
+
+### Описание проблемы
+При попытке удалить несколько parsing runs через bulk delete endpoint:
+- Backend возвращает статус 200/207 с `{"deleted": N, "total": N}`
+- Но записи НЕ удаляются из базы данных
+- Frontend продолжает отображать удаленные записи
+- В логах нет ошибок, но записи остаются в БД
+
+**Симптомы:**
+- `DELETE /parsing/runs/bulk` возвращает 200/207
+- Response показывает `{"deleted": N}`, но записи все еще существуют
+- Frontend не обновляется после удаления
+- Записи остаются в БД даже после успешного ответа
+
+### Причина
+**Корневая причина:** `log_audit` вызывался ДО `commit()` в той же транзакции. Если `log_audit` падал с ошибкой (например, из-за проблем с таблицей `audit_log`), вся транзакция откатывалась, и удаление не сохранялось в БД, хотя endpoint возвращал успех.
+
+**Дополнительные проблемы:**
+1. Использование одной транзакции для всех удалений в bulk delete приводило к `InFailedSQLTransactionError`, если одно удаление падало
+2. Commit в `get_db` dependency мог конфликтовать с commit'ами в endpoint
+3. Проверка удаления в той же сессии показывала неправильный результат из-за кэша сессии
+
+### Решение ✅
+**1. Использование отдельных сессий для каждого удаления:**
+```python
+# CRITICAL: Use separate session for each delete to avoid transaction conflicts
+for run_id in run_ids:
+    async with AsyncSessionLocal() as delete_session:
+        # Direct SQL DELETE in separate session
+        delete_result = await delete_session.execute(
+            text("DELETE FROM parsing_runs WHERE run_id = :run_id"),
+            {"run_id": run_id}
+        )
+        # Commit FIRST, before audit log
+        await delete_session.flush()
+        await delete_session.commit()
+```
+
+**2. Audit log ПОСЛЕ commit в отдельной сессии:**
+```python
+# Log to audit_log AFTER commit (in a separate transaction)
+# This way audit log errors won't affect the delete
+try:
+    from app.adapters.audit import log_audit
+    async with AsyncSessionLocal() as audit_session:
+        await log_audit(...)
+        await audit_session.commit()
+except Exception as audit_err:
+    logger.warning(f"Error logging audit for run {run_id}: {audit_err}")
+    # Don't fail the delete if audit logging fails
+```
+
+**3. Проверка удаления через новую сессию:**
+```python
+# Verify deletion using a NEW session to ensure we read from DB, not cache
+async with AsyncSessionLocal() as verify_session:
+    verify_result = await verify_session.execute(...)
+    count_after = verify_result.scalar()
+```
+
+**4. Исправлен frontend Select статуса:**
+- Select теперь сразу обновляет URL при изменении значения
+- Убран `setTimeout`, который вызывал проблемы
+
+**5. Исправлена обработка ответа bulk delete в `api.ts`:**
+- Для статуса 204 возвращается пустой объект
+- Для статуса 200 парсится JSON (bulk delete возвращает `{deleted, total, errors}`)
+
+### Проверка
+```powershell
+# 1. Проверить, что сервис перезапустился
+Get-Content "logs\Backend-*.log" -Tail 20 | Select-String -Pattern "Started server|WatchFiles detected"
+
+# 2. Проверить bulk delete через API
+python -c "import requests; r = requests.delete('http://127.0.0.1:8000/parsing/runs/bulk', json=['test-id-1', 'test-id-2'], headers={'Content-Type': 'application/json'}, timeout=10); print(f'Status: {r.status_code}'); print(f'Response: {r.text}')"
+# Ожидаемый результат: Status 200 или 207, Response с deleted count
+
+# 3. Проверить, что записи удалены
+python -c "import requests; import time; r1 = requests.get('http://127.0.0.1:8000/parsing/runs?status=failed&limit=5&offset=0'); d1 = r1.json(); ids = [r.get('runId') or r.get('run_id') for r in d1.get('runs', [])[:2]]; print(f'Deleting: {ids}'); r2 = requests.delete('http://127.0.0.1:8000/parsing/runs/bulk', json=ids, headers={'Content-Type': 'application/json'}, timeout=30); time.sleep(5); r3 = requests.get('http://127.0.0.1:8000/parsing/runs?status=failed&limit=10&offset=0'); d3 = r3.json(); remaining = [r.get('runId') or r.get('run_id') for r in d3.get('runs', [])]; still_exist = [rid for rid in ids if rid in remaining]; print(f'Still exist: {len(still_exist)}'); print('SUCCESS' if not still_exist else 'FAILED')"
+# Ожидаемый результат: Still exist: 0, SUCCESS
+
+# 4. Проверить через Frontend:
+# - Открыть страницу /parsing-runs
+# - Выбрать статус "Ошибка" в Select
+# - Выделить все записи со статусом "Ошибка"
+# - Нажать "Удалить"
+# - Убедиться, что записи удалены и список обновился
+```
+
+**Ожидаемый результат:**
+- Bulk delete удаляет записи из БД
+- Frontend обновляется и не показывает удаленные записи
+- Select статуса работает корректно
+- В логах видны сообщения "Committed deletion" и "Verified: Run ... deleted successfully"
+
+### Измененные файлы
+- `backend/app/transport/routers/parsing_runs.py` - bulk delete использует отдельные сессии, audit log после commit
+- `backend/app/usecases/delete_parsing_run.py` - убран flush из usecase (вызывающий код управляет транзакцией)
+- `frontend/moderator-dashboard-ui/app/parsing-runs/page.tsx` - исправлен Select статуса (сразу обновляет URL)
+- `frontend/moderator-dashboard-ui/lib/api.ts` - исправлена обработка ответа bulk delete (парсинг JSON для статуса 200)
+
+### Дата решения
+2025-12-28 ✅ **РЕШЕНО**
+
+**Важное замечание**: После исправления ОБЯЗАТЕЛЬНО перезапустить Backend полностью. Проблема была в порядке операций: audit log должен выполняться ПОСЛЕ commit в отдельной сессии, чтобы ошибки аудита не откатывали удаление.
+
+---
+
+## 💡 Рекомендации для предотвращения проблем с транзакциями и удалением
+
+### 1. Порядок операций в транзакциях
+
+**⚠️ КРИТИЧЕСКИ ВАЖНО: Всегда делайте commit ПЕРЕД операциями, которые могут откатить транзакцию!**
+
+**Неправильно:**
+```python
+# ❌ НЕПРАВИЛЬНО: audit log ДО commit
+await delete_session.execute(text("DELETE FROM ..."))
+await log_audit(...)  # Если это падает - вся транзакция откатывается!
+await delete_session.commit()
+```
+
+**Правильно:**
+```python
+# ✅ ПРАВИЛЬНО: commit ПЕРЕД audit log
+await delete_session.execute(text("DELETE FROM ..."))
+await delete_session.flush()
+await delete_session.commit()  # Сначала commit!
+
+# Audit log в отдельной сессии ПОСЛЕ commit
+async with AsyncSessionLocal() as audit_session:
+    await log_audit(...)
+    await audit_session.commit()  # Ошибки аудита не влияют на удаление
+```
+
+### 2. Использование отдельных сессий для независимых операций
+
+**⚠️ КРИТИЧЕСКИ ВАЖНО: Для bulk операций используйте отдельные сессии для каждой операции!**
+
+**Неправильно:**
+```python
+# ❌ НЕПРАВИЛЬНО: все удаления в одной транзакции
+for run_id in run_ids:
+    await db.execute(text("DELETE FROM ... WHERE run_id = :run_id"), {"run_id": run_id})
+await db.commit()  # Если одно удаление падает - все откатывается!
+```
+
+**Правильно:**
+```python
+# ✅ ПРАВИЛЬНО: каждое удаление в отдельной сессии
+for run_id in run_ids:
+    async with AsyncSessionLocal() as delete_session:
+        await delete_session.execute(text("DELETE FROM ... WHERE run_id = :run_id"), {"run_id": run_id})
+        await delete_session.flush()
+        await delete_session.commit()  # Каждое удаление независимо
+```
+
+### 3. Проверка результатов через новую сессию
+
+**⚠️ КРИТИЧЕСКИ ВАЖНО: Проверяйте результаты операций через новую сессию, чтобы читать из БД, а не из кэша!**
+
+**Неправильно:**
+```python
+# ❌ НЕПРАВИЛЬНО: проверка в той же сессии
+await delete_session.execute(text("DELETE FROM ..."))
+await delete_session.commit()
+verify = await delete_session.execute(text("SELECT COUNT(*) FROM ..."))  # Может показать старые данные из кэша!
+```
+
+**Правильно:**
+```python
+# ✅ ПРАВИЛЬНО: проверка через новую сессию
+await delete_session.execute(text("DELETE FROM ..."))
+await delete_session.commit()
+await delete_session.close()  # Закрыть сессию
+
+# Проверка через новую сессию
+async with AsyncSessionLocal() as verify_session:
+    verify = await verify_session.execute(text("SELECT COUNT(*) FROM ..."))  # Читает из БД!
+```
+
+### 4. Обработка ошибок в bulk операциях
+
+**⚠️ КРИТИЧЕСКИ ВАЖНО: Ошибка в одной операции не должна блокировать остальные!**
+
+**Правильно:**
+```python
+deleted_count = 0
+errors = []
+
+for run_id in run_ids:
+    async with AsyncSessionLocal() as delete_session:
+        try:
+            await delete_session.execute(text("DELETE FROM ... WHERE run_id = :run_id"), {"run_id": run_id})
+            await delete_session.commit()
+            deleted_count += 1
+        except Exception as e:
+            errors.append(f"Error deleting {run_id}: {str(e)}")
+            # Ошибка не влияет на другие удаления!
+```
+
+### 5. Порядок маршрутов в FastAPI
+
+**⚠️ КРИТИЧЕСКИ ВАЖНО: Конкретные маршруты ДО параметризованных!**
+
+**Неправильно:**
+```python
+# ❌ НЕПРАВИЛЬНО: параметризованный маршрут ПЕРЕД конкретным
+@router.delete("/runs/{run_id}")  # FastAPI будет пытаться сопоставить "/runs/bulk" с этим!
+async def delete_one(...):
+    ...
+
+@router.delete("/runs/bulk")  # Этот маршрут никогда не будет достигнут!
+async def delete_bulk(...):
+    ...
+```
+
+**Правильно:**
+```python
+# ✅ ПРАВИЛЬНО: конкретный маршрут ПЕРЕД параметризованным
+@router.delete("/runs/bulk")  # Конкретный маршрут ПЕРВЫМ
+async def delete_bulk(...):
+    ...
+
+@router.delete("/runs/{run_id}")  # Параметризованный маршрут ВТОРЫМ
+async def delete_one(...):
+    ...
+```
+
+### 6. Frontend: Обновление состояния после удаления
+
+**⚠️ КРИТИЧЕСКИ ВАЖНО: Всегда обновляйте состояние с текущими параметрами URL!**
+
+**Правильно:**
+```typescript
+// ✅ ПРАВИЛЬНО: использовать текущие параметры URL
+const handleDelete = async (runId: string) => {
+  await apiFetch(`/parsing/runs/${runId}`, { method: "DELETE" })
+  
+  // Получить текущие параметры из URL
+  const currentPage = searchParams.get("page") || "1"
+  const currentStatus = searchParams.get("status") || "all"
+  
+  // Обновить список с текущими параметрами
+  await loadRuns({
+    page: parseInt(currentPage),
+    status: currentStatus,
+    // ... другие параметры
+  })
+}
+```
+
+### 7. Frontend: Select компоненты должны сразу обновлять URL
+
+**⚠️ КРИТИЧЕСКИ ВАЖНО: Select компоненты должны сразу обновлять URL, без задержек!**
+
+**Неправильно:**
+```typescript
+// ❌ НЕПРАВИЛЬНО: setTimeout вызывает проблемы
+<Select onValueChange={(value) => {
+  setStatusFilter(value)
+  setTimeout(() => handleFilterChange(), 0)  // Задержка может вызвать проблемы!
+}}>
+```
+
+**Правильно:**
+```typescript
+// ✅ ПРАВИЛЬНО: сразу обновлять URL
+<Select onValueChange={(value) => {
+  setStatusFilter(value)
+  handleFilterChange()  // Сразу вызывать без задержки
+}}>
+```
+
+### 8. Проверка результатов на Frontend
+
+**⚠️ КРИТИЧЕСКИ ВАЖНО: После исправления ОБЯЗАТЕЛЬНО проверить результат на Frontend!**
+
+**Чеклист проверки:**
+1. ✅ Открыть страницу в браузере
+2. ✅ Выполнить операцию (удаление, фильтрация и т.д.)
+3. ✅ Убедиться, что результат отображается корректно
+4. ✅ Проверить консоль браузера (F12) - не должно быть ошибок
+5. ✅ Проверить Network tab - запросы должны быть успешными
+6. ✅ Проверить, что состояние обновляется корректно
+
+**Команды для проверки:**
+```powershell
+# Проверить, что Frontend доступен
+curl http://localhost:3000
+
+# Проверить, что Backend доступен
+curl http://127.0.0.1:8000/health
+
+# Проверить логи Backend
+Get-Content "logs\Backend-*.log" -Tail 50
+
+# Проверить логи Frontend
+Get-Content "logs\Frontend-*.log" -Tail 50
+```
+
+---

@@ -1,5 +1,5 @@
 """Router for parsing operations."""
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, BackgroundTasks
 from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -20,9 +20,16 @@ router = APIRouter()
 @router.post("/start", status_code=201)
 async def start_parsing_endpoint(
     request: StartParsingRequestDTO,
+    background_tasks: BackgroundTasks,
     db: AsyncSession = Depends(get_db)
 ):
     """Start parsing for a keyword."""
+    # #region agent log
+    import json
+    from datetime import datetime
+    with open('d:\\tryagain\\.cursor\\debug.log', 'a', encoding='utf-8') as f:
+        f.write(json.dumps({"location":"parsing.py:20","message":"start_parsing_endpoint called","data":{"keyword":request.keyword,"depth":request.depth,"source":request.source,"has_background_tasks":background_tasks is not None},"timestamp":int(datetime.utcnow().timestamp()*1000),"sessionId":"debug-session","runId":"","hypothesisId":"A"})+'\n')
+    # #endregion
     # Validate source
     valid_sources = ["google", "yandex", "both"]
     source = request.source.lower() if request.source else "google"
@@ -33,8 +40,13 @@ async def start_parsing_endpoint(
         db=db,
         keyword=request.keyword,
         depth=request.depth,
-        source=source
+        source=source,
+        background_tasks=background_tasks
     )
+    # #region agent log
+    with open('d:\\tryagain\\.cursor\\debug.log', 'a', encoding='utf-8') as f:
+        f.write(json.dumps({"location":"parsing.py:40","message":"start_parsing.execute returned","data":{"run_id":result.get("run_id"),"status":result.get("status")},"timestamp":int(datetime.utcnow().timestamp()*1000),"sessionId":"debug-session","runId":result.get("run_id",""),"hypothesisId":"A"})+'\n')
+    # #endregion
     await db.commit()
     
     # Return response with camelCase field names for frontend
@@ -85,14 +97,32 @@ async def get_parsing_status_endpoint(
         
         # Create DTO with extracted keyword
         # Используем camelCase для соответствия DTO
+        # CRITICAL FIX: Use getattr() for safe access to SimpleNamespace attributes
+        from app.adapters.db.repositories import DomainQueueRepository
+        domain_queue_repo = DomainQueueRepository(db)
+        _, count = await domain_queue_repo.list(
+            limit=1,
+            offset=0,
+            parsing_run_id=run_id
+        )
+        results_count = count if count > 0 else None
+        
+        # CRITICAL FIX: Use getattr() for safe access to SimpleNamespace attributes
+        # Pydantic v2 with alias requires the field name (run_id), not the alias (runId)
+        run_id_value = getattr(run, 'run_id', None)
+        status_value = getattr(run, 'status', None)
+        started_at_value = getattr(run, 'started_at', None)
+        finished_at_value = getattr(run, 'finished_at', None)
+        error_message_value = getattr(run, 'error_message', None)
+        
         status_dict = {
-            "runId": run.run_id,  # Используем camelCase для соответствия DTO
+            "run_id": run_id_value,  # Use field name, not alias
             "keyword": keyword,
-            "status": run.status,
-            "startedAt": run.started_at.isoformat() if run.started_at else None,
-            "finishedAt": run.finished_at.isoformat() if run.finished_at else None,
-            "error": run.error_message,  # Маппим error_message на error
-            "resultsCount": None,  # Можно вычислить из parsing_hits, но пока null
+            "status": status_value,
+            "started_at": started_at_value,  # Use field name, not alias
+            "finished_at": finished_at_value,  # Use field name, not alias
+            "error_message": error_message_value,  # Use field name, not alias
+            "resultsCount": results_count,  # No alias, use camelCase
         }
         return ParsingStatusResponseDTO.model_validate(status_dict)
     except Exception as e:

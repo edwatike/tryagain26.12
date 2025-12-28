@@ -68,6 +68,24 @@ async def health_check():
     return {"status": "ok"}
 
 
+# Track running parse requests to prevent duplicates
+_running_parse_requests = set()
+# Create lock lazily to avoid issues with event loop
+_parse_lock = None
+
+def get_parse_lock():
+    """Get or create the parse lock."""
+    global _parse_lock
+    if _parse_lock is None:
+        try:
+            _parse_lock = asyncio.Lock()
+        except RuntimeError:
+            # If no event loop is running, create a new one
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            _parse_lock = asyncio.Lock()
+    return _parse_lock
+
 @app.post("/parse", response_model=ParseResponse)
 async def parse_keyword(request: ParseRequest):
     """Parse suppliers for a keyword."""
@@ -79,8 +97,28 @@ async def parse_keyword(request: ParseRequest):
     
     logger = logging.getLogger(__name__)
     
+    # Create request key for duplicate detection (without timestamp - same key for same request)
+    request_key = f"{request.keyword}_{request.depth}_{request.source}"
+    
+    # CRITICAL: Use lock to prevent race conditions
+    parse_lock = get_parse_lock()
+    async with parse_lock:
+        # CRITICAL: Prevent duplicate execution using request_key
+        if request_key in _running_parse_requests:
+            logger.warning(f"[DUPLICATE DETECTED] Parse request for '{request_key}' is already running, skipping duplicate call")
+            # Return empty response for duplicate
+            return ParseResponse(
+                keyword=request.keyword,
+                suppliers=[],
+                total_found=0
+            )
+        
+        # Mark request as running IMMEDIATELY to prevent race conditions
+        _running_parse_requests.add(request_key)
+        logger.info(f"[DUPLICATE CHECK] Marked request '{request_key}' as running (total running: {len(_running_parse_requests)})")
+    
     try:
-        logger.info(f"Starting parse for keyword: {request.keyword}, depth: {request.depth}, source: {request.source}")
+        logger.info(f"=== PARSE REQUEST === keyword: {request.keyword}, depth: {request.depth}, source: '{request.source}'")
         logger.info(f"Platform: {sys.platform}, is Windows: {sys.platform == 'win32'}")
         
         # On Windows, run parsing in a separate thread with asyncio.run() to avoid NotImplementedError
@@ -185,7 +223,10 @@ async def parse_keyword(request: ParseRequest):
                         
                         # Prepare query
                         query = f"{keyword_param} купить"
-                        thread_logger.info(f"Query: {query}, source: {source_param}, depth: {depth}")
+                        
+                        # Normalize source parameter (lowercase, strip whitespace)
+                        source_normalized = str(source_param).lower().strip() if source_param else "google"
+                        thread_logger.info(f"=== CREATING PAGES === Query: {query}, source (original): '{source_param}', source (normalized): '{source_normalized}', depth: {depth}")
                         
                         # Collect links from search engines
                         collected_links: Set[str] = set()
@@ -193,15 +234,39 @@ async def parse_keyword(request: ParseRequest):
                         # Run search engines in parallel (same approach as parser.py)
                         tasks = []
                         
-                        if source_param in ["yandex", "both"]:
+                        # Create pages only for requested sources - USE STRICT EQUALITY TO PREVENT DUPLICATES
+                        if source_normalized == "yandex":
+                            thread_logger.info(">>> Creating ONLY Yandex page (source=yandex)")
                             yandex_page = await context.new_page()
+                            thread_logger.info(f">>> Yandex page created")
                             yandex_engine = YandexEngine()
                             tasks.append(yandex_engine.parse(yandex_page, query, depth, collected_links))
-                        
-                        if source_param in ["google", "both"]:
+                        elif source_normalized == "google":
+                            thread_logger.info(">>> Creating ONLY Google page (source=google)")
                             google_page = await context.new_page()
+                            thread_logger.info(f">>> Google page created")
                             google_engine = GoogleEngine()
                             tasks.append(google_engine.parse(google_page, query, depth, collected_links))
+                        elif source_normalized == "both":
+                            thread_logger.info(">>> Creating BOTH Yandex and Google pages (source=both)")
+                            yandex_page = await context.new_page()
+                            thread_logger.info(f">>> Yandex page created")
+                            yandex_engine = YandexEngine()
+                            tasks.append(yandex_engine.parse(yandex_page, query, depth, collected_links))
+                            
+                            google_page = await context.new_page()
+                            thread_logger.info(f">>> Google page created")
+                            google_engine = GoogleEngine()
+                            tasks.append(google_engine.parse(google_page, query, depth, collected_links))
+                        else:
+                            # Default to Google if source is invalid
+                            thread_logger.warning(f">>> Invalid source '{source_normalized}', defaulting to Google")
+                            google_page = await context.new_page()
+                            thread_logger.info(f">>> Google page created (default)")
+                            google_engine = GoogleEngine()
+                            tasks.append(google_engine.parse(google_page, query, depth, collected_links))
+                        
+                        thread_logger.info(f">>> TOTAL: Created {len(tasks)} task(s) for parsing")
                         
                         # Wait for all search engines to complete
                         if tasks:
@@ -262,11 +327,12 @@ async def parse_keyword(request: ParseRequest):
             )
         
         logger.info(f"Parse completed: found {len(suppliers)} suppliers")
-        return ParseResponse(
+        result = ParseResponse(
             keyword=request.keyword,
             suppliers=suppliers,
             total_found=len(suppliers)
         )
+        return result
     except HTTPException:
         # Re-raise HTTP exceptions as-is
         raise
@@ -318,4 +384,10 @@ async def parse_keyword(request: ParseRequest):
             status_code=500,
             detail=detail_message
         )
+    finally:
+        # Always remove from running requests, even on error
+        parse_lock = get_parse_lock()
+        async with parse_lock:
+            _running_parse_requests.discard(request_key)
+            logger.info(f"[DUPLICATE CHECK] Removed request '{request_key}' from running requests (remaining: {len(_running_parse_requests)})")
 

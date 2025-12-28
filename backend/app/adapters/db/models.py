@@ -199,6 +199,7 @@ class ParsingRunModel(Base):
     started_at: Mapped[Optional[datetime]] = mapped_column(nullable=True)
     finished_at: Mapped[Optional[datetime]] = mapped_column(nullable=True)
     error_message: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    results_count: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     
     # Relationship
     request: Mapped[Optional["ParsingRequestModel"]] = relationship("ParsingRequestModel", lazy="select")
@@ -214,7 +215,9 @@ class DomainQueueModel(Base):
     """Model for domains_queue table."""
     __tablename__ = "domains_queue"
     
-    domain: Mapped[str] = mapped_column(String(255), primary_key=True)
+    # Primary key changed from domain to id to allow same domain for different keywords
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    domain: Mapped[str] = mapped_column(String(255), nullable=False)
     keyword: Mapped[str] = mapped_column(String(255), nullable=False)
     url: Mapped[str] = mapped_column(Text, nullable=False)
     parsing_run_id: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
@@ -228,10 +231,15 @@ class DomainQueueModel(Base):
         nullable=False
     )
     
-    # Indexes
+    # Indexes and unique constraint
+    # IMPORTANT: Same domain can appear for different keywords and parsing runs
+    # Unique constraint ensures no duplicates for (domain, keyword, parsing_run_id)
     __table_args__ = (
         Index("idx_domains_queue_status", "status"),
         Index("idx_domains_queue_keyword", "keyword"),
+        Index("idx_domains_queue_parsing_run_id", "parsing_run_id"),
+        Index("idx_domains_queue_domain_keyword", "domain", "keyword"),
+        UniqueConstraint("domain", "keyword", "parsing_run_id", name="uq_domains_queue_domain_keyword_run"),
     )
 
 

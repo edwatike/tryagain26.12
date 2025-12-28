@@ -26,6 +26,10 @@
 6. Скопируйте весь SQL и выполните (F5)
 7. Откройте файл `backend/migrations/002_audit_log.sql`
 8. Скопируйте весь SQL и выполните (F5)
+9. Откройте файл `backend/migrations/003_parsing_requests.sql`
+10. Скопируйте весь SQL и выполните (F5)
+11. Откройте файл `backend/migrations/004_fix_domains_queue_primary_key.sql`
+12. Скопируйте весь SQL и выполните (F5)
 
 ### Вариант 2: Через командную строку PostgreSQL (рекомендуется)
 
@@ -34,6 +38,8 @@ cd D:\tryagain
 $env:PGPASSWORD="Jnvnszoe5971312059001"
 psql -U postgres -d b2bplatform -h localhost -p 5432 -f backend\migrations\001_initial_schema.sql
 psql -U postgres -d b2bplatform -h localhost -p 5432 -f backend\migrations\002_audit_log.sql
+psql -U postgres -d b2bplatform -h localhost -p 5432 -f backend\migrations\003_parsing_requests.sql
+psql -U postgres -d b2bplatform -h localhost -p 5432 -f backend\migrations\004_fix_domains_queue_primary_key.sql
 ```
 
 ### Вариант 3: Через DBeaver или другой SQL клиент

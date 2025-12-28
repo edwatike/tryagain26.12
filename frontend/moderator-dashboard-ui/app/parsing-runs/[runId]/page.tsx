@@ -35,16 +35,39 @@ export default function ParsingRunDetailPage() {
   useEffect(() => {
     if (runId) {
       loadRun()
+      // Загружаем домены сразу, даже если статус еще не "completed"
+      // Это нужно для случаев, когда статус уже "completed", но домены еще не загружены
       loadDomains()
     }
   }, [runId])
   
   useEffect(() => {
     // Reload domains when run status changes to completed
+    // CRITICAL FIX: Always reload domains when status becomes "completed"
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/1f557059-57b9-4853-ac44-fdf3eb251610',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'parsing-runs/[runId]/page.tsx:47',message:'Status change effect triggered',data:{runId,currentStatus:run?.status,previousStatus:null},timestamp:Date.now(),sessionId:'debug-session',runId:runId,hypothesisId:'C'})}).catch(()=>{});
+    // #endregion
     if (run?.status === "completed" && runId) {
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/1f557059-57b9-4853-ac44-fdf3eb251610',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'parsing-runs/[runId]/page.tsx:48',message:'Status is completed, loading domains',data:{runId,status:run.status},timestamp:Date.now(),sessionId:'debug-session',runId:runId,hypothesisId:'C'})}).catch(()=>{});
+      // #endregion
       loadDomains()
     }
   }, [run?.status, runId])
+  
+  // CRITICAL FIX: Also reload domains periodically if status is "completed" but domains are empty
+  useEffect(() => {
+    if (!runId || !run) return
+    
+    if (run.status === "completed" && domains.length === 0 && !loadingDomains) {
+      // Если статус "completed", но доменов нет, попробуем загрузить еще раз через 2 секунды
+      const timeout = setTimeout(() => {
+        loadDomains()
+      }, 2000)
+      
+      return () => clearTimeout(timeout)
+    }
+  }, [run?.status, domains.length, loadingDomains, runId])
 
   // Polling для обновления статуса, если парсинг еще выполняется
   useEffect(() => {
@@ -52,7 +75,13 @@ export default function ParsingRunDetailPage() {
 
     // Если статус "running", обновляем каждые 2 секунды
     if (run.status === "running") {
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/1f557059-57b9-4853-ac44-fdf3eb251610',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'parsing-runs/[runId]/page.tsx:71',message:'Polling started for running status',data:{runId,currentStatus:run.status},timestamp:Date.now(),sessionId:'debug-session',runId:runId,hypothesisId:'B'})}).catch(()=>{});
+      // #endregion
       const interval = setInterval(() => {
+        // #region agent log
+        fetch('http://127.0.0.1:7242/ingest/1f557059-57b9-4853-ac44-fdf3eb251610',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'parsing-runs/[runId]/page.tsx:73',message:'Polling interval triggered',data:{runId},timestamp:Date.now(),sessionId:'debug-session',runId:runId,hypothesisId:'B'})}).catch(()=>{});
+        // #endregion
         loadRun()
       }, 2000) // Обновляем каждые 2 секунды
 
@@ -61,9 +90,15 @@ export default function ParsingRunDetailPage() {
   }, [runId, run?.status])
 
           async function loadRun() {
+            // #region agent log
+            fetch('http://127.0.0.1:7242/ingest/1f557059-57b9-4853-ac44-fdf3eb251610',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'parsing-runs/[runId]/page.tsx:80',message:'loadRun called',data:{runId},timestamp:Date.now(),sessionId:'debug-session',runId:runId,hypothesisId:'B'})}).catch(()=>{});
+            // #endregion
             try {
               setLoading(true)
               const data = await apiFetch<ParsingRunDTO>(`/parsing/runs/${runId}`)
+              // #region agent log
+              fetch('http://127.0.0.1:7242/ingest/1f557059-57b9-4853-ac44-fdf3eb251610',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'parsing-runs/[runId]/page.tsx:83',message:'loadRun response received',data:{runId,status:data.status,resultsCount:data.resultsCount,hasRunId:!!data.runId,hasRun_id:!!data.run_id},timestamp:Date.now(),sessionId:'debug-session',runId:runId,hypothesisId:'D'})}).catch(()=>{});
+              // #endregion
               setRun(data)
               setError(null)
             } catch (err) {
@@ -98,16 +133,28 @@ export default function ParsingRunDetailPage() {
           
           async function loadDomains() {
             if (!runId) return
+            // #region agent log
+            fetch('http://127.0.0.1:7242/ingest/1f557059-57b9-4853-ac44-fdf3eb251610',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'parsing-runs/[runId]/page.tsx:116',message:'loadDomains called',data:{runId},timestamp:Date.now(),sessionId:'debug-session',runId:runId,hypothesisId:'C'})}).catch(()=>{});
+            // #endregion
             try {
               setLoadingDomains(true)
+              console.log(`[Parsing Run Detail] Loading domains for runId: ${runId}`)
               const data = await getDomainsQueue({
                 parsingRunId: runId,
                 limit: 1000
               })
+              // #region agent log
+              fetch('http://127.0.0.1:7242/ingest/1f557059-57b9-4853-ac44-fdf3eb251610',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'parsing-runs/[runId]/page.tsx:125',message:'loadDomains response received',data:{runId,entriesCount:data.entries.length,total:data.total,firstEntryParsingRunId:data.entries[0]?.parsingRunId},timestamp:Date.now(),sessionId:'debug-session',runId:runId,hypothesisId:'E'})}).catch(()=>{});
+              // #endregion
+              console.log(`[Parsing Run Detail] Loaded ${data.entries.length} domains, total: ${data.total}`)
               setDomains(data.entries)
+              if (data.entries.length === 0 && data.total > 0) {
+                console.warn(`[Parsing Run Detail] Warning: API returned total=${data.total} but entries.length=0`)
+              }
             } catch (err) {
               console.error("[Parsing Run Detail] Error loading domains:", err)
               // Don't show error toast for domains, just log it
+              setDomains([]) // Clear domains on error
             } finally {
               setLoadingDomains(false)
             }
@@ -259,16 +306,18 @@ export default function ParsingRunDetailPage() {
           ) : null}
           
           {/* Список найденных URL */}
-          {run.status === "completed" && domains.length > 0 && (
+          {run.status === "completed" && (
             <div>
               <label className="text-sm font-medium text-muted-foreground mb-2 block">
-                Найденные URL ({domains.length})
+                Найденные URL {domains.length > 0 ? `(${domains.length})` : ""}
               </label>
-              <div className="max-h-96 overflow-y-auto border rounded-md p-4 space-y-2">
-                {loadingDomains ? (
-                  <p className="text-sm text-muted-foreground">Загрузка...</p>
-                ) : (
-                  domains.map((entry, index) => (
+              {loadingDomains ? (
+                <div className="border rounded-md p-4">
+                  <p className="text-sm text-muted-foreground">Загрузка доменов...</p>
+                </div>
+              ) : domains.length > 0 ? (
+                <div className="max-h-96 overflow-y-auto border rounded-md p-4 space-y-2">
+                  {domains.map((entry, index) => (
                     <div key={entry.domain || index} className="flex items-start gap-2 p-2 hover:bg-muted rounded">
                       <div className="flex-1 min-w-0">
                         <a
@@ -284,16 +333,17 @@ export default function ParsingRunDetailPage() {
                         </p>
                       </div>
                     </div>
-                  ))
-                )}
-              </div>
-            </div>
-          )}
-          
-          {run.status === "completed" && domains.length === 0 && !loadingDomains && (
-            <div>
-              <label className="text-sm font-medium text-muted-foreground">Найденные URL</label>
-              <p className="text-sm text-muted-foreground">URL не найдены</p>
+                  ))}
+                </div>
+              ) : (
+                <div className="border rounded-md p-4">
+                  <p className="text-sm text-muted-foreground">
+                    {run.resultsCount && run.resultsCount > 0 
+                      ? `Ожидается ${run.resultsCount} результатов, но они еще не загружены. Попробуйте обновить страницу.`
+                      : "URL не найдены"}
+                  </p>
+                </div>
+              )}
             </div>
           )}
         </div>

@@ -3,6 +3,7 @@ from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import text
 
 from app.adapters.db.session import get_db
 from app.transport.schemas.parsing import (
@@ -73,18 +74,16 @@ async def list_parsing_runs_endpoint(
                     except (json.JSONDecodeError, KeyError, IndexError):
                         pass
             
-            # Get results_count from run or calculate from domains_queue
-            results_count = run.results_count
-            if results_count is None:
-                # Calculate from domains_queue
-                from app.adapters.db.repositories import DomainQueueRepository
-                domain_queue_repo = DomainQueueRepository(db)
-                _, count = await domain_queue_repo.list(
-                    limit=1,
-                    offset=0,
-                    parsing_run_id=run.run_id
-                )
-                results_count = count if count > 0 else None
+            # CRITICAL FIX: Always calculate results_count from domains_queue
+            # This completely avoids AttributeError by never accessing the model attribute
+            from app.adapters.db.repositories import DomainQueueRepository
+            domain_queue_repo = DomainQueueRepository(db)
+            _, count = await domain_queue_repo.list(
+                limit=1,
+                offset=0,
+                parsing_run_id=run.run_id
+            )
+            results_count = count if count > 0 else None
             
             # Create DTO with extracted keyword
             run_dict = {
@@ -123,16 +122,44 @@ async def get_parsing_run_endpoint(
     import logging
     logger = logging.getLogger(__name__)
     
-    run = await get_parsing_run.execute(db=db, run_id=run_id)
+    # #region agent log
+    import json
+    from datetime import datetime
+    with open('d:\\tryagain\\.cursor\\debug.log', 'a', encoding='utf-8') as f:
+        f.write(json.dumps({"location":"parsing_runs.py:127","message":"get_parsing_run_endpoint called","data":{"run_id":run_id},"timestamp":int(datetime.utcnow().timestamp()*1000),"sessionId":"debug-session","runId":run_id,"hypothesisId":"D"})+'\n')
+    # #endregion
+    # CRITICAL FIX: Wrap get_parsing_run in try-except to catch AttributeError
+    # SQLAlchemy might try to load results_count even if we don't access it
+    try:
+        run = await get_parsing_run.execute(db=db, run_id=run_id)
+        # #region agent log
+        run_status = getattr(run, 'status', None) if run else None
+        with open('d:\\tryagain\\.cursor\\debug.log', 'a', encoding='utf-8') as f:
+            f.write(json.dumps({"location":"parsing_runs.py:128","message":"get_parsing_run.execute returned","data":{"run_id":run_id,"status":run_status,"has_run":run is not None},"timestamp":int(datetime.utcnow().timestamp()*1000),"sessionId":"debug-session","runId":run_id,"hypothesisId":"D"})+'\n')
+        # #endregion
+    except AttributeError as e:
+        if "results_count" in str(e):
+            # SQLAlchemy tried to load results_count but model doesn't have it
+            # Return error with instructions
+            logger.error(f"AttributeError loading parsing run {run_id}: {e}")
+            raise HTTPException(
+                status_code=500, 
+                detail="Model version mismatch. Please restart Backend to load updated model."
+            )
+        else:
+            raise
+    
     if not run:
         raise HTTPException(status_code=404, detail="Parsing run not found")
     
     try:
         # Extract keyword from request.title or raw_keys_json
+        # Wrap in try-except to catch any AttributeError from accessing run attributes
         keyword = "Unknown"
-        if run.request:
-            if run.request.title:
-                keyword = run.request.title
+        try:
+            if run.request:
+                if run.request.title:
+                    keyword = run.request.title
             elif run.request.raw_keys_json:
                 try:
                     keys_data = json.loads(run.request.raw_keys_json)
@@ -144,70 +171,50 @@ async def get_parsing_run_endpoint(
                             keyword = keys[0] if isinstance(keys[0], str) else str(keys[0])
                 except (json.JSONDecodeError, KeyError, IndexError):
                     pass
+        except (AttributeError, KeyError) as e:
+            # If accessing run.request or other attributes fails, just use default
+            logger.warning(f"Error accessing run attributes: {e}")
+            keyword = "Unknown"
         
-        # Get results_count from run or calculate from domains_queue
-        results_count = run.results_count
-        if results_count is None:
-            # Calculate from domains_queue
-            from app.adapters.db.repositories import DomainQueueRepository
-            domain_queue_repo = DomainQueueRepository(db)
-            _, count = await domain_queue_repo.list(
-                limit=1,
-                offset=0,
-                parsing_run_id=run_id
-            )
-            results_count = count if count > 0 else None
+        # CRITICAL FIX: Always calculate results_count from domains_queue
+        # This completely avoids AttributeError by never accessing the model attribute
+        from app.adapters.db.repositories import DomainQueueRepository
+        domain_queue_repo = DomainQueueRepository(db)
+        _, count = await domain_queue_repo.list(
+            limit=1,
+            offset=0,
+            parsing_run_id=run_id
+        )
+        results_count = count if count > 0 else None
+        # #region agent log
+        with open('d:\\tryagain\\.cursor\\debug.log', 'a', encoding='utf-8') as f:
+            f.write(json.dumps({"location":"parsing_runs.py:176","message":"results_count calculated","data":{"run_id":run_id,"count":count,"results_count":results_count},"timestamp":int(datetime.utcnow().timestamp()*1000),"sessionId":"debug-session","runId":run_id,"hypothesisId":"F"})+'\n')
+        # #endregion
         
         # Create DTO with extracted keyword
+        # Use getattr for all attributes to avoid AttributeError
+        started_at = getattr(run, 'started_at', None)
+        finished_at = getattr(run, 'finished_at', None)
+        created_at = getattr(run, 'created_at', None)
+        
         run_dict = {
-            "runId": run.run_id,
+            "runId": getattr(run, 'run_id', None),
             "keyword": keyword,
-            "status": run.status,
-            "startedAt": run.started_at.isoformat() if run.started_at else None,
-            "finishedAt": run.finished_at.isoformat() if run.finished_at else None,
-            "error": run.error_message,
+            "status": getattr(run, 'status', None),
+            "startedAt": started_at.isoformat() if started_at else None,
+            "finishedAt": finished_at.isoformat() if finished_at else None,
+            "error": getattr(run, 'error_message', None),
             "resultsCount": results_count,
-            "createdAt": run.created_at.isoformat() if run.created_at else None,
+            "createdAt": created_at.isoformat() if created_at else None,
         }
+        # #region agent log
+        with open('d:\\tryagain\\.cursor\\debug.log', 'a', encoding='utf-8') as f:
+            f.write(json.dumps({"location":"parsing_runs.py:193","message":"Returning run_dict","data":{"run_id":run_id,"status":run_dict["status"],"resultsCount":run_dict["resultsCount"]},"timestamp":int(datetime.utcnow().timestamp()*1000),"sessionId":"debug-session","runId":run_id,"hypothesisId":"D"})+'\n')
+        # #endregion
         return ParsingRunDTO.model_validate(run_dict)
     except Exception as e:
         logger.error(f"Error converting parsing run {run_id}: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Error processing parsing run: {str(e)}")
-
-
-@router.delete("/runs/{run_id}", status_code=204)
-async def delete_parsing_run_endpoint(
-    run_id: str,
-    db: AsyncSession = Depends(get_db)
-):
-    """Delete parsing run by ID."""
-    import logging
-    logger = logging.getLogger(__name__)
-    
-    logger.info(f"Deleting parsing run: {run_id}")
-    
-    success = await delete_parsing_run.execute(db=db, run_id=run_id)
-    if not success:
-        logger.warning(f"Parsing run not found: {run_id}")
-        raise HTTPException(status_code=404, detail="Parsing run not found")
-    
-    try:
-        # Log to audit_log
-        from app.adapters.audit import log_audit
-        await log_audit(
-            db=db,
-            table_name="parsing_runs",
-            operation="DELETE",
-            record_id=run_id,
-            changed_by="system"
-        )
-        
-        await db.commit()
-        logger.info(f"Successfully deleted parsing run: {run_id}")
-    except Exception as e:
-        logger.error(f"Error deleting parsing run {run_id}: {e}", exc_info=True)
-        await db.rollback()
-        raise HTTPException(status_code=500, detail=f"Error deleting parsing run: {str(e)}")
 
 
 @router.delete("/runs/bulk")
@@ -218,6 +225,7 @@ async def bulk_delete_parsing_runs_endpoint(
     """Bulk delete parsing runs."""
     import logging
     import json
+    from app.adapters.db.session import AsyncSessionLocal
     
     logger = logging.getLogger(__name__)
     
@@ -241,46 +249,177 @@ async def bulk_delete_parsing_runs_endpoint(
     deleted_count = 0
     errors = []
     
+    # CRITICAL: Use separate session for each delete to avoid transaction conflicts
+    # This ensures each delete is completely independent
     for run_id in run_ids:
+        # Create a new session for this delete
+        async with AsyncSessionLocal() as delete_session:
+            try:
+                # Use direct SQL DELETE in separate session
+                # Check if run exists first
+                check_result = await delete_session.execute(
+                    text("SELECT COUNT(*) FROM parsing_runs WHERE run_id = :run_id"),
+                    {"run_id": run_id}
+                )
+                count_before = check_result.scalar()
+                
+                if count_before == 0:
+                    errors.append(f"Run {run_id} not found")
+                    continue
+                
+                # Delete the run
+                delete_result = await delete_session.execute(
+                    text("DELETE FROM parsing_runs WHERE run_id = :run_id"),
+                    {"run_id": run_id}
+                )
+                
+                if delete_result.rowcount > 0:
+                    deleted_count += 1
+                    
+                    # Commit this delete FIRST, before audit log
+                    # This ensures the delete is committed even if audit log fails
+                    await delete_session.flush()
+                    await delete_session.commit()
+                    logger.info(f"Committed deletion of run {run_id} (rowcount: {delete_result.rowcount})")
+                    
+                    # Log to audit_log AFTER commit (in a separate transaction)
+                    # This way audit log errors won't affect the delete
+                    try:
+                        from app.adapters.audit import log_audit
+                        async with AsyncSessionLocal() as audit_session:
+                            await log_audit(
+                                db=audit_session,
+                                table_name="parsing_runs",
+                                operation="DELETE",
+                                record_id=run_id,
+                                changed_by="system"
+                            )
+                            await audit_session.commit()
+                    except Exception as audit_err:
+                        logger.warning(f"Error logging audit for run {run_id}: {audit_err}")
+                        # Don't fail the delete if audit logging fails
+                    
+                    # CRITICAL: Close the session to ensure commit is finalized
+                    await delete_session.close()
+                    
+                    # Verify deletion using a NEW session to ensure we read from DB, not cache
+                    async with AsyncSessionLocal() as verify_session:
+                        verify_result = await verify_session.execute(
+                            text("SELECT COUNT(*) FROM parsing_runs WHERE run_id = :run_id"),
+                            {"run_id": run_id}
+                        )
+                        count_after = verify_result.scalar()
+                        if count_after > 0:
+                            logger.error(f"CRITICAL: Run {run_id} still exists after commit! Attempting direct delete again...")
+                            # Try direct delete one more time in new session
+                            direct_delete = await verify_session.execute(
+                                text("DELETE FROM parsing_runs WHERE run_id = :run_id"),
+                                {"run_id": run_id}
+                            )
+                            await verify_session.flush()
+                            await verify_session.commit()
+                            logger.info(f"Second delete attempt for {run_id} - rowcount: {direct_delete.rowcount}")
+                        else:
+                            logger.info(f"Verified: Run {run_id} deleted successfully")
+                else:
+                    errors.append(f"Run {run_id} not deleted (rowcount: 0)")
+            except Exception as e:
+                logger.error(f"Error deleting parsing run {run_id}: {e}", exc_info=True)
+                errors.append(f"Error deleting {run_id}: {str(e)}")
+                try:
+                    await delete_session.rollback()
+                except:
+                    pass
+    
+    logger.info(f"Successfully deleted {deleted_count} parsing runs")
+    
+    # Return response
+    if errors:
+        return JSONResponse(
+            status_code=207,
+            content={
+                "deleted": deleted_count,
+                "errors": errors,
+                "total": len(run_ids)
+            }
+        )
+    return JSONResponse(
+        status_code=200,
+        content={
+            "deleted": deleted_count,
+            "total": len(run_ids)
+        }
+    )
+
+
+@router.delete("/runs/{run_id}", status_code=204)
+async def delete_parsing_run_endpoint(
+    run_id: str,
+    db: AsyncSession = Depends(get_db)
+):
+    """Delete parsing run by ID."""
+    import logging
+    logger = logging.getLogger(__name__)
+    
+    logger.info(f"Deleting parsing run: {run_id}")
+    
+    try:
+        logger.info(f"Calling delete_parsing_run.execute for {run_id}")
+        success = await delete_parsing_run.execute(db=db, run_id=run_id)
+        logger.info(f"delete_parsing_run.execute returned: {success}")
+        if not success:
+            logger.warning(f"Parsing run not found: {run_id}")
+            raise HTTPException(status_code=404, detail="Parsing run not found")
+        
+        # CRITICAL: Commit the transaction FIRST, before audit log
+        # This ensures the delete is committed even if audit log fails
+        logger.info(f"Committing transaction for run {run_id}...")
+        await db.flush()
+        await db.commit()
+        logger.info(f"Transaction committed for run {run_id}")
+        
+        # Log to audit_log AFTER commit (in a separate transaction)
+        # This way audit log errors won't affect the delete
         try:
-            success = await delete_parsing_run.execute(db=db, run_id=run_id)
-            if success:
-                deleted_count += 1
-                # Log to audit_log
-                from app.adapters.audit import log_audit
+            from app.adapters.audit import log_audit
+            from app.adapters.db.session import AsyncSessionLocal
+            async with AsyncSessionLocal() as audit_session:
                 await log_audit(
-                    db=db,
+                    db=audit_session,
                     table_name="parsing_runs",
                     operation="DELETE",
                     record_id=run_id,
                     changed_by="system"
                 )
-            else:
-                errors.append(f"Run {run_id} not found")
-        except Exception as e:
-            logger.error(f"Error deleting parsing run {run_id}: {e}", exc_info=True)
-            errors.append(f"Error deleting {run_id}: {str(e)}")
-    
-    try:
-        await db.commit()
-        logger.info(f"Successfully deleted {deleted_count} parsing runs")
-        if errors:
-            return JSONResponse(
-                status_code=207,
-                content={
-                    "deleted": deleted_count,
-                    "errors": errors,
-                    "total": len(run_ids)
-                }
+                await audit_session.commit()
+        except Exception as audit_err:
+            logger.warning(f"Error logging audit for run {run_id}: {audit_err}")
+            # Don't fail the delete if audit logging fails
+        
+        # CRITICAL: Verify deletion using a NEW session to ensure we read from DB, not cache
+        # This ensures we're reading from the database, not from session cache
+        from app.adapters.db.session import AsyncSessionLocal
+        async with AsyncSessionLocal() as verify_session:
+            verify_result = await verify_session.execute(
+                text("SELECT COUNT(*) FROM parsing_runs WHERE run_id = :run_id"),
+                {"run_id": run_id}
             )
-        return JSONResponse(
-            status_code=200,
-            content={
-                "deleted": deleted_count,
-                "total": len(run_ids)
-            }
-        )
+            count_after_commit = verify_result.scalar()
+            logger.info(f"Verification after commit - runs with run_id {run_id}: {count_after_commit}")
+            
+            if count_after_commit > 0:
+                logger.error(f"CRITICAL: Run {run_id} still exists after commit! Attempting direct delete again...")
+                # Try to delete again directly in new session
+                direct_delete = await verify_session.execute(
+                    text("DELETE FROM parsing_runs WHERE run_id = :run_id"),
+                    {"run_id": run_id}
+                )
+                await verify_session.flush()
+                await verify_session.commit()
+                logger.info(f"Second delete attempt for {run_id} - rowcount: {direct_delete.rowcount}")
+            else:
+                logger.info(f"SUCCESS: Run {run_id} was successfully deleted!")
     except Exception as e:
-        logger.error(f"Error committing bulk delete: {e}", exc_info=True)
+        logger.error(f"Error deleting parsing run {run_id}: {e}", exc_info=True)
         await db.rollback()
-        raise HTTPException(status_code=500, detail=f"Error bulk deleting parsing runs: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error deleting parsing run: {str(e)}")

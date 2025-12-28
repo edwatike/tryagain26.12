@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { apiFetch, APIError } from "@/lib/api"
 import { ParsingRunDTO } from "@/lib/types"
@@ -32,6 +32,7 @@ import {
 export default function ParsingRunsPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const isDeletingRef = useRef(false)
   
   const [runs, setRuns] = useState<ParsingRunDTO[]>([])
   const [loading, setLoading] = useState(true)
@@ -39,6 +40,12 @@ export default function ParsingRunsPage() {
   const [total, setTotal] = useState(0)
   const [limit, setLimit] = useState(100)
   const [offset, setOffset] = useState(0)
+  const [refreshKey, setRefreshKey] = useState(0)
+  
+  // Отслеживание изменений runs для диагностики
+  useEffect(() => {
+    console.log(`[useEffect] runs changed - length: ${runs.length}, total: ${total}, refreshKey: ${refreshKey}`)
+  }, [runs, total, refreshKey])
   
   // Фильтры и поиск
   const [statusFilter, setStatusFilter] = useState<string>("all")
@@ -52,6 +59,11 @@ export default function ParsingRunsPage() {
   const [deleteRunId, setDeleteRunId] = useState<string | null>(null)
 
   useEffect(() => {
+    // Не загружаем данные, если идет процесс удаления
+    if (isDeletingRef.current) {
+      return
+    }
+    
     const page = parseInt(searchParams.get("page") || "1", 10)
     const status = searchParams.get("status") || "all"
     const keyword = searchParams.get("keyword") || ""
@@ -65,6 +77,7 @@ export default function ParsingRunsPage() {
     setOffset((page - 1) * limit)
     
     loadRuns(page, status, keyword, sort, order)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams])
 
   async function loadRuns(
@@ -73,7 +86,7 @@ export default function ParsingRunsPage() {
     keyword: string = keywordSearch,
     sort: string = sortBy,
     order: "asc" | "desc" = sortOrder
-  ) {
+  ): Promise<void> {
     try {
       setLoading(true)
       const offset = (page - 1) * limit
@@ -93,15 +106,39 @@ export default function ParsingRunsPage() {
         params.append("order", order)
       }
       
+      // Добавляем уникальный параметр для предотвращения кэширования
+      params.append("_t", Date.now().toString())
+      
       const data = await apiFetch<{ runs: ParsingRunDTO[]; total: number; limit: number; offset: number }>(
         `/parsing/runs?${params.toString()}`
       )
       
+      console.log(`[loadRuns] API response - runs: ${data.runs?.length || 0}, total: ${data.total}`)
+      
       const validRuns = (data.runs || []).filter((run) => run && (run.runId || run.run_id))
       
-      setRuns(validRuns)
+      // Создаем новый массив для гарантированного обновления React
+      const newRuns = [...validRuns]
+      
+      // Логирование перед обновлением состояния
+      console.log(`[loadRuns] New data - runs.length: ${newRuns.length}, total: ${data.total}`)
+      console.log(`[loadRuns] First 5 run IDs:`, newRuns.slice(0, 5).map(r => r.runId || r.run_id))
+      
+      // Принудительно обновляем состояние с новыми данными
+      // Используем прямую установку, а не функциональное обновление, чтобы гарантировать обновление
+      console.log(`[loadRuns] Updating state - runs: ${newRuns.length}, total: ${data.total}`)
+      setRuns(newRuns)
       setTotal(data.total)
       setError(null)
+      
+      // Принудительно обновляем ключ для перерисовки компонента
+      setRefreshKey(prev => {
+        const newKey = prev + 1
+        console.log(`[loadRuns] Refresh key updated: ${prev} -> ${newKey}`)
+        return newKey
+      })
+      
+      console.log(`[loadRuns] State update scheduled - runs.length: ${newRuns.length}, total: ${data.total}`)
     } catch (err) {
       console.error("Error loading parsing runs:", err)
       if (err instanceof APIError) {
@@ -119,36 +156,104 @@ export default function ParsingRunsPage() {
   }
 
   async function handleDelete(runId: string) {
+    console.log(`[handleDelete] Called with runId: ${runId}`)
+    
     const originalRuns = [...runs]
     const runToDelete = runs.find(r => (r.runId || r.run_id) === runId)
     
-    // Оптимистичное обновление
-    setRuns(runs.filter(r => (r.runId || r.run_id) !== runId))
-    setTotal(total - 1)
+    console.log(`[handleDelete] Run to delete:`, runToDelete)
+    
+    // Закрываем диалог
     setDeleteDialogOpen(false)
     setDeleteRunId(null)
+    
+    // Устанавливаем флаг удаления
+    isDeletingRef.current = true
+    
+    // Показываем индикатор загрузки
+    setLoading(true)
 
     try {
-      await apiFetch(`/parsing/runs/${runId}`, {
-        method: "DELETE",
-      })
+      console.log(`[handleDelete] Sending DELETE request to /parsing/runs/${runId}`)
+      try {
+        const deleteResult = await apiFetch(`/parsing/runs/${runId}`, {
+          method: "DELETE",
+        })
+        console.log(`[handleDelete] Delete result:`, deleteResult)
+        console.log(`[handleDelete] Delete successful!`)
+      } catch (deleteError) {
+        console.error(`[handleDelete] Delete error:`, deleteError)
+        throw deleteError
+      }
+      
+      // Получаем актуальные параметры из URL для перезагрузки
+      let page = parseInt(searchParams.get("page") || "1", 10)
+      const status = searchParams.get("status") || "all"
+      const keyword = searchParams.get("keyword") || ""
+      const sort = searchParams.get("sort") || "created_at"
+      const order = (searchParams.get("order") || "desc") as "asc" | "desc"
+      
+      // Небольшая задержка, чтобы дать серверу время на удаление
+      await new Promise(resolve => setTimeout(resolve, 500))
+      
+      // Если текущая страница стала пустой, переходим на предыдущую
+      const currentTotal = total - 1
+      const maxPage = Math.ceil(currentTotal / limit)
+      if (page > maxPage && maxPage > 0) {
+        page = maxPage
+        const params = new URLSearchParams(searchParams.toString())
+        params.set("page", page.toString())
+        router.push(`/parsing-runs?${params.toString()}`)
+        // router.push вызовет useEffect, который загрузит данные
+      } else {
+        // Принудительно перезагружаем данные
+        // Сбрасываем флаг перед загрузкой
+        isDeletingRef.current = false
+        
+        console.log(`[handleDelete] Reloading data after delete... (page: ${page})`)
+        
+        // Обновляем Next.js кэш
+        router.refresh()
+        
+        // Загружаем данные несколько раз для гарантии обновления
+        await new Promise(resolve => setTimeout(resolve, 500))
+        console.log(`[handleDelete] First reload...`)
+        await loadRuns(page, status, keyword, sort, order)
+        
+        // Дополнительная загрузка для гарантии
+        await new Promise(resolve => setTimeout(resolve, 500))
+        console.log(`[handleDelete] Second reload...`)
+        await loadRuns(page, status, keyword, sort, order)
+        
+        // Финальная загрузка для гарантии
+        await new Promise(resolve => setTimeout(resolve, 500))
+        console.log(`[handleDelete] Third reload...`)
+        await loadRuns(page, status, keyword, sort, order)
+        
+        console.log(`[handleDelete] After reloads - runs.length: ${runs.length}, total: ${total}`)
+      }
+      
       toast.success(`Запуск парсинга "${runToDelete?.keyword || runId}" успешно удален`)
-      // Перезагружаем список для синхронизации
-      await loadRuns()
     } catch (err) {
       // Откат при ошибке
       setRuns(originalRuns)
       setTotal(total)
+      setLoading(false)
       console.error("Error deleting parsing run:", err)
       if (err instanceof APIError) {
         toast.error(`Ошибка удаления: ${err.message}`)
       } else {
         toast.error("Ошибка удаления запуска парсинга")
       }
+    } finally {
+      // Снимаем флаг удаления
+      isDeletingRef.current = false
     }
   }
 
   async function handleBulkDelete() {
+    console.log(`[handleBulkDelete] Called with ${selectedRuns.size} selected runs`)
+    
     if (selectedRuns.size === 0) {
       toast.warning("Выберите записи для удаления")
       return
@@ -158,29 +263,91 @@ export default function ParsingRunsPage() {
     const runIds = Array.from(selectedRuns)
     const selectedCount = selectedRuns.size
     
-    // Оптимистичное обновление
-    setRuns(runs.filter(r => {
-      const id = r.runId || r.run_id
-      return !id || !selectedRuns.has(id)
-    }))
-    setTotal(total - selectedCount)
+    console.log(`[handleBulkDelete] Deleting ${selectedCount} runs:`, runIds.slice(0, 5), '...')
+    console.log(`[handleBulkDelete] Current total: ${total}, runs count: ${runs.length}`)
+    
+    // Закрываем диалог и очищаем выбор
     setSelectedRuns(new Set())
     setDeleteDialogOpen(false)
+    
+    // Устанавливаем флаг удаления
+    isDeletingRef.current = true
+    
+    // Показываем индикатор загрузки
+    setLoading(true)
 
     try {
+      console.log(`[handleBulkDelete] Sending DELETE request to /parsing/runs/bulk`)
+      
       // Используем bulk endpoint
-      await apiFetch(`/parsing/runs/bulk`, {
+      const deleteResponse = await apiFetch<{ deleted: number; total: number; errors?: string[] }>(`/parsing/runs/bulk`, {
         method: "DELETE",
         body: JSON.stringify(runIds),
       })
+      
+      console.log(`[handleBulkDelete] Delete response:`, deleteResponse)
+      console.log(`[handleBulkDelete] Deleted: ${deleteResponse.deleted}, Errors: ${deleteResponse.errors?.length || 0}`)
+      
+      // Получаем актуальные параметры из URL для перезагрузки
+      let page = parseInt(searchParams.get("page") || "1", 10)
+      const status = searchParams.get("status") || "all"
+      const keyword = searchParams.get("keyword") || ""
+      const sort = searchParams.get("sort") || "created_at"
+      const order = (searchParams.get("order") || "desc") as "asc" | "desc"
+      
+      // Небольшая задержка, чтобы дать серверу время на удаление
+      await new Promise(resolve => setTimeout(resolve, 800))
+      
+      // Если текущая страница стала пустой, переходим на предыдущую
+      const currentTotal = total - selectedCount
+      const maxPage = Math.ceil(currentTotal / limit)
+      if (page > maxPage && maxPage > 0) {
+        page = maxPage
+        const params = new URLSearchParams(searchParams.toString())
+        params.set("page", page.toString())
+        router.push(`/parsing-runs?${params.toString()}`)
+        // router.push вызовет useEffect, который загрузит данные
+      } else {
+        // Принудительно перезагружаем данные
+        // Сбрасываем флаг перед загрузкой
+        isDeletingRef.current = false
+        
+        // Обновляем Next.js кэш
+        router.refresh()
+        
+        // Загружаем данные несколько раз для гарантии обновления
+        console.log(`[handleBulkDelete] Reloading data after delete...`)
+        await loadRuns(page, status, keyword, sort, order)
+        
+        // Дополнительная загрузка для гарантии
+        await new Promise(resolve => setTimeout(resolve, 500))
+        console.log(`[handleBulkDelete] Second reload...`)
+        await loadRuns(page, status, keyword, sort, order)
+        
+        // Финальная загрузка для гарантии
+        await new Promise(resolve => setTimeout(resolve, 500))
+        console.log(`[handleBulkDelete] Third reload...`)
+        const finalData = await loadRuns(page, status, keyword, sort, order)
+        
+        // Если после всех попыток данные не обновились, принудительно перезагружаем страницу
+        await new Promise(resolve => setTimeout(resolve, 500))
+        if (typeof window !== 'undefined') {
+          console.log(`[handleBulkDelete] Force reloading page...`)
+          window.location.reload()
+        }
+      }
+      
       toast.success(`Успешно удалено ${selectedCount} запусков парсинга`)
-      await loadRuns()
     } catch (err) {
       // Откат при ошибке
       setRuns(originalRuns)
       setTotal(total)
+      setLoading(false)
       console.error("Error bulk deleting parsing runs:", err)
       toast.error("Ошибка массового удаления")
+    } finally {
+      // Снимаем флаг удаления
+      isDeletingRef.current = false
     }
   }
 
@@ -329,7 +496,16 @@ export default function ParsingRunsPage() {
           />
           <Select value={statusFilter} onValueChange={(value) => {
             setStatusFilter(value)
-            setTimeout(handleFilterChange, 0)
+            // Обновляем URL сразу с новым значением
+            const params = new URLSearchParams()
+            params.set("page", "1")
+            if (value !== "all") params.set("status", value)
+            if (keywordSearch) params.set("keyword", keywordSearch)
+            if (sortBy) {
+              params.set("sort", sortBy)
+              params.set("order", sortOrder)
+            }
+            router.push(`/parsing-runs?${params.toString()}`)
           }}>
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Статус" />
@@ -398,7 +574,7 @@ export default function ParsingRunsPage() {
                 </TableCell>
               </TableRow>
             ) : (
-              runs.map((run) => {
+              runs.map((run, index) => {
                 const runId = run.runId || run.run_id
                 if (!runId) {
                   return null
@@ -406,7 +582,7 @@ export default function ParsingRunsPage() {
                 const isSelected = selectedRuns.has(runId)
                 
                 return (
-                  <TableRow key={runId} className={isSelected ? "bg-muted" : ""}>
+                  <TableRow key={`${runId}-${refreshKey}`} className={isSelected ? "bg-muted" : ""}>
                     <TableCell>
                       <input
                         type="checkbox"
