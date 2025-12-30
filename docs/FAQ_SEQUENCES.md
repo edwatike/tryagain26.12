@@ -219,3 +219,9 @@ pytest backend/tests/test_migrations.py -v
 
 См. `backend/migrations/004_fix_domains_queue_primary_key.sql` - пример правильной миграции с переименованием таблицы и последовательности.
 
+
+
+
+
+
+

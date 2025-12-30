@@ -1,6 +1,6 @@
 """Pydantic schemas for parsing."""
 from datetime import datetime
-from typing import Optional, List
+from typing import Optional, List, Dict, Any
 from pydantic import BaseModel, ConfigDict, Field
 
 from app.transport.schemas.common import BaseDTO
@@ -45,6 +45,9 @@ class ParsingRunDTO(BaseDTO):
     error: Optional[str] = Field(None, alias="error_message")
     resultsCount: Optional[int] = None  # Not in DB, can be calculated from parsing_hits
     createdAt: str = Field(alias="created_at")
+    depth: Optional[int] = None  # Depth of parsing (number of pages)
+    source: Optional[str] = Field(None, description="Source for parsing: 'google', 'yandex', or 'both'")
+    processLog: Optional[Dict[str, Any]] = Field(None, alias="process_log", description="Detailed parsing process information")
     
     model_config = ConfigDict(
         from_attributes=True,

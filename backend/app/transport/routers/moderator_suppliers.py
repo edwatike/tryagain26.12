@@ -181,6 +181,14 @@ async def list_suppliers(
             'created_at': s.created_at,
             'updated_at': s.updated_at,
         }
+        # Decompress checko_data if it's compressed bytes
+        from app.utils.checko_compression import decompress_checko_data_to_string
+        if supplier_dict.get("checko_data") and isinstance(supplier_dict["checko_data"], bytes):
+            try:
+                supplier_dict["checko_data"] = decompress_checko_data_to_string(supplier_dict["checko_data"])
+            except ValueError:
+                supplier_dict["checko_data"] = None
+        
         supplier_dtos.append(ModeratorSupplierDTO.model_validate(supplier_dict, from_attributes=False))
     
     return ModeratorSuppliersListResponseDTO(
@@ -201,7 +209,17 @@ async def get_supplier(
     if not supplier:
         raise HTTPException(status_code=404, detail="Supplier not found")
     
-    return ModeratorSupplierDTO.model_validate(supplier)
+    # Decompress checko_data if it's compressed bytes
+    from app.utils.checko_compression import decompress_checko_data_to_string
+    if supplier.checko_data and isinstance(supplier.checko_data, bytes):
+        try:
+            supplier.checko_data = decompress_checko_data_to_string(supplier.checko_data)
+        except ValueError as e:
+            logger.warning(f"Failed to decompress checko_data for supplier {supplier_id}: {e}")
+            supplier.checko_data = None
+    
+    # Use from_attributes=True to properly read from SQLAlchemy model
+    return ModeratorSupplierDTO.model_validate(supplier, from_attributes=True)
 
 
 @router.post("/suppliers", response_model=ModeratorSupplierDTO, status_code=201)
@@ -210,13 +228,127 @@ async def create_supplier(
     db: AsyncSession = Depends(get_db)
 ):
     """Create a new supplier."""
+    import logging
+    logger = logging.getLogger(__name__)
+    
+    # DEBUG: Log raw request object
+    print(f"\n=== CREATE SUPPLIER: RAW REQUEST ===")
+    print(f"Request type: {type(request)}")
+    print(f"Request fields: {list(request.model_fields.keys())}")
+    print(f"registrationDate attribute: {getattr(request, 'registrationDate', 'NOT FOUND')}")
+    print(f"legalAddress attribute: {getattr(request, 'legalAddress', 'NOT FOUND')}")
+    print(f"financeYear attribute: {getattr(request, 'financeYear', 'NOT FOUND')}")
+    print(f"legalCasesCount attribute: {getattr(request, 'legalCasesCount', 'NOT FOUND')}")
+    print(f"checkoData attribute length: {len(getattr(request, 'checkoData', '')) if getattr(request, 'checkoData', None) else 0}")
+    
+    # Convert camelCase to snake_case for database fields
+    # Include None values to allow SQLAlchemy to set them as NULL
+    # Use exclude_unset=False to include all fields, even if not explicitly set
+    supplier_data = request.model_dump(exclude_unset=False, exclude_none=False)
+    logger.info(f"create_supplier: received {len(supplier_data)} fields: {list(supplier_data.keys())}")
+    
+    # Log key fields - use print for immediate visibility
+    print(f"\n=== CREATE SUPPLIER: AFTER model_dump ===")
+    print(f"Fields received: {list(supplier_data.keys())}")
+    for key in ["registrationDate", "legalAddress", "financeYear", "legalCasesCount", "checkoData"]:
+        if key in supplier_data:
+            value = supplier_data[key]
+            if isinstance(value, str) and len(value) > 50:
+                print(f"  {key}: [string, length={len(value)}]")
+                logger.info(f"  {key}: [string, length={len(value)}]")
+            else:
+                print(f"  {key}: {type(value).__name__} = {repr(value)}")
+                logger.info(f"  {key}: {type(value).__name__} = {repr(value)}")
+        else:
+            print(f"  {key}: MISSING!")
+            logger.warning(f"  {key}: MISSING from supplier_data!")
+    
+    snake_case_data = {}
+    field_mapping = {
+        "companyStatus": "company_status",
+        "registrationDate": "registration_date",
+        "legalAddress": "legal_address",
+        "authorizedCapital": "authorized_capital",
+        "financeYear": "finance_year",
+        "legalCasesCount": "legal_cases_count",
+        "legalCasesSum": "legal_cases_sum",
+        "legalCasesAsPlaintiff": "legal_cases_as_plaintiff",
+        "legalCasesAsDefendant": "legal_cases_as_defendant",
+        "checkoData": "checko_data",
+    }
+    
+    # Explicitly include all fields, even if they are None or empty strings
+    for key, value in supplier_data.items():
+        db_key = field_mapping.get(key, key)
+        # Preserve None, empty strings, and 0 as valid values
+        snake_case_data[db_key] = value
+        if key in ["registrationDate", "legalAddress", "financeYear", "legalCasesCount", "checkoData"]:
+            logger.debug(f"Mapped {key} -> {db_key}: {type(value).__name__}")
+    
+    logger.info(f"create_supplier: mapped to {len(snake_case_data)} fields: {list(snake_case_data.keys())}")
+    
+    # Log key mapped fields - use print for immediate visibility
+    print(f"\n=== MAPPED FIELDS ===")
+    for key in ["registration_date", "legal_address", "finance_year", "legal_cases_count", "checko_data"]:
+        if key in snake_case_data:
+            value = snake_case_data[key]
+            if isinstance(value, str) and len(value) > 50:
+                print(f"  {key}: [string, length={len(value)}]")
+                logger.info(f"  {key}: [string, length={len(value)}]")
+            else:
+                print(f"  {key}: {type(value).__name__} = {repr(value)}")
+                logger.info(f"  {key}: {type(value).__name__} = {repr(value)}")
+        else:
+            print(f"  {key}: MISSING!")
+            logger.warning(f"  {key}: MISSING from snake_case_data!")
+    
+    # CRITICAL: Check if data is actually present before calling usecase
+    if not snake_case_data.get("registration_date") and not snake_case_data.get("legal_address"):
+        print("WARNING: Key fields are missing from snake_case_data!")
+        logger.error("Key fields (registration_date, legal_address) are missing from snake_case_data!")
+        logger.error(f"snake_case_data keys: {list(snake_case_data.keys())}")
+        logger.error(f"snake_case_data values: {snake_case_data}")
+    
     supplier = await create_moderator_supplier.execute(
         db=db,
-        supplier_data=request.model_dump()
+        supplier_data=snake_case_data
     )
     await db.commit()
     
-    return ModeratorSupplierDTO.model_validate(supplier)
+    # CRITICAL FIX: Reload supplier from DB to ensure we have all data
+    # Refresh doesn't always work correctly, so we reload the object
+    from app.adapters.db.repositories import ModeratorSupplierRepository
+    repo = ModeratorSupplierRepository(db)
+    supplier = await repo.get_by_id(supplier.id)
+    
+    # Log what was actually saved
+    print(f"\n=== AFTER RELOAD FROM DB ===")
+    print(f"  registration_date: {supplier.registration_date} (type: {type(supplier.registration_date)})")
+    print(f"  legal_address: {supplier.legal_address}")
+    print(f"  finance_year: {supplier.finance_year}")
+    print(f"  legal_cases_count: {supplier.legal_cases_count}")
+    print(f"  checko_data length: {len(supplier.checko_data) if supplier.checko_data else 0}")
+    logger.info("=== After reload from DB ===")
+    logger.info(f"  registration_date: {supplier.registration_date}")
+    logger.info(f"  legal_address: {supplier.legal_address[:50] if supplier.legal_address else None}")
+    logger.info(f"  finance_year: {supplier.finance_year}")
+    logger.info(f"  legal_cases_count: {supplier.legal_cases_count}")
+    logger.info(f"  checko_data length: {len(supplier.checko_data) if supplier.checko_data else 0}")
+    
+    # Decompress checko_data if it's compressed bytes
+    from app.utils.checko_compression import decompress_checko_data_to_string
+    if supplier.checko_data and isinstance(supplier.checko_data, bytes):
+        try:
+            supplier.checko_data = decompress_checko_data_to_string(supplier.checko_data)
+            logger.debug(f"Decompressed checko_data for supplier {supplier.id}")
+        except ValueError as e:
+            logger.warning(f"Failed to decompress checko_data for supplier {supplier.id}: {e}")
+            supplier.checko_data = None
+    
+    # Create DTO with from_attributes=True to properly read from SQLAlchemy model
+    dto = ModeratorSupplierDTO.model_validate(supplier, from_attributes=True)
+    
+    return dto
 
 
 @router.put("/suppliers/{supplier_id}", response_model=ModeratorSupplierDTO)
@@ -226,8 +358,15 @@ async def update_supplier(
     db: AsyncSession = Depends(get_db)
 ):
     """Update supplier."""
+    import logging
+    logger = logging.getLogger(__name__)
+    
     # Convert camelCase to snake_case for database fields
-    update_data = request.model_dump(exclude_unset=True)
+    # exclude_unset=True: only update fields that were explicitly set
+    # exclude_none=False: allow updating fields to None
+    update_data = request.model_dump(exclude_unset=True, exclude_none=False)
+    logger.info(f"update_supplier: received {len(update_data)} fields: {list(update_data.keys())}")
+    
     snake_case_data = {}
     field_mapping = {
         "companyStatus": "company_status",
@@ -244,7 +383,13 @@ async def update_supplier(
     
     for key, value in update_data.items():
         db_key = field_mapping.get(key, key)
+        # Log key fields for debugging
+        if key in ["registrationDate", "legalAddress", "financeYear", "legalCasesCount", "checkoData"]:
+            value_preview = str(value)[:50] if value and isinstance(value, str) else value
+            logger.debug(f"Mapping {key} -> {db_key}: {type(value).__name__} = {value_preview}")
         snake_case_data[db_key] = value
+    
+    logger.info(f"update_supplier: mapped to {len(snake_case_data)} fields: {list(snake_case_data.keys())}")
     
     supplier = await update_moderator_supplier.execute(
         db=db,
@@ -256,7 +401,22 @@ async def update_supplier(
         raise HTTPException(status_code=404, detail="Supplier not found")
     
     await db.commit()
-    return ModeratorSupplierDTO.model_validate(supplier)
+    
+    # Reload supplier from DB to ensure we have all data
+    from app.adapters.db.repositories import ModeratorSupplierRepository
+    repo = ModeratorSupplierRepository(db)
+    supplier = await repo.get_by_id(supplier.id)
+    
+    # Decompress checko_data if it's compressed bytes
+    from app.utils.checko_compression import decompress_checko_data_to_string
+    if supplier.checko_data and isinstance(supplier.checko_data, bytes):
+        try:
+            supplier.checko_data = decompress_checko_data_to_string(supplier.checko_data)
+        except ValueError as e:
+            logger.warning(f"Failed to decompress checko_data for supplier {supplier.id}: {e}")
+            supplier.checko_data = None
+    
+    return ModeratorSupplierDTO.model_validate(supplier, from_attributes=True)
 
 
 @router.delete("/suppliers/{supplier_id}", status_code=204)

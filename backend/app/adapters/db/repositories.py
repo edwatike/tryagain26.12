@@ -24,10 +24,35 @@ class ModeratorSupplierRepository:
     
     async def create(self, supplier_data: dict) -> ModeratorSupplierModel:
         """Create a new supplier."""
+        import logging
+        logger = logging.getLogger(__name__)
+        
+        logger.debug(f"Creating supplier with fields: {list(supplier_data.keys())}")
+        
+        # Log key fields before creation
+        for key in ["registration_date", "legal_address", "finance_year", "legal_cases_count", "checko_data"]:
+            if key in supplier_data:
+                value = supplier_data[key]
+                if isinstance(value, str) and len(value) > 50:
+                    logger.info(f"  {key}: [string, length={len(value)}]")
+                else:
+                    logger.info(f"  {key}: {type(value).__name__} = {repr(value)}")
+            else:
+                logger.debug(f"  {key}: not present")
+        
         supplier = ModeratorSupplierModel(**supplier_data)
         self.session.add(supplier)
         await self.session.flush()
         await self.session.refresh(supplier)
+        
+        # Log what was actually saved
+        logger.info(f"Supplier created successfully with ID: {supplier.id}, name: {supplier.name}")
+        logger.debug(f"Saved registration_date: {supplier.registration_date}")
+        logger.debug(f"Saved legal_address: {supplier.legal_address[:50] if supplier.legal_address else None}")
+        logger.debug(f"Saved finance_year: {supplier.finance_year}")
+        logger.debug(f"Saved legal_cases_count: {supplier.legal_cases_count}")
+        logger.debug(f"Saved checko_data length: {len(supplier.checko_data) if supplier.checko_data else 0}")
+        
         return supplier
     
     async def get_by_id(self, supplier_id: int) -> Optional[ModeratorSupplierModel]:
@@ -47,10 +72,12 @@ class ModeratorSupplierRepository:
         return result.scalar_one_or_none()
     
     async def get_by_inn(self, inn: str) -> Optional[ModeratorSupplierModel]:
-        """Get supplier by INN."""
+        """Get supplier by INN (returns first match if multiple exist)."""
         result = await self.session.execute(
             select(ModeratorSupplierModel)
             .where(ModeratorSupplierModel.inn == inn)
+            .order_by(ModeratorSupplierModel.created_at.desc())
+            .limit(1)
         )
         return result.scalar_one_or_none()
     
@@ -81,15 +108,44 @@ class ModeratorSupplierRepository:
     
     async def update(self, supplier_id: int, supplier_data: dict) -> Optional[ModeratorSupplierModel]:
         """Update supplier."""
+        import logging
+        logger = logging.getLogger(__name__)
+        
         supplier = await self.get_by_id(supplier_id)
         if not supplier:
+            logger.warning(f"Supplier with ID {supplier_id} not found for update")
             return None
         
-        for key, value in supplier_data.items():
-            setattr(supplier, key, value)
+        logger.debug(f"Updating supplier ID {supplier_id} with fields: {list(supplier_data.keys())}")
         
+        # Log key fields before update
+        for key in ["registration_date", "legal_address", "finance_year", "legal_cases_count", "checko_data"]:
+            if key in supplier_data:
+                value = supplier_data[key]
+                if isinstance(value, str) and len(value) > 50:
+                    logger.info(f"  {key}: [string, length={len(value)}]")
+                else:
+                    logger.info(f"  {key}: {type(value).__name__} = {repr(value)}")
+        
+        # Update fields using setattr - this ensures SQLAlchemy tracks changes
+        updated_fields = []
+        for key, value in supplier_data.items():
+            # Only update if the field exists on the model
+            if hasattr(supplier, key):
+                old_value = getattr(supplier, key)
+                setattr(supplier, key, value)
+                updated_fields.append(key)
+                if key in ["registration_date", "legal_address", "finance_year", "legal_cases_count", "checko_data"]:
+                    logger.debug(f"Set {key}: {type(old_value).__name__} -> {type(value).__name__}")
+            else:
+                logger.warning(f"Field {key} does not exist on ModeratorSupplierModel, skipping")
+        
+        # Flush changes to database
         await self.session.flush()
+        
+        # Refresh supplier to get updated data from DB
         await self.session.refresh(supplier)
+        logger.info(f"Supplier ID {supplier_id} updated successfully with {len(updated_fields)} fields: {', '.join(updated_fields)}")
         return supplier
     
     async def delete(self, supplier_id: int) -> bool:

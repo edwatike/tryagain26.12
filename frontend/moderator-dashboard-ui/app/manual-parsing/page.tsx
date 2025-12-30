@@ -2,11 +2,12 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { apiFetch, APIError } from "@/lib/api"
+import { startParsing } from "@/lib/api"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Navigation } from "@/components/navigation"
 import {
   Select,
   SelectContent,
@@ -14,6 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { toast } from "sonner"
 
 export default function ManualParsingPage() {
   const router = useRouter()
@@ -25,39 +27,30 @@ export default function ManualParsingPage() {
 
   async function handleStart() {
     if (!keyword.trim()) {
-      setError("Введите ключевое слово")
+      toast.error("Введите ключевое слово")
       return
     }
 
     try {
       setLoading(true)
       setError(null)
-      const data = await apiFetch<{ runId: string; keyword: string; status: string }>("/parsing/start", {
-        method: "POST",
-        body: JSON.stringify({ keyword, depth, source }),
+      const result = await startParsing({
+        keyword: keyword.trim(),
+        depth,
+        source,
       })
-      router.push(`/parsing-runs/${data.runId}`)
+      const runId = result.runId || result.run_id || ""
+      toast.success(`Парсинг запущен: ${result.keyword}`)
+      if (runId) {
+        router.push(`/parsing-runs/${runId}`)
+      }
     } catch (err) {
-      // Log detailed error to console (visible in F12)
-      console.error("[Manual Parsing] Error starting parsing:", {
-        error: err,
-        keyword: keyword,
-        depth: depth,
-        source: source,
-        details: err instanceof APIError ? {
-          status: err.status,
-          message: err.message,
-          data: err.data
-        } : err
-      })
-      
-      if (err instanceof APIError) {
+      console.error("[Manual Parsing] Error starting parsing:", err)
+      toast.error("Ошибка запуска парсинга")
+      if (err instanceof Error) {
         setError(err.message)
-        console.error(`[Manual Parsing] API Error ${err.status}:`, err.message, err.data)
       } else {
-        const errorMsg = "Ошибка запуска парсинга"
-        setError(errorMsg)
-        console.error("[Manual Parsing] Unexpected error:", err)
+        setError("Ошибка запуска парсинга")
       }
     } finally {
       setLoading(false)
@@ -65,63 +58,68 @@ export default function ManualParsingPage() {
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Ручной парсинг</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {error && <div className="text-red-500">{error}</div>}
-        
-        <div>
-          <Label htmlFor="keyword">Ключевое слово</Label>
-          <Input
-            id="keyword"
-            value={keyword}
-            onChange={(e) => setKeyword(e.target.value)}
-            placeholder="Например: металлопрокат"
-            disabled={loading}
-          />
-        </div>
+    <div className="min-h-screen bg-background">
+      <Navigation />
+      <main className="container mx-auto px-6 py-12 max-w-7xl">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-4xl font-bold">Ручной парсинг</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {error && <div className="text-red-500">{error}</div>}
+            
+            <div>
+              <Label htmlFor="keyword">Ключевое слово</Label>
+              <Input
+                id="keyword"
+                value={keyword}
+                onChange={(e) => setKeyword(e.target.value)}
+                placeholder="Например: металлопрокат"
+                disabled={loading}
+              />
+            </div>
 
-        <div>
-          <Label htmlFor="source">Источник поиска</Label>
-          <Select
-            value={source}
-            onValueChange={(value: "google" | "yandex" | "both") => setSource(value)}
-            disabled={loading}
-          >
-            <SelectTrigger id="source">
-              <SelectValue placeholder="Выберите источник" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="google">Google</SelectItem>
-              <SelectItem value="yandex">Yandex</SelectItem>
-              <SelectItem value="both">Google + Yandex</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+            <div>
+              <Label htmlFor="source">Источник поиска</Label>
+              <Select
+                value={source}
+                onValueChange={(value: "google" | "yandex" | "both") => setSource(value)}
+                disabled={loading}
+              >
+                <SelectTrigger id="source">
+                  <SelectValue placeholder="Выберите источник" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="google">Google</SelectItem>
+                  <SelectItem value="yandex">Yandex</SelectItem>
+                  <SelectItem value="both">Google + Yandex</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
 
-        <div>
-          <Label htmlFor="depth">Глубина парсинга (количество страниц)</Label>
-          <Input
-            id="depth"
-            type="number"
-            value={depth}
-            onChange={(e) => setDepth(parseInt(e.target.value) || 1)}
-            min={1}
-            max={10}
-            disabled={loading}
-          />
-          <p className="text-sm text-muted-foreground mt-1">
-            Количество страниц результатов поиска для парсинга (1 страница ≈ 10-20 URL)
-          </p>
-        </div>
+            <div>
+              <Label htmlFor="depth">Глубина парсинга (количество страниц)</Label>
+              <Input
+                id="depth"
+                type="number"
+                value={depth}
+                onChange={(e) => setDepth(parseInt(e.target.value) || 1)}
+                min={1}
+                max={10}
+                disabled={loading}
+              />
+              <p className="text-sm text-muted-foreground mt-1">
+                Количество страниц результатов поиска для парсинга (1 страница ≈ 10-20 URL)
+              </p>
+            </div>
 
-        <Button onClick={handleStart} disabled={loading || !keyword.trim()}>
-          {loading ? "Запуск..." : "Запустить парсинг"}
-        </Button>
-      </CardContent>
-    </Card>
+            <Button onClick={handleStart} disabled={loading || !keyword.trim()}>
+              {loading ? "Запуск..." : "Запустить парсинг"}
+            </Button>
+          </CardContent>
+        </Card>
+      </main>
+    </div>
   )
 }
 

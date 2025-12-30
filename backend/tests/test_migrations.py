@@ -206,3 +206,9 @@ async def test_no_orphaned_sequences(postgres_session: AsyncSession):
         f"Найдены последовательности без связанных таблиц: {problematic}"
     )
 
+
+
+
+
+
+

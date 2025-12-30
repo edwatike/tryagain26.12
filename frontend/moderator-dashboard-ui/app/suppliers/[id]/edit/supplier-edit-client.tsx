@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { CheckoInfoDialog } from "@/components/checko-info-dialog"
+import { Navigation } from "@/components/navigation"
 
 export function SupplierEditClient({ supplierId }: { supplierId: number }) {
   const router = useRouter()
@@ -24,6 +25,26 @@ export function SupplierEditClient({ supplierId }: { supplierId: number }) {
     domain: "",
     address: "",
     type: "supplier" as "supplier" | "reseller",
+    // Checko fields
+    ogrn: "",
+    kpp: "",
+    okpo: "",
+    companyStatus: "",
+    registrationDate: "",
+    legalAddress: "",
+    phone: "",
+    website: "",
+    vk: "",
+    telegram: "",
+    authorizedCapital: null as number | null,
+    revenue: null as number | null,
+    profit: null as number | null,
+    financeYear: null as number | null,
+    legalCasesCount: null as number | null,
+    legalCasesSum: null as number | null,
+    legalCasesAsPlaintiff: null as number | null,
+    legalCasesAsDefendant: null as number | null,
+    checkoData: null as string | null,
   })
 
   const isNewSupplier = supplierId === 0
@@ -50,6 +71,26 @@ export function SupplierEditClient({ supplierId }: { supplierId: number }) {
         domain: data.domain || "",
         address: data.address || "",
         type: data.type || "supplier",
+        // Checko fields
+        ogrn: data.ogrn || "",
+        kpp: data.kpp || "",
+        okpo: data.okpo || "",
+        companyStatus: data.companyStatus || "",
+        registrationDate: data.registrationDate || "",
+        legalAddress: data.legalAddress || "",
+        phone: data.phone || "",
+        website: data.website || "",
+        vk: data.vk || "",
+        telegram: data.telegram || "",
+        authorizedCapital: data.authorizedCapital ?? null,
+        revenue: data.revenue ?? null,
+        profit: data.profit ?? null,
+        financeYear: data.financeYear ?? null,
+        legalCasesCount: data.legalCasesCount ?? null,
+        legalCasesSum: data.legalCasesSum ?? null,
+        legalCasesAsPlaintiff: data.legalCasesAsPlaintiff ?? null,
+        legalCasesAsDefendant: data.legalCasesAsDefendant ?? null,
+        checkoData: data.checkoData ?? null,
       })
       setError(null)
     } catch (err) {
@@ -93,14 +134,68 @@ export function SupplierEditClient({ supplierId }: { supplierId: number }) {
         // Создание нового поставщика
         const newSupplier = await apiFetch<SupplierDTO>(`/moderator/suppliers`, {
           method: "POST",
-          body: JSON.stringify(formData),
+          body: JSON.stringify({
+            name: formData.name,
+            inn: formData.inn || null,
+            email: formData.email || null,
+            domain: formData.domain || null,
+            address: formData.address || null,
+            type: formData.type,
+            // Checko fields
+            ogrn: formData.ogrn || null,
+            kpp: formData.kpp || null,
+            okpo: formData.okpo || null,
+            companyStatus: formData.companyStatus || null,
+            registrationDate: formData.registrationDate || null,
+            legalAddress: formData.legalAddress || null,
+            phone: formData.phone || null,
+            website: formData.website || null,
+            vk: formData.vk || null,
+            telegram: formData.telegram || null,
+            authorizedCapital: formData.authorizedCapital,
+            revenue: formData.revenue,
+            profit: formData.profit,
+            financeYear: formData.financeYear,
+            legalCasesCount: formData.legalCasesCount,
+            legalCasesSum: formData.legalCasesSum,
+            legalCasesAsPlaintiff: formData.legalCasesAsPlaintiff,
+            legalCasesAsDefendant: formData.legalCasesAsDefendant,
+            checkoData: formData.checkoData,
+          }),
         })
         router.push(`/suppliers/${newSupplier.id}`)
       } else {
         // Обновление существующего поставщика
         await apiFetch(`/moderator/suppliers/${supplierId}`, {
           method: "PUT",
-          body: JSON.stringify(formData),
+          body: JSON.stringify({
+            name: formData.name,
+            inn: formData.inn || null,
+            email: formData.email || null,
+            domain: formData.domain || null,
+            address: formData.address || null,
+            type: formData.type,
+            // Checko fields
+            ogrn: formData.ogrn || null,
+            kpp: formData.kpp || null,
+            okpo: formData.okpo || null,
+            companyStatus: formData.companyStatus || null,
+            registrationDate: formData.registrationDate || null,
+            legalAddress: formData.legalAddress || null,
+            phone: formData.phone || null,
+            website: formData.website || null,
+            vk: formData.vk || null,
+            telegram: formData.telegram || null,
+            authorizedCapital: formData.authorizedCapital,
+            revenue: formData.revenue,
+            profit: formData.profit,
+            financeYear: formData.financeYear,
+            legalCasesCount: formData.legalCasesCount,
+            legalCasesSum: formData.legalCasesSum,
+            legalCasesAsPlaintiff: formData.legalCasesAsPlaintiff,
+            legalCasesAsDefendant: formData.legalCasesAsDefendant,
+            checkoData: formData.checkoData,
+          }),
         })
         router.push(`/suppliers/${supplierId}`)
       }
@@ -125,15 +220,32 @@ export function SupplierEditClient({ supplierId }: { supplierId: number }) {
   }
 
   if (loading) {
-    return <div>Загрузка...</div>
+    return (
+      <div className="min-h-screen bg-background">
+        <Navigation />
+        <main className="container mx-auto px-6 py-12">
+          <div className="text-center text-muted-foreground">Загрузка...</div>
+        </main>
+      </div>
+    )
   }
 
   if (!isNewSupplier && (error || !supplier)) {
-    return <div className="text-red-500">Ошибка: {error || "Поставщик не найден"}</div>
+    return (
+      <div className="min-h-screen bg-background">
+        <Navigation />
+        <main className="container mx-auto px-6 py-12">
+          <div className="text-red-500">Ошибка: {error || "Поставщик не найден"}</div>
+        </main>
+      </div>
+    )
   }
 
   return (
-    <div className="space-y-6">
+    <div className="min-h-screen bg-background">
+      <Navigation />
+      <main className="container mx-auto px-6 py-12 max-w-7xl">
+        <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">{isNewSupplier ? "Добавление поставщика" : "Редактирование поставщика"}</h1>
         <Button variant="outline" onClick={() => router.back()}>
@@ -170,7 +282,7 @@ export function SupplierEditClient({ supplierId }: { supplierId: number }) {
           </div>
 
           <div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-start gap-2">
               <div className="flex-1">
                 <Label htmlFor="inn">ИНН</Label>
                 <Input
@@ -197,7 +309,7 @@ export function SupplierEditClient({ supplierId }: { supplierId: number }) {
                   <p className="text-green-600 text-xs mt-1">✓ ИНН корректен</p>
                 )}
               </div>
-              <div className="pt-6">
+              <div className="pt-7">
                 <CheckoInfoDialog
                   inn={formData.inn}
                   onDataLoaded={(data) => {
@@ -285,6 +397,8 @@ export function SupplierEditClient({ supplierId }: { supplierId: number }) {
           </div>
         </CardContent>
       </Card>
+        </div>
+      </main>
     </div>
   )
 }

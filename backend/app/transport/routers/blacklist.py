@@ -143,24 +143,35 @@ async def add_to_blacklist_endpoint(
     try:
         entry = await add_to_blacklist.execute(db=db, blacklist_data=blacklist_data)
         
-        # Логируем в audit_log (перед commit, чтобы быть частью транзакции)
-        from app.adapters.audit import log_audit
-        await log_audit(
-            db=db,
-            table_name="blacklist",
-            operation="INSERT",
-            record_id=entry.domain,
-            new_data={
-                "domain": entry.domain,
-                "reason": entry.reason,
-                "added_by": entry.added_by,
-                "parsing_run_id": entry.parsing_run_id
-            },
-            changed_by=entry.added_by or "system"
-        )
-        
+        # CRITICAL: Commit FIRST, before audit log
+        # This ensures the domain is saved even if audit log fails
+        await db.flush()
         await db.commit()
         logger.info(f"Successfully added domain to blacklist: {domain} (added_at: {entry.added_at})")
+        
+        # Log to audit_log AFTER commit (in a separate transaction)
+        # This way audit log errors won't affect the blacklist entry
+        try:
+            from app.adapters.audit import log_audit
+            from app.adapters.db.session import AsyncSessionLocal
+            async with AsyncSessionLocal() as audit_session:
+                await log_audit(
+                    db=audit_session,
+                    table_name="blacklist",
+                    operation="INSERT",
+                    record_id=entry.domain,
+                    new_data={
+                        "domain": entry.domain,
+                        "reason": entry.reason,
+                        "added_by": entry.added_by,
+                        "parsing_run_id": entry.parsing_run_id
+                    },
+                    changed_by=entry.added_by or "system"
+                )
+                await audit_session.commit()
+        except Exception as audit_err:
+            logger.warning(f"Error logging audit for domain {domain}: {audit_err}")
+            # Don't fail the add if audit logging fails
         
         # Конвертируем entry в DTO с правильной обработкой datetime
         entry_dict = {

@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.adapters.db.repositories import ParsingRequestRepository, ParsingRunRepository
 from app.adapters.parser_client import ParserClient
 from app.config import settings
+from app.usecases import create_keyword
 
 # Track running parsing tasks to prevent duplicates
 _running_parsing_tasks = set()
@@ -50,6 +51,14 @@ async def execute(db: AsyncSession, keyword: str, depth: int = 10, source: str =
         "depth": depth,
         "started_at": datetime.utcnow(),
     })
+    
+    # Create keyword if it doesn't exist
+    try:
+        await create_keyword.execute(db=db, keyword=keyword)
+        logger.info(f"Keyword '{keyword}' created or already exists")
+    except Exception as e:
+        logger.warning(f"Failed to create keyword '{keyword}': {e}")
+        # Don't fail the parsing if keyword creation fails
     
     # Start parsing asynchronously
     # Note: In production, this should be done via a task queue (Celery, RQ, etc.)
@@ -123,13 +132,19 @@ async def execute(db: AsyncSession, keyword: str, depth: int = 10, source: str =
                         result = await parser_client.parse(
                             keyword=keyword,
                             depth=depth,
-                            source=source
+                            source=source,
+                            run_id=run_id
                         )
                         # #region agent log
                         with open('d:\\tryagain\\.cursor\\debug.log', 'a', encoding='utf-8') as f:
                             f.write(json.dumps({"location":"start_parsing.py:73","message":"parser_client.parse completed","data":{"run_id":run_id,"total_found":result.get('total_found', 0),"suppliers_count":len(result.get('suppliers', []))},"timestamp":int(datetime.utcnow().timestamp()*1000),"sessionId":"debug-session","runId":run_id,"hypothesisId":"A"})+'\n')
                         # #endregion
                         logger.info(f"Parsing completed for run_id: {run_id}, found {result.get('total_found', 0)} suppliers")
+                        
+                        # Get parsing logs from result if available
+                        parsing_logs = result.get('parsing_logs', {})
+                        if parsing_logs:
+                            logger.info(f"Received parsing logs for run_id: {run_id}")
                         
                         # Save parsed URLs to domains_queue
                         from app.adapters.db.repositories import DomainQueueRepository
@@ -145,108 +160,228 @@ async def execute(db: AsyncSession, keyword: str, depth: int = 10, source: str =
                         saved_count = 0
                         errors_count = 0
                         
-                        for supplier in suppliers:
-                            if supplier.get('source_url'):
-                                try:
-                                    from urllib.parse import urlparse
-                                    parsed_url = urlparse(supplier['source_url'])
-                                    domain = parsed_url.netloc.replace("www.", "")
-                                    
-                                    # IMPORTANT: URL привязываются к ключу и запуску!
-                                    # Один и тот же домен может быть найден для разных ключей,
-                                    # поэтому мы всегда добавляем домен для каждого ключа/запуска.
-                                    # Проверяем, что домен не был уже добавлен для ЭТОГО ключа и ЭТОГО запуска.
-                                    existing_entry = await domain_queue_repo.get_by_domain_keyword_run(
-                                        domain=domain,
-                                        keyword=keyword,
-                                        parsing_run_id=run_id
-                                    )
-                                    
-                                    if not existing_entry:
-                                        try:
-                                            await domain_queue_repo.create({
-                                                "domain": domain,
-                                                "keyword": keyword,
-                                                "url": supplier['source_url'],
-                                                "parsing_run_id": run_id,
-                                                "status": "pending"
-                                            })
-                                            saved_count += 1
-                                            # #region agent log
-                                            if saved_count <= 3:  # Log first 3 to avoid spam
-                                                with open('d:\\tryagain\\.cursor\\debug.log', 'a', encoding='utf-8') as f:
-                                                    f.write(json.dumps({"location":"start_parsing.py:108","message":"Domain saved","data":{"run_id":run_id,"domain":domain,"keyword":keyword,"parsing_run_id":run_id,"saved_count":saved_count},"timestamp":int(datetime.utcnow().timestamp()*1000),"sessionId":"debug-session","runId":run_id,"hypothesisId":"E"})+'\n')
-                                            # #endregion
-                                            logger.debug(f"Saved domain {domain} for run_id {run_id}")
-                                        except Exception as create_error:
-                                            # CRITICAL FIX: If sequence permission error, try to fix it
-                                            error_str = str(create_error)
-                                            if "InsufficientPrivilegeError" in error_str or ("domains_queue" in error_str and "seq" in error_str):
-                                                logger.error(f"Sequence permission error for domain {domain}: {create_error}")
-                                                try:
-                                                    # Try to grant permissions on BOTH possible sequence names
-                                                    from sqlalchemy import text
-                                                    # First try to rename sequence if it has wrong name (check all possible names)
-                                                    sequence_names = ["domains_queue_new_id_seq", "domains_queue_new_id_seq1"]
-                                                    for old_name in sequence_names:
-                                                        try:
-                                                            await bg_db.execute(text(f"ALTER SEQUENCE {old_name} RENAME TO domains_queue_id_seq"))
-                                                            await bg_db.commit()
-                                                            logger.info(f"Renamed {old_name} to domains_queue_id_seq")
-                                                            break
-                                                        except Exception:
-                                                            await bg_db.rollback()
-                                                            pass  # Might already be renamed or not exist
-                                                    
-                                                    # Grant permissions on the correct sequence name
+                        # CRITICAL: Wrap domain saving in try-except to ensure commit happens
+                        try:
+                            for supplier in suppliers:
+                                if supplier.get('source_url'):
+                                    try:
+                                        from urllib.parse import urlparse
+                                        parsed_url = urlparse(supplier['source_url'])
+                                        domain = parsed_url.netloc.replace("www.", "")
+                                        
+                                        # IMPORTANT: URL привязываются к ключу и запуску!
+                                        # Один и тот же домен может быть найден для разных ключей,
+                                        # поэтому мы всегда добавляем домен для каждого ключа/запуска.
+                                        # Проверяем, что домен не был уже добавлен для ЭТОГО ключа и ЭТОГО запуска.
+                                        existing_entry = await domain_queue_repo.get_by_domain_keyword_run(
+                                            domain=domain,
+                                            keyword=keyword,
+                                            parsing_run_id=run_id
+                                        )
+                                        
+                                        if not existing_entry:
+                                            try:
+                                                # КРИТИЧЕСКИ ВАЖНО: Используем source из supplier, который приходит из парсера
+                                                # Парсер правильно определяет source на основе того, кто реально нашел URL
+                                                # Если source не указан в supplier, используем source из параметра как fallback
+                                                url_source = supplier.get('source')
+                                                if not url_source:
+                                                    # Fallback: если парсер не вернул source, используем source из параметра
+                                                    url_source = source
+                                                await domain_queue_repo.create({
+                                                    "domain": domain,
+                                                    "keyword": keyword,
+                                                    "url": supplier['source_url'],
+                                                    "parsing_run_id": run_id,
+                                                    "source": url_source,  # Используем источник из парсера (google, yandex, или both)
+                                                    "status": "pending"
+                                                })
+                                                saved_count += 1
+                                                # #region agent log
+                                                if saved_count <= 3:  # Log first 3 to avoid spam
+                                                    with open('d:\\tryagain\\.cursor\\debug.log', 'a', encoding='utf-8') as f:
+                                                        f.write(json.dumps({"location":"start_parsing.py:108","message":"Domain saved","data":{"run_id":run_id,"domain":domain,"keyword":keyword,"parsing_run_id":run_id,"saved_count":saved_count},"timestamp":int(datetime.utcnow().timestamp()*1000),"sessionId":"debug-session","runId":run_id,"hypothesisId":"E"})+'\n')
+                                                # #endregion
+                                                logger.debug(f"Saved domain {domain} for run_id {run_id}")
+                                            except Exception as create_error:
+                                                # CRITICAL FIX: If sequence permission error, try to fix it
+                                                error_str = str(create_error)
+                                                if "InsufficientPrivilegeError" in error_str or ("domains_queue" in error_str and "seq" in error_str):
+                                                    logger.error(f"Sequence permission error for domain {domain}: {create_error}")
                                                     try:
-                                                        await bg_db.execute(text("GRANT ALL PRIVILEGES ON SEQUENCE domains_queue_id_seq TO postgres"))
-                                                        await bg_db.execute(text("GRANT ALL PRIVILEGES ON SEQUENCE domains_queue_id_seq TO PUBLIC"))
-                                                        await bg_db.execute(text("ALTER SEQUENCE domains_queue_id_seq OWNER TO postgres"))
-                                                        logger.info("Fixed permissions on sequence domains_queue_id_seq")
-                                                    except Exception as seq_error:
-                                                        logger.warning(f"Could not fix permissions on domains_queue_id_seq: {seq_error}")
-                                                    await bg_db.commit()
-                                                    logger.info(f"Fixed sequence permissions, retrying domain save for {domain}")
-                                                    # Retry create after fixing permissions
-                                                    await domain_queue_repo.create({
-                                                        "domain": domain,
-                                                        "keyword": keyword,
-                                                        "url": supplier['source_url'],
-                                                        "parsing_run_id": run_id,
-                                                        "status": "pending"
-                                                    })
-                                                    saved_count += 1
-                                                    logger.debug(f"Saved domain {domain} for run_id {run_id} after fixing permissions")
-                                                except Exception as fix_error:
+                                                        # Try to grant permissions on BOTH possible sequence names
+                                                        from sqlalchemy import text
+                                                        # First try to rename sequence if it has wrong name (check all possible names)
+                                                        sequence_names = ["domains_queue_new_id_seq", "domains_queue_new_id_seq1"]
+                                                        for old_name in sequence_names:
+                                                            try:
+                                                                await bg_db.execute(text(f"ALTER SEQUENCE {old_name} RENAME TO domains_queue_id_seq"))
+                                                                await bg_db.commit()
+                                                                logger.info(f"Renamed {old_name} to domains_queue_id_seq")
+                                                                break
+                                                            except Exception:
+                                                                await bg_db.rollback()
+                                                                pass  # Might already be renamed or not exist
+                                                        
+                                                        # Grant permissions on the correct sequence name
+                                                        try:
+                                                            await bg_db.execute(text("GRANT ALL PRIVILEGES ON SEQUENCE domains_queue_id_seq TO postgres"))
+                                                            await bg_db.execute(text("GRANT ALL PRIVILEGES ON SEQUENCE domains_queue_id_seq TO PUBLIC"))
+                                                            await bg_db.execute(text("ALTER SEQUENCE domains_queue_id_seq OWNER TO postgres"))
+                                                            logger.info("Fixed permissions on sequence domains_queue_id_seq")
+                                                        except Exception as seq_error:
+                                                            logger.warning(f"Could not fix permissions on domains_queue_id_seq: {seq_error}")
+                                                        await bg_db.commit()
+                                                        logger.info(f"Fixed sequence permissions, retrying domain save for {domain}")
+                                                        # Retry create after fixing permissions
+                                                        await domain_queue_repo.create({
+                                                            "domain": domain,
+                                                            "keyword": keyword,
+                                                            "url": supplier['source_url'],
+                                                            "parsing_run_id": run_id,
+                                                            "source": source,  # Сохраняем источник (google, yandex, или both)
+                                                            "status": "pending"
+                                                        })
+                                                        saved_count += 1
+                                                        logger.debug(f"Saved domain {domain} for run_id {run_id} after fixing permissions")
+                                                    except Exception as fix_error:
+                                                        errors_count += 1
+                                                        logger.error(f"Failed to fix sequence permissions: {fix_error}", exc_info=True)
+                                                        await bg_db.rollback()
+                                                else:
                                                     errors_count += 1
-                                                    logger.error(f"Failed to fix sequence permissions: {fix_error}", exc_info=True)
-                                                    await bg_db.rollback()
-                                            else:
-                                                errors_count += 1
-                                                logger.warning(f"Error saving domain {supplier.get('source_url')}: {create_error}", exc_info=True)
-                                    else:
-                                        logger.debug(f"Domain {domain} for keyword {keyword} and run_id {run_id} already in queue, skipping.")
-                                except Exception as e:
-                                    errors_count += 1
-                                    logger.warning(f"Error saving domain {supplier.get('source_url')}: {e}", exc_info=True)
+                                                    logger.warning(f"Error saving domain {supplier.get('source_url')}: {create_error}", exc_info=True)
+                                        else:
+                                            logger.debug(f"Domain {domain} for keyword {keyword} and run_id {run_id} already in queue, skipping.")
+                                    except Exception as e:
+                                        errors_count += 1
+                                        logger.warning(f"Error saving domain {supplier.get('source_url')}: {e}", exc_info=True)
+                            
+                            # CRITICAL: Log immediately after loop to verify we reach this point
+                            # Write to debug.log FIRST to ensure we see it even if logger fails
+                            with open('d:\\tryagain\\.cursor\\debug.log', 'a', encoding='utf-8') as f:
+                                f.write(json.dumps({"location":"start_parsing.py:259","message":"LOOP COMPLETE","data":{"run_id":run_id,"saved_count":saved_count,"errors_count":errors_count},"timestamp":int(datetime.utcnow().timestamp()*1000),"sessionId":"debug-session","runId":run_id,"hypothesisId":"LOOP"})+'\n')
+                            logger.info(f"[LOOP COMPLETE] Finished supplier loop for run_id: {run_id}, saved_count: {saved_count}, errors_count: {errors_count}")
+                            
+                            # CRITICAL: Commit domains IMMEDIATELY after saving - BEFORE any other operations
+                            # This ensures domains are saved even if subsequent operations fail
+                            total_suppliers = len(suppliers)
+                            logger.info(f"[DOMAIN SAVE COMPLETE] Finished saving domains for run_id: {run_id}, saved_count: {saved_count}, errors_count: {errors_count}, total_suppliers: {total_suppliers}")
+                            
+                            # Commit domains FIRST - IMMEDIATELY after saving, before collecting statistics
+                            logger.info(f"[BEFORE COMMIT] About to commit {saved_count} domains for run_id: {run_id}")
+                            await bg_db.commit()
+                            logger.info(f"✅ [COMMIT SUCCESS] Committed {saved_count} domains to database for run_id: {run_id} (errors: {errors_count})")
+                        except Exception as domain_save_error:
+                            logger.error(f"❌ [DOMAIN SAVE ERROR] Error during domain saving for run_id {run_id}: {domain_save_error}", exc_info=True)
+                            # Try to commit what we have, then re-raise
+                            try:
+                                await bg_db.commit()
+                                logger.info(f"✅ [COMMIT AFTER ERROR] Committed {saved_count} domains after error for run_id: {run_id}")
+                            except Exception as commit_error:
+                                logger.error(f"❌ [COMMIT FAILED] Failed to commit domains after error for run_id {run_id}: {commit_error}", exc_info=True)
+                                await bg_db.rollback()
+                            raise  # Re-raise to prevent status update if domains commit failed
                         
-                        # CRITICAL FIX: Update status and commit domains in ONE transaction
-                        # This ensures status is always updated when domains are saved
-                        total_suppliers = len(suppliers)
-                        logger.info(f"Parsing complete for run_id: {run_id}. Total suppliers from parser: {total_suppliers}, Saved to DB: {saved_count}, Errors: {errors_count}")
+                        # Collect process information for logging (AFTER domains are committed)
+                        process_info = {
+                            "total_domains": saved_count,
+                            "total_suppliers_from_parser": total_suppliers,
+                            "errors_count": errors_count,
+                            "keyword": keyword,
+                            "depth": depth,
+                            "source": source,
+                            "finished_at": datetime.utcnow().isoformat(),
+                        }
+                        
+                        # Add parsing logs if available
+                        if parsing_logs:
+                            process_info["parsing_logs"] = parsing_logs
+                        
+                        # Get statistics by source from domains_queue
+                        try:
+                            from sqlalchemy import text, func
+                            stats_result = await bg_db.execute(
+                                text("""
+                                    SELECT source, COUNT(*) as count
+                                    FROM domains_queue
+                                    WHERE parsing_run_id = :run_id
+                                    GROUP BY source
+                                """),
+                                {"run_id": run_id}
+                            )
+                            stats_rows = stats_result.fetchall()
+                            source_stats = {"google": 0, "yandex": 0, "both": 0}
+                            for row in stats_rows:
+                                source_name = row[0] or "google"  # Default to google if null
+                                count = row[1]
+                                if source_name in source_stats:
+                                    source_stats[source_name] = count
+                            process_info["source_statistics"] = source_stats
+                        except Exception as stats_error:
+                            logger.warning(f"Error getting source statistics for run_id {run_id}: {stats_error}")
+                            process_info["source_statistics"] = {"google": 0, "yandex": 0, "both": 0}
+                        
+                        # Get started_at time for duration calculation
+                        try:
+                            started_result = await bg_db.execute(
+                                text("SELECT started_at FROM parsing_runs WHERE run_id = :run_id"),
+                                {"run_id": run_id}
+                            )
+                            started_row = started_result.fetchone()
+                            if started_row and started_row[0]:
+                                started_at = started_row[0]
+                                process_info["started_at"] = started_at.isoformat() if hasattr(started_at, 'isoformat') else str(started_at)
+                                if hasattr(started_at, 'timestamp'):
+                                    duration_seconds = (datetime.utcnow() - started_at).total_seconds()
+                                    process_info["duration_seconds"] = duration_seconds
+                        except Exception as time_error:
+                            logger.warning(f"Error getting started_at for run_id {run_id}: {time_error}")
+                        
+                        # Check for CAPTCHA in error_message
+                        try:
+                            error_result = await bg_db.execute(
+                                text("SELECT error_message FROM parsing_runs WHERE run_id = :run_id"),
+                                {"run_id": run_id}
+                            )
+                            error_row = error_result.fetchone()
+                            if error_row and error_row[0]:
+                                error_msg = error_row[0].lower()
+                                if "captcha" in error_msg or "капча" in error_msg:
+                                    process_info["captcha_detected"] = True
+                                    process_info["captcha_error_message"] = error_row[0]
+                                else:
+                                    process_info["captcha_detected"] = False
+                            else:
+                                process_info["captcha_detected"] = False
+                        except Exception as captcha_error:
+                            logger.warning(f"Error checking CAPTCHA for run_id {run_id}: {captcha_error}")
+                            process_info["captcha_detected"] = False
                         
                         # #region agent log
                         with open('d:\\tryagain\\.cursor\\debug.log', 'a', encoding='utf-8') as f:
                             f.write(json.dumps({"location":"start_parsing.py:150","message":"Before updating status","data":{"run_id":run_id,"saved_count":saved_count,"total_suppliers":total_suppliers},"timestamp":int(datetime.utcnow().timestamp()*1000),"sessionId":"debug-session","runId":run_id,"hypothesisId":"A"})+'\n')
                         # #endregion
                         
-                        # Update status in the SAME transaction as domains commit
+                        # Log process information to file
+                        logger.info(f"Process information for run_id {run_id}: {json.dumps(process_info, default=str)}")
+                        with open('d:\\tryagain\\.cursor\\debug.log', 'a', encoding='utf-8') as f:
+                            f.write(json.dumps({
+                                "location": "start_parsing.py:process_log",
+                                "message": "Parsing process completed - full process log",
+                                "data": process_info,
+                                "timestamp": int(datetime.utcnow().timestamp()*1000),
+                                "sessionId": "debug-session",
+                                "runId": run_id,
+                                "hypothesisId": "PROCESS_LOG"
+                            })+'\n')
+                        
+                        # Update status in SEPARATE transaction (domains already committed)
                         from sqlalchemy import text
                         try:
                             logger.info(f"Updating parsing run {run_id} status to 'completed' (saved_count: {saved_count})")
                             
-                            # Update status BEFORE committing domains - ensures atomicity
+                            # Update status - use simple update without process_log first to avoid SQL errors
                             update_result = await bg_db.execute(
                                 text("""
                                     UPDATE parsing_runs 
@@ -265,14 +400,33 @@ async def execute(db: AsyncSession, keyword: str, depth: int = 10, source: str =
                             rows_updated = update_result.rowcount
                             logger.info(f"UPDATE query executed, rows_updated={rows_updated} for run_id: {run_id}")
                             
-                            # Commit BOTH domains AND status update in one transaction
+                            # Try to update process_log separately if needed
+                            try:
+                                import json as json_module
+                                process_log_json = json_module.dumps(process_info, ensure_ascii=False)
+                                await bg_db.execute(
+                                    text("""
+                                        UPDATE parsing_runs 
+                                        SET process_log = CAST(:process_log AS jsonb)
+                                        WHERE run_id = :run_id
+                                    """),
+                                    {
+                                        "process_log": process_log_json,
+                                        "run_id": run_id
+                                    }
+                                )
+                                logger.info(f"Updated process_log for run_id: {run_id}")
+                            except Exception as process_log_error:
+                                logger.warning(f"Failed to update process_log for run_id {run_id}: {process_log_error}")
+                                # Don't fail the whole update if process_log fails
+                            
+                            # Commit status update
                             await bg_db.commit()
                             # #region agent log
                             with open('d:\\tryagain\\.cursor\\debug.log', 'a', encoding='utf-8') as f:
-                                f.write(json.dumps({"location":"start_parsing.py:185","message":"Domains and status committed to DB","data":{"run_id":run_id,"saved_count":saved_count,"rows_updated":rows_updated},"timestamp":int(datetime.utcnow().timestamp()*1000),"sessionId":"debug-session","runId":run_id,"hypothesisId":"A"})+'\n')
+                                f.write(json.dumps({"location":"start_parsing.py:185","message":"Status update committed to DB","data":{"run_id":run_id,"saved_count":saved_count,"rows_updated":rows_updated},"timestamp":int(datetime.utcnow().timestamp()*1000),"sessionId":"debug-session","runId":run_id,"hypothesisId":"A"})+'\n')
                             # #endregion
-                            logger.info(f"Saved {saved_count} domains to queue for run_id: {run_id} (errors: {errors_count})")
-                            logger.info(f"Committed {saved_count} domains and status update to database for run_id: {run_id}")
+                            logger.info(f"✅ Committed status update to database for run_id: {run_id}")
                             
                             # Verify update worked by querying directly
                             verify_result = await bg_db.execute(
@@ -332,13 +486,82 @@ async def execute(db: AsyncSession, keyword: str, depth: int = 10, source: str =
                         # Re-raise would cause the task to fail silently
                         # Instead, update status to failed and log the error
                         try:
+                            # Collect process information for failed parsing
+                            process_info_failed = {
+                                "total_domains": saved_count if 'saved_count' in locals() else 0,
+                                "errors_count": errors_count if 'errors_count' in locals() else 0,
+                                "keyword": keyword,
+                                "depth": depth,
+                                "source": source,
+                                "finished_at": datetime.utcnow().isoformat(),
+                                "error": str(parse_error)[:1000],
+                                "status": "failed"
+                            }
+                            
+                            # Get statistics by source from domains_queue (if any domains were saved)
+                            try:
+                                from sqlalchemy import text
+                                stats_result = await bg_db.execute(
+                                    text("""
+                                        SELECT source, COUNT(*) as count
+                                        FROM domains_queue
+                                        WHERE parsing_run_id = :run_id
+                                        GROUP BY source
+                                    """),
+                                    {"run_id": run_id}
+                                )
+                                stats_rows = stats_result.fetchall()
+                                source_stats = {"google": 0, "yandex": 0, "both": 0}
+                                for row in stats_rows:
+                                    source_name = row[0] or "google"
+                                    count = row[1]
+                                    if source_name in source_stats:
+                                        source_stats[source_name] = count
+                                process_info_failed["source_statistics"] = source_stats
+                            except Exception:
+                                process_info_failed["source_statistics"] = {"google": 0, "yandex": 0, "both": 0}
+                            
+                            # Check for CAPTCHA in error
+                            error_msg_lower = str(parse_error).lower()
+                            if "captcha" in error_msg_lower or "капча" in error_msg_lower:
+                                process_info_failed["captcha_detected"] = True
+                            else:
+                                process_info_failed["captcha_detected"] = False
+                            
+                            # Log process information to file
+                            logger.info(f"Process information (FAILED) for run_id {run_id}: {json.dumps(process_info_failed, default=str)}")
+                            with open('d:\\tryagain\\.cursor\\debug.log', 'a', encoding='utf-8') as f:
+                                f.write(json.dumps({
+                                    "location": "start_parsing.py:process_log_failed",
+                                    "message": "Parsing process failed - full process log",
+                                    "data": process_info_failed,
+                                    "timestamp": int(datetime.utcnow().timestamp()*1000),
+                                    "sessionId": "debug-session",
+                                    "runId": run_id,
+                                    "hypothesisId": "PROCESS_LOG_FAILED"
+                                })+'\n')
+                            
                             bg_run_repo = ParsingRunRepository(bg_db)
                             error_msg = str(parse_error)[:1000]  # Limit error message length
-                            await bg_run_repo.update(run_id, {
-                                "status": "failed",
-                                "error_message": error_msg,
-                                "finished_at": datetime.utcnow()
-                            })
+                            # Use direct SQL to update with process_log as JSONB
+                            from sqlalchemy import text
+                            await bg_db.execute(
+                                text("""
+                                    UPDATE parsing_runs 
+                                    SET status = :status,
+                                        error_message = :error_message,
+                                        finished_at = :finished_at,
+                                        process_log = CAST(:process_log AS jsonb)
+                                    WHERE run_id = :run_id
+                                """),
+                                {
+                                    "status": "failed",
+                                    "error_message": error_msg,
+                                    "finished_at": datetime.utcnow(),
+                                    "process_log": json.dumps(process_info_failed),
+                                    "run_id": run_id
+                                }
+                            )
                             await bg_db.commit()
                             logger.info(f"Updated parsing run {run_id} status to 'failed' due to error")
                         except Exception as update_err:

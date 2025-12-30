@@ -38,7 +38,7 @@ async def execute(db: AsyncSession, run_id: str):
         text("""
             SELECT pr.id, pr.run_id, pr.request_id, pr.parser_task_id, 
                    pr.status, pr.depth, pr.source, pr.created_at, 
-                   pr.started_at, pr.finished_at, pr.error_message
+                   pr.started_at, pr.finished_at, pr.error_message, pr.process_log
             FROM parsing_runs pr
             WHERE pr.run_id = :run_id
         """),
@@ -62,6 +62,7 @@ async def execute(db: AsyncSession, run_id: str):
     run.started_at = row[8]
     run.finished_at = row[9]
     run.error_message = row[10]
+    run.process_log = row[11]  # JSONB field
     
     # CRITICAL FIX: Load request using direct SQL to avoid any SQLAlchemy model loading
     # Even loading ParsingRequestModel might trigger SQLAlchemy to check ParsingRunModel

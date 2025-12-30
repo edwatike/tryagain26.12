@@ -2,8 +2,8 @@
 from datetime import datetime, date
 from typing import Optional
 from sqlalchemy import (
-    String, Integer, BigInteger, Text, Date, 
-    ForeignKey, UniqueConstraint, Index
+    String, Integer, BigInteger, Text, Date, JSON,
+    ForeignKey, UniqueConstraint, Index, LargeBinary
 )
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
@@ -55,8 +55,8 @@ class ModeratorSupplierModel(Base):
     legal_cases_as_plaintiff: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     legal_cases_as_defendant: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     
-    # Full Checko data (JSON)
-    checko_data: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    # Full Checko data (compressed JSON, gzip)
+    checko_data: Mapped[Optional[bytes]] = mapped_column(LargeBinary, nullable=True)
     
     # Metadata
     created_at: Mapped[datetime] = mapped_column(
@@ -200,6 +200,7 @@ class ParsingRunModel(Base):
     finished_at: Mapped[Optional[datetime]] = mapped_column(nullable=True)
     error_message: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     results_count: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    process_log: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)  # JSON object with parsing process details
     
     # Relationship
     request: Mapped[Optional["ParsingRequestModel"]] = relationship("ParsingRequestModel", lazy="select")
@@ -221,6 +222,7 @@ class DomainQueueModel(Base):
     keyword: Mapped[str] = mapped_column(String(255), nullable=False)
     url: Mapped[str] = mapped_column(Text, nullable=False)
     parsing_run_id: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    source: Mapped[Optional[str]] = mapped_column(String(32), nullable=True, default="google")  # google, yandex, or both
     status: Mapped[str] = mapped_column(
         String(50),
         nullable=False,

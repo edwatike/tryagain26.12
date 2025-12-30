@@ -17,6 +17,9 @@ class Settings(BaseSettings):
     page_load_timeout: int = 30000  # 30 seconds
     navigation_timeout: int = 60000  # 60 seconds
     
+    # Backend URL for status updates
+    BACKEND_URL: str = "http://127.0.0.1:8000"
+    
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",

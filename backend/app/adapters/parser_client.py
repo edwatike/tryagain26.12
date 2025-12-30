@@ -1,6 +1,6 @@
 """HTTP client for Parser Service."""
 import httpx
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 from app.config import settings
 
 
@@ -14,7 +14,7 @@ class ParserClient:
             timeout=300.0  # 5 minutes for parsing operations
         )
     
-    async def parse(self, keyword: str, depth: int = 10, source: str = "google") -> Dict[str, Any]:
+    async def parse(self, keyword: str, depth: int = 10, source: str = "google", run_id: Optional[str] = None) -> Dict[str, Any]:
         """
         Start parsing for a keyword.
         
@@ -40,7 +40,8 @@ class ParserClient:
                 json={
                     "keyword": keyword,
                     "depth": depth,
-                    "source": source
+                    "source": source,
+                    "run_id": run_id
                 },
                 headers={
                     "Content-Type": "application/json; charset=utf-8"

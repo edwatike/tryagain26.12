@@ -33,3 +33,9 @@ if ($issues.Count -gt 0) {
 Write-Host "✅ Миграция $MigrationFile проверена успешно"
 exit 0
 
+
+
+
+
+
+

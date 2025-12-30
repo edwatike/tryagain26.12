@@ -1,7 +1,8 @@
 """Router for parsing operations."""
-from fastapi import APIRouter, Depends, BackgroundTasks
+from fastapi import APIRouter, Depends, BackgroundTasks, Body, HTTPException
 from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
+from typing import Optional, Dict, Any
 
 from app.adapters.db.session import get_db
 from app.transport.schemas.parsing import (
@@ -12,6 +13,7 @@ from app.transport.schemas.parsing import (
 from app.usecases import (
     start_parsing,
     get_parsing_status,
+    get_parsing_run,
 )
 
 router = APIRouter()
@@ -59,6 +61,29 @@ async def start_parsing_endpoint(
             "status": result["status"]
         }
     )
+
+
+@router.put("/status/{run_id}")
+async def update_parsing_status_endpoint(
+    run_id: str,
+    request_data: Dict[str, Any] = Body(default={}),
+    db: AsyncSession = Depends(get_db)
+):
+    """Update parsing run status (for CAPTCHA and progress updates)."""
+    from app.adapters.db.repositories import ParsingRunRepository
+    
+    run_repo = ParsingRunRepository(db)
+    update_data = {}
+    
+    # Получаем error_message из тела запроса
+    if request_data and "error_message" in request_data:
+        update_data["error_message"] = request_data["error_message"]
+    
+    if update_data:
+        await run_repo.update(run_id, update_data)
+        await db.commit()
+    
+    return {"status": "updated"}
 
 
 @router.get("/status/{run_id}", response_model=ParsingStatusResponseDTO)
@@ -128,4 +153,6 @@ async def get_parsing_status_endpoint(
     except Exception as e:
         logger.error(f"Error converting parsing status {run_id}: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Error processing parsing status: {str(e)}")
+
+
 

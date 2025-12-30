@@ -100,3 +100,9 @@ class BaseRepository:
             self.logger.error(f"Failed to fix sequence permissions for {table_name}")
             return False
 
+
+
+
+
+
+

@@ -1,6 +1,6 @@
 """Router for domains queue."""
-from typing import Optional
-from fastapi import APIRouter, Depends, HTTPException, Query
+from typing import Optional, Dict, Any
+from fastapi import APIRouter, Depends, HTTPException, Query, Body
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.adapters.db.session import get_db

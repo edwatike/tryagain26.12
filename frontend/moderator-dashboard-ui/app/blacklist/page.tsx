@@ -1,139 +1,147 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { apiFetch, APIError } from "@/lib/api"
-import { BlacklistEntryDTO } from "@/lib/types"
+import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Navigation } from "@/components/navigation"
+import { getBlacklist, addToBlacklist, removeFromBlacklist } from "@/lib/api"
+import { getCachedBlacklist, setCachedBlacklist, invalidateBlacklistCache } from "@/lib/cache"
+import { toast } from "sonner"
+import { Plus, Trash2 } from "lucide-react"
+import type { BlacklistEntryDTO } from "@/lib/types"
 
 export default function BlacklistPage() {
   const [entries, setEntries] = useState<BlacklistEntryDTO[]>([])
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
   const [newDomain, setNewDomain] = useState("")
+  const [addingDomain, setAddingDomain] = useState(false)
 
   useEffect(() => {
     loadBlacklist()
   }, [])
 
   async function loadBlacklist() {
+    setLoading(true)
     try {
-      setLoading(true)
-      setError(null)
-      const data = await apiFetch<{ entries: BlacklistEntryDTO[]; total: number }>("/moderator/blacklist?limit=100&offset=0")
-      setEntries(data.entries || [])
-      // Если entries пустой, но total > 0, значит проблема с данными
-      if ((!data.entries || data.entries.length === 0) && data.total > 0) {
-        setError(`В базе данных есть ${data.total} записей, но они не загружены. Проверьте формат данных.`)
-      }
-    } catch (err) {
-      if (err instanceof APIError) {
-        setError(err.message)
+      // Проверяем кэш
+      const cached = getCachedBlacklist()
+      if (cached) {
+        setEntries(cached)
+        setLoading(false)
+        // Загружаем в фоне для обновления кэша
+        getBlacklist({ limit: 1000 })
+          .then((data) => {
+            setCachedBlacklist(data.entries)
+            setEntries(data.entries)
+          })
+          .catch(() => {
+            // Игнорируем ошибки фоновой загрузки
+          })
       } else {
-        setError("Ошибка загрузки черного списка")
+        const data = await getBlacklist({ limit: 1000 })
+        setEntries(data.entries)
+        setCachedBlacklist(data.entries)
       }
-      console.error("Blacklist load error:", err)
+    } catch (error) {
+      toast.error("Ошибка загрузки данных")
+      console.error("Error loading blacklist:", error)
     } finally {
       setLoading(false)
     }
   }
 
   async function handleAdd() {
-    if (!newDomain.trim()) return
+    if (!newDomain.trim()) {
+      toast.error("Введите домен")
+      return
+    }
 
+    setAddingDomain(true)
     try {
-      await apiFetch("/moderator/blacklist", {
-        method: "POST",
-        body: JSON.stringify({ domain: newDomain }),
-      })
+      await addToBlacklist({ domain: newDomain.trim() })
+      invalidateBlacklistCache()
+      toast.success(`Домен "${newDomain}" добавлен в blacklist`)
       setNewDomain("")
       loadBlacklist()
-    } catch (err) {
-      if (err instanceof APIError) {
-        setError(err.message)
-      } else {
-        setError("Ошибка добавления в черный список")
-      }
+    } catch (error) {
+      toast.error("Ошибка добавления домена")
+      console.error("Error adding to blacklist:", error)
+    } finally {
+      setAddingDomain(false)
     }
   }
 
-  async function handleDelete(domain: string) {
+  async function handleRemove(domain: string) {
+    if (!confirm(`Удалить "${domain}" из blacklist?`)) return
+
     try {
-      await apiFetch(`/moderator/blacklist/${domain}`, {
-        method: "DELETE",
-      })
+      await removeFromBlacklist(domain)
+      invalidateBlacklistCache()
+      toast.success(`Домен "${domain}" удален из blacklist`)
       loadBlacklist()
-    } catch (err) {
-      if (err instanceof APIError) {
-        setError(err.message)
-      } else {
-        setError("Ошибка удаления из черного списка")
-      }
+    } catch (error) {
+      toast.error("Ошибка удаления домена")
+      console.error("Error removing from blacklist:", error)
     }
-  }
-
-  if (loading) {
-    return <div>Загрузка...</div>
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Черный список</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {error && <div className="text-red-500">{error}</div>}
-        
-        <div className="flex gap-2">
-          <Input
-            value={newDomain}
-            onChange={(e) => setNewDomain(e.target.value)}
-            placeholder="Введите домен"
-            onKeyPress={(e) => e.key === "Enter" && handleAdd()}
-          />
-          <Button onClick={handleAdd}>Добавить</Button>
-        </div>
+    <div className="min-h-screen bg-background">
+      <Navigation />
 
-        {entries.length === 0 ? (
-          <div className="text-center py-8 text-muted-foreground">
-            Черный список пуст. Добавьте домен, чтобы начать.
+      <main className="container mx-auto px-6 py-6 max-w-7xl">
+        <h1 className="text-4xl font-bold mb-4">Черный список доменов</h1>
+
+        <Card className="mb-4">
+          <div className="p-4">
+            <div className="flex gap-2 mb-3">
+              <Input
+                placeholder="Введите домен (example.com)"
+                value={newDomain}
+                onChange={(e) => setNewDomain(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleAdd()}
+              />
+              <Button onClick={handleAdd} disabled={addingDomain}>
+                <Plus className="mr-2 h-4 w-4" />
+                Добавить
+              </Button>
+            </div>
+
+            {loading ? (
+              <div className="text-center py-12 text-muted-foreground">Загрузка...</div>
+            ) : entries.length === 0 ? (
+              <div className="text-center py-12 text-muted-foreground">Список пуст</div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Домен</TableHead>
+                    <TableHead>Причина</TableHead>
+                    <TableHead>Добавлен</TableHead>
+                    <TableHead className="text-right">Действия</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {entries.map((entry) => (
+                    <TableRow key={entry.domain}>
+                      <TableCell className="font-mono font-medium">{entry.domain}</TableCell>
+                      <TableCell>{entry.reason || "—"}</TableCell>
+                      <TableCell>{entry.addedAt ? new Date(entry.addedAt).toLocaleString("ru-RU") : "—"}</TableCell>
+                      <TableCell className="text-right">
+                        <Button variant="ghost" size="sm" onClick={() => handleRemove(entry.domain)}>
+                          <Trash2 className="h-4 w-4 text-red-600" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
           </div>
-        ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Домен</TableHead>
-                <TableHead>Причина</TableHead>
-                <TableHead>Добавлен</TableHead>
-                <TableHead>Действия</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {entries.map((entry) => (
-                <TableRow key={entry.domain}>
-                  <TableCell>{entry.domain}</TableCell>
-                  <TableCell>{entry.reason || "—"}</TableCell>
-                  <TableCell>
-                    {entry.addedAt ? new Date(entry.addedAt).toLocaleDateString('ru-RU') : "—"}
-                  </TableCell>
-                  <TableCell>
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => handleDelete(entry.domain)}
-                    >
-                      Удалить
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        )}
-      </CardContent>
-    </Card>
+        </Card>
+      </main>
+    </div>
   )
 }
-

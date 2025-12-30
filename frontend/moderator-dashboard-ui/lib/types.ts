@@ -67,6 +67,50 @@ export interface ParsingRunDTO {
   resultsCount: number | null
   created_at?: string  // Backend возвращает snake_case
   createdAt?: string  // Для обратной совместимости
+  depth?: number  // Глубина парсинга
+  source?: string | null  // Source for parsing: 'google', 'yandex', or 'both'
+  process_log?: {
+    total_domains?: number
+    source_statistics?: {
+      google: number
+      yandex: number
+      both: number
+    }
+    duration_seconds?: number
+    captcha_detected?: boolean
+    started_at?: string
+    finished_at?: string
+    error?: string
+  } | null
+  processLog?: {
+    total_domains?: number
+    source_statistics?: {
+      google: number
+      yandex: number
+      both: number
+    }
+    duration_seconds?: number
+    captcha_detected?: boolean
+    started_at?: string
+    finished_at?: string
+    error?: string
+    parsing_logs?: ParsingLogsDTO  // Structured parsing logs from parser service
+  } | null  // Для обратной совместимости (camelCase)
+}
+
+export interface ParsingLogsDTO {
+  google?: {
+    links_by_page: Record<number, number>  // Page number -> number of links found
+    total_links: number
+    last_links: string[]  // Last 20 links found
+    pages_processed: number
+  }
+  yandex?: {
+    links_by_page: Record<number, number>  // Page number -> number of links found
+    total_links: number
+    last_links: string[]  // Last 20 links found
+    pages_processed: number
+  }
 }
 
 export interface DomainQueueEntryDTO {
@@ -74,7 +118,23 @@ export interface DomainQueueEntryDTO {
   keyword: string
   url: string
   parsingRunId: string | null
+  source?: string | null  // Source of the URL: google, yandex, or both
   status: string
   createdAt: string
+}
+
+export interface ParsingDomainGroup {
+  domain: string
+  urls: Array<{
+    url: string
+    keyword: string
+    source?: string | null  // Source of the URL: google, yandex, or both
+    status: string
+    createdAt: string
+  }>
+  totalUrls: number
+  supplierType?: "supplier" | "reseller" | null  // Тип поставщика, если домен найден в базе
+  supplierId?: number | null  // ID поставщика для редактирования
+  sources?: string[]  // Массив источников URL (google, yandex или оба)
 }
 

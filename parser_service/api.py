@@ -6,7 +6,7 @@ import httpx
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import List, Optional, Dict, Set, Any
 
 # CRITICAL: Set event loop policy BEFORE any other imports
 # This must be the very first thing to avoid NotImplementedError on Windows
@@ -43,6 +43,7 @@ class ParseRequest(BaseModel):
     keyword: str
     depth: int = 10  # Number of search result pages to parse
     source: str = "google"  # "google", "yandex", or "both"
+    run_id: Optional[str] = None  # Optional run_id for status updates
 
 
 class ParsedSupplier(BaseModel):
@@ -60,6 +61,7 @@ class ParseResponse(BaseModel):
     keyword: str
     suppliers: List[ParsedSupplier]
     total_found: int
+    parsing_logs: Optional[Dict[str, Any]] = None  # Structured parsing logs with links found by each engine
 
 
 @app.get("/health")
@@ -125,7 +127,7 @@ async def parse_keyword(request: ParseRequest):
         # This is EXACTLY the same approach as test_browser_connection.py
         if sys.platform == 'win32':
             logger.info("Using Windows-specific parsing in separate thread with asyncio.run()")
-            def run_parsing_in_thread(keyword_param, depth_param, source_param, chrome_cdp_url_param):
+            def run_parsing_in_thread(keyword_param, depth_param, source_param, chrome_cdp_url_param, run_id_param=None):
                 """Run parsing in a separate thread with its own event loop using asyncio.run().
                 
                 This function runs ALL parsing operations in ONE asyncio.run() call,
@@ -145,7 +147,7 @@ async def parse_keyword(request: ParseRequest):
                 from playwright.async_api import async_playwright
                 from src.engines import YandexEngine, GoogleEngine
                 from src.parser import Parser
-                from typing import Set
+                from typing import Set, Dict
                 
                 async def parse_async():
                     """Async function to run ALL parsing operations in one event loop."""
@@ -228,58 +230,143 @@ async def parse_keyword(request: ParseRequest):
                         source_normalized = str(source_param).lower().strip() if source_param else "google"
                         thread_logger.info(f"=== CREATING PAGES === Query: {query}, source (original): '{source_param}', source (normalized): '{source_normalized}', depth: {depth}")
                         
-                        # Collect links from search engines
-                        collected_links: Set[str] = set()
+                        # Collect links from search engines with source tracking
+                        # Use dict to track which source(s) found each URL
+                        collected_links: Dict[str, Set[str]] = {}  # URL -> set of sources (google, yandex)
                         
                         # Run search engines in parallel (same approach as parser.py)
                         tasks = []
                         
                         # Create pages only for requested sources - USE STRICT EQUALITY TO PREVENT DUPLICATES
+                        # Get current active page to restore focus later (if exists)
+                        current_active_page = None
+                        try:
+                            # Try to get the currently active page in the context
+                            pages = context.pages
+                            if pages:
+                                # Find the page that is currently active (has focus)
+                                for p in pages:
+                                    try:
+                                        # Check if page is still valid and active
+                                        if p.url and p.url != "about:blank":
+                                            current_active_page = p
+                                            break
+                                    except:
+                                        pass
+                        except:
+                            pass
+                        
+                        # Initialize parsing logs structure
+                        parsing_logs = {}
+                        
                         if source_normalized == "yandex":
                             thread_logger.info(">>> Creating ONLY Yandex page (source=yandex)")
                             yandex_page = await context.new_page()
                             thread_logger.info(f">>> Yandex page created")
+                            # Возвращаем фокус на предыдущую активную страницу (если она есть)
+                            if current_active_page:
+                                try:
+                                    await current_active_page.bring_to_front()
+                                except:
+                                    pass
                             yandex_engine = YandexEngine()
-                            tasks.append(yandex_engine.parse(yandex_page, query, depth, collected_links))
+                            tasks.append(yandex_engine.parse(yandex_page, query, depth, collected_links, run_id_param, keyword_param, parsing_logs))
                         elif source_normalized == "google":
                             thread_logger.info(">>> Creating ONLY Google page (source=google)")
                             google_page = await context.new_page()
                             thread_logger.info(f">>> Google page created")
+                            # Возвращаем фокус на предыдущую активную страницу (если она есть)
+                            if current_active_page:
+                                try:
+                                    await current_active_page.bring_to_front()
+                                except:
+                                    pass
                             google_engine = GoogleEngine()
-                            tasks.append(google_engine.parse(google_page, query, depth, collected_links))
+                            tasks.append(google_engine.parse(google_page, query, depth, collected_links, run_id_param, keyword_param, parsing_logs))
                         elif source_normalized == "both":
                             thread_logger.info(">>> Creating BOTH Yandex and Google pages (source=both)")
                             yandex_page = await context.new_page()
                             thread_logger.info(f">>> Yandex page created")
-                            yandex_engine = YandexEngine()
-                            tasks.append(yandex_engine.parse(yandex_page, query, depth, collected_links))
-                            
                             google_page = await context.new_page()
                             thread_logger.info(f">>> Google page created")
+                            # Возвращаем фокус на предыдущую активную страницу (если она есть)
+                            if current_active_page:
+                                try:
+                                    await current_active_page.bring_to_front()
+                                except:
+                                    pass
+                            yandex_engine = YandexEngine()
+                            tasks.append(yandex_engine.parse(yandex_page, query, depth, collected_links, run_id_param, keyword_param, parsing_logs))
                             google_engine = GoogleEngine()
-                            tasks.append(google_engine.parse(google_page, query, depth, collected_links))
+                            tasks.append(google_engine.parse(google_page, query, depth, collected_links, run_id_param, keyword_param, parsing_logs))
                         else:
                             # Default to Google if source is invalid
                             thread_logger.warning(f">>> Invalid source '{source_normalized}', defaulting to Google")
                             google_page = await context.new_page()
                             thread_logger.info(f">>> Google page created (default)")
+                            # Возвращаем фокус на предыдущую активную страницу (если она есть)
+                            if current_active_page:
+                                try:
+                                    await current_active_page.bring_to_front()
+                                except:
+                                    pass
                             google_engine = GoogleEngine()
-                            tasks.append(google_engine.parse(google_page, query, depth, collected_links))
+                            tasks.append(google_engine.parse(google_page, query, depth, collected_links, run_id_param, keyword_param, parsing_logs))
                         
                         thread_logger.info(f">>> TOTAL: Created {len(tasks)} task(s) for parsing")
                         
                         # Wait for all search engines to complete
                         if tasks:
-                            await asyncio.gather(*tasks)
+                            thread_logger.info(f">>> [LOGS] About to start periodic logs sending for run_id: {run_id_param}")
+                            # Запускаем задачи и периодически отправляем логи в backend
+                            # Создаем задачу для периодической отправки логов
+                            async def send_logs_periodically():
+                                """Периодически отправляет логи в backend во время парсинга."""
+                                send_count = 0
+                                thread_logger.info(f"Starting periodic logs sending for run_id: {run_id_param}")
+                                try:
+                                    while True:
+                                        await asyncio.sleep(2.5)  # Синхронизировано с rate limiting (2.5 сек)
+                                        if parsing_logs:
+                                            send_count += 1
+                                            thread_logger.info(f"Attempting to send logs (attempt #{send_count}) for run_id: {run_id_param}")
+                                            await parser._send_parsing_logs(run_id_param, parsing_logs)
+                                        else:
+                                            thread_logger.debug(f"No logs to send yet for run_id: {run_id_param}")
+                                except asyncio.CancelledError:
+                                    thread_logger.info(f"Periodic logs sending cancelled for run_id: {run_id_param}, total attempts: {send_count}")
+                                    raise
+                                except Exception as e:
+                                    thread_logger.error(f"Error in periodic logs sending for run_id: {run_id_param}: {e}", exc_info=True)
+                            
+                            # Запускаем задачу отправки логов в фоне
+                            logs_task = asyncio.create_task(send_logs_periodically())
+                            
+                            try:
+                                # Ждем завершения парсинга
+                                await asyncio.gather(*tasks)
+                            finally:
+                                # Отменяем задачу отправки логов и отправляем финальные логи
+                                logs_task.cancel()
+                                try:
+                                    await logs_task
+                                except asyncio.CancelledError:
+                                    pass
+                                # Отправляем финальные логи
+                                if parsing_logs:
+                                    await parser._send_parsing_logs(run_id_param, parsing_logs)
                         
                         # Return only collected URLs without parsing pages
                         # Convert collected links to supplier-like format (only URLs, no page parsing)
                         suppliers = []
-                        for url in list(collected_links):  # No limit - return all collected URLs
+                        for url, sources in collected_links.items():  # No limit - return all collected URLs
                             # Extract domain from URL
                             from urllib.parse import urlparse
                             parsed_url = urlparse(url)
                             domain = parsed_url.netloc.replace("www.", "")
+                            
+                            # Determine source: "google", "yandex", or "both"
+                            url_source = "both" if len(sources) > 1 else list(sources)[0] if sources else "google"
                             
                             suppliers.append({
                                 "name": domain,  # Use domain as name since we don't parse pages
@@ -287,10 +374,12 @@ async def parse_keyword(request: ParseRequest):
                                 "email": None,
                                 "phone": None,
                                 "inn": None,
-                                "source_url": url
+                                "source_url": url,
+                                "source": url_source  # Add source information
                             })
                         
-                        return suppliers
+                        # Return suppliers with parsing logs
+                        return suppliers, parsing_logs
                     finally:
                         # Clean up
                         if browser:
@@ -307,30 +396,45 @@ async def parse_keyword(request: ParseRequest):
             executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="parsing")
             try:
                 logger.info("Running parsing in separate thread with asyncio.run() (Windows)...")
-                suppliers = await current_loop.run_in_executor(
+                result_tuple = await current_loop.run_in_executor(
                     executor,
                     run_parsing_in_thread,
                     request.keyword,
                     request.depth,
                     request.source,
-                    settings.CHROME_CDP_URL
+                    settings.CHROME_CDP_URL,
+                    request.run_id
                 )
+                # Handle both return formats (tuple with logs or just suppliers)
+                if isinstance(result_tuple, tuple) and len(result_tuple) == 2:
+                    suppliers, parsing_logs = result_tuple
+                else:
+                    suppliers = result_tuple if result_tuple else []
+                    parsing_logs = {}
             finally:
                 executor.shutdown(wait=False)
         else:
             # Non-Windows: run normally
             parser = Parser(settings.CHROME_CDP_URL)
-            suppliers = await parser.parse_keyword(
+            result_tuple = await parser.parse_keyword(
                 keyword=request.keyword,
                 depth=request.depth,
-                source=request.source
+                source=request.source,
+                run_id=request.run_id
             )
+            # Handle both return formats (tuple with logs or just suppliers)
+            if isinstance(result_tuple, tuple) and len(result_tuple) == 2:
+                suppliers, parsing_logs = result_tuple
+            else:
+                suppliers = result_tuple if result_tuple else []
+                parsing_logs = {}
         
         logger.info(f"Parse completed: found {len(suppliers)} suppliers")
         result = ParseResponse(
             keyword=request.keyword,
             suppliers=suppliers,
-            total_found=len(suppliers)
+            total_found=len(suppliers),
+            parsing_logs=parsing_logs if parsing_logs else None
         )
         return result
     except HTTPException:

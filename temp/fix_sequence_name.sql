@@ -18,3 +18,9 @@ BEGIN
     RAISE NOTICE 'Granted permissions on domains_queue_id_seq';
 END $$;
 
+
+
+
+
+
+

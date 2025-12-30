@@ -30,7 +30,7 @@ class AddToBlacklistRequestDTO(BaseModel):
     @field_validator('domain')
     @classmethod
     def validate_domain(cls, v: str) -> str:
-        """Validate domain format."""
+        """Validate and normalize domain format to root domain."""
         if not v or len(v.strip()) == 0:
             raise ValueError("Domain cannot be empty")
         if len(v) > 255:
@@ -41,6 +41,13 @@ class AddToBlacklistRequestDTO(BaseModel):
             raise ValueError("Invalid domain format")
         # Remove protocol if present
         domain = domain.replace('http://', '').replace('https://', '').replace('www.', '')
+        # Remove path if present (take only domain part)
+        domain = domain.split('/')[0]
+        # Extract root domain (last 2 parts)
+        parts = domain.split('.')
+        if len(parts) > 2:
+            # Take last 2 parts (example.com from subdomain.example.com)
+            domain = '.'.join(parts[-2:])
         if len(domain) < 3:
             raise ValueError("Domain is too short")
         return domain

@@ -3,6 +3,7 @@ import asyncio
 import random
 import logging
 import time
+from typing import Optional
 from playwright.async_api import Page
 
 logger = logging.getLogger(__name__)
@@ -44,6 +45,7 @@ async def human_like_mouse_movement(page: Page):
 
 async def very_human_behavior(page: Page):
     """Very human-like behavior with mouse movement and scrolling."""
+    # Don't bring page to front - it should only be activated for CAPTCHA
     await human_pause()
     await human_like_mouse_movement(page)
     await human_pause(0.5, 2)
@@ -53,78 +55,134 @@ async def very_human_behavior(page: Page):
 
 async def light_human_behavior(page: Page):
     """Light human-like behavior (just scrolling)."""
+    # Don't bring page to front - it should only be activated for CAPTCHA
     await human_pause(0.5, 1.5)
     await human_like_scroll(page)
     await human_pause(0.5, 1.2)
 
 
-async def wait_for_captcha(page: Page, engine_name: str):
+async def wait_for_captcha(page: Page, engine_name: str, run_id: Optional[str] = None):
     """Wait for CAPTCHA to be solved, with window management."""
     captcha_detected = False
     max_wait_time = 300  # Maximum 5 minutes to solve CAPTCHA
     start_time = time.time()
+    
+    # Сначала ждем загрузки страницы
+    try:
+        await page.wait_for_load_state("domcontentloaded", timeout=10000)
+    except:
+        pass
     
     while True:
         # Check timeout
         if time.time() - start_time > max_wait_time:
             logger.warning(f"{engine_name}: CAPTCHA wait timeout ({max_wait_time}s)")
             break
+        
+        try:
+            url = page.url.lower()
+            # Также проверяем содержимое страницы на наличие CAPTCHA
+            page_content = ""
+            try:
+                page_content = await page.content()
+            except:
+                pass
             
-        url = page.url.lower()
-        # Check for various CAPTCHA indicators
-        if ("captcha" in url or "showcaptcha" in url or 
-            "/sorry" in url or "sorry/index" in url or
-            "unusual traffic" in url.lower()):
-            if not captcha_detected:
-                # Maximize browser window when captcha is detected
-                try:
-                    await page.set_viewport_size({"width": 1920, "height": 1080})
-                    await page.bring_to_front()
-                    await page.evaluate("() => { window.focus(); }")
-                except:
-                    pass
-                
-                # Force window activation via PowerShell (Windows only)
-                try:
-                    import os
-                    import sys
-                    if sys.platform == 'win32':
-                        ps_cmd = '''
-                        $w = Get-Process chrome | Where {$_.MainWindowTitle -ne ""} | Select -First 1;
-                        if ($w) {
-                            $sig = '[DllImport("user32.dll")] public static extern bool SetForegroundWindow(IntPtr h); [DllImport("user32.dll")] public static extern bool ShowWindow(IntPtr h, int c);';
-                            $t = Add-Type -MemberDefinition $sig -Name Win32 -Namespace Native -PassThru;
-                            $t::ShowWindow($w.MainWindowHandle, 3); # SW_MAXIMIZE
-                            $t::SetForegroundWindow($w.MainWindowHandle);
-                        }
-                        '''
-                        os.system(f'powershell -WindowStyle Hidden -Command "{ps_cmd}"')
-                except:
-                    pass
-                
-                captcha_detected = True
-                logger.warning(f"{engine_name}: Капча обнаружена!")
-                logger.warning("=" * 60)
-                logger.warning(f"{engine_name}: КАПЧА ОБНАРУЖЕНА!")
-                logger.warning("=" * 60)
-                # Sound signals - use logger instead of print to avoid encoding issues
-                try:
-                    import sys
-                    if sys.platform == 'win32':
-                        import winsound
-                        for _ in range(3):
-                            winsound.Beep(1000, 200)
-                except:
-                    pass
+            # Check for various CAPTCHA indicators
+            is_captcha = (
+                "captcha" in url or "showcaptcha" in url or 
+                "/sorry" in url or "sorry/index" in url or
+                "unusual traffic" in url.lower() or
+                "captcha" in page_content.lower() or
+                "showcaptcha" in page_content.lower()
+            )
+            
+            if is_captcha:
+                if not captcha_detected:
+                    # Maximize browser window when captcha is detected
+                    logger.warning(f"{engine_name}: CAPTCHA detected! Activating browser window...")
+                    try:
+                        await page.set_viewport_size({"width": 1920, "height": 1080})
+                        await page.bring_to_front()
+                        await page.evaluate("() => { window.focus(); }")
+                        logger.info(f"{engine_name}: Page brought to front")
+                    except Exception as e:
+                        logger.error(f"{engine_name}: Error bringing page to front: {e}")
+                    
+                    # Force window activation via PowerShell (Windows only)
+                    try:
+                        import os
+                        import sys
+                        import subprocess
+                        if sys.platform == 'win32':
+                            # Более надежный способ активации окна Chrome
+                            ps_cmd = '''
+                            $processes = Get-Process chrome -ErrorAction SilentlyContinue | Where-Object {$_.MainWindowTitle -ne ""};
+                            if ($processes) {
+                                $proc = $processes | Select-Object -First 1;
+                                $sig = '[DllImport("user32.dll")] public static extern bool SetForegroundWindow(IntPtr h); [DllImport("user32.dll")] public static extern bool ShowWindow(IntPtr h, int c);';
+                                $t = Add-Type -MemberDefinition $sig -Name Win32 -Namespace Native -PassThru;
+                                $t::ShowWindow($proc.MainWindowHandle, 3); # SW_MAXIMIZE
+                                Start-Sleep -Milliseconds 100;
+                                $t::SetForegroundWindow($proc.MainWindowHandle);
+                            }
+                            '''
+                            result = subprocess.run(
+                                ['powershell', '-WindowStyle', 'Hidden', '-Command', ps_cmd],
+                                capture_output=True,
+                                timeout=5
+                            )
+                            if result.returncode == 0:
+                                logger.info(f"{engine_name}: Browser window activated via PowerShell")
+                            else:
+                                logger.warning(f"{engine_name}: Failed to activate window via PowerShell")
+                    except Exception as e:
+                        logger.error(f"{engine_name}: Error activating window via PowerShell: {e}")
+                    
+                    captcha_detected = True
+                    logger.warning(f"{engine_name}: Капча обнаружена!")
+                    logger.warning("=" * 60)
+                    logger.warning(f"{engine_name}: КАПЧА ОБНАРУЖЕНА!")
+                    logger.warning("=" * 60)
+                    
+                    # Обновляем статус в backend, если передан run_id
+                    if run_id:
+                        try:
+                            import httpx
+                            from ..config import settings
+                            async with httpx.AsyncClient(timeout=5.0) as client:
+                                await client.put(
+                                    f"{settings.BACKEND_URL}/parsing/status/{run_id}",
+                                    json={"error_message": "CAPTCHA обнаружена - требуется решение"}
+                                )
+                            logger.info(f"{engine_name}: Статус CAPTCHA обновлен в backend для run_id: {run_id}")
+                        except Exception as e:
+                            logger.error(f"{engine_name}: Ошибка обновления статуса CAPTCHA в backend: {e}")
+                    
+                    # Sound signals - use logger instead of print to avoid encoding issues
+                    try:
+                        import sys
+                        if sys.platform == 'win32':
+                            import winsound
+                            for _ in range(3):
+                                winsound.Beep(1000, 200)
+                    except:
+                        pass
+            
+            # Если CAPTCHA не обнаружена, выходим из цикла
+            if not is_captcha:
+                if captcha_detected:
+                    # Restore small window size after captcha is solved
+                    try:
+                        await page.set_viewport_size({"width": 800, "height": 600})
+                    except:
+                        pass
+                    logger.info(f"[OK] {engine_name}: Капча решена! Продолжаем...")
+                break
             
             await asyncio.sleep(2)
-        else:
-            if captcha_detected:
-                # Restore small window size after captcha is solved
-                try:
-                    await page.set_viewport_size({"width": 800, "height": 600})
-                except:
-                    pass
-                logger.info(f"[OK] {engine_name}: Капча решена! Продолжаем...")
-            break
+        except Exception as e:
+            logger.error(f"{engine_name}: Error checking CAPTCHA: {e}")
+            await asyncio.sleep(2)
+            continue
 

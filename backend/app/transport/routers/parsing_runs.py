@@ -1,6 +1,6 @@
 """Router for parsing runs."""
-from typing import Optional
-from fastapi import APIRouter, Depends, HTTPException, Query, Request
+from typing import Optional, Dict, Any
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, Body
 from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import text
@@ -95,6 +95,7 @@ async def list_parsing_runs_endpoint(
                 "error": run.error_message,
                 "resultsCount": results_count,
                 "createdAt": run.created_at.isoformat() if run.created_at else None,
+                "depth": run.depth,
             }
             run_dto = ParsingRunDTO.model_validate(run_dict)
             run_dtos.append(run_dto)
@@ -110,6 +111,112 @@ async def list_parsing_runs_endpoint(
         "offset": offset
     }
     return JSONResponse(content=response_data)
+
+
+# CRITICAL: More specific routes must be defined BEFORE less specific ones
+# /runs/{run_id}/logs must come BEFORE /runs/{run_id}
+# TEST: Try with different path pattern to avoid potential conflicts
+@router.get("/runs/{run_id}/logs", name="get_parsing_logs")
+async def get_parsing_logs_endpoint(
+    run_id: str,
+    db: AsyncSession = Depends(get_db)
+):
+    """Get parsing logs for a specific run ID."""
+    import logging
+    from fastapi import HTTPException
+    
+    logger = logging.getLogger(__name__)
+    logger.info(f"[LOGS ENDPOINT] get_parsing_logs_endpoint called with run_id={run_id}")
+    
+    # Get parsing run to check if it exists
+    # Если run не найден, возвращаем пустой объект вместо 404
+    # Это нормальная ситуация, если run еще не создан или логи еще не сохранены
+    run = await get_parsing_run.execute(db=db, run_id=run_id)
+    if not run:
+        # Возвращаем пустой объект, а не 404 - это нормальная ситуация
+        return {"run_id": run_id, "parsing_logs": {}}
+    
+    # Extract parsing_logs from process_log
+    process_log = getattr(run, 'process_log', None)
+    if process_log and isinstance(process_log, dict):
+        parsing_logs = process_log.get("parsing_logs", {})
+        return {"run_id": run_id, "parsing_logs": parsing_logs}
+    else:
+        return {"run_id": run_id, "parsing_logs": {}}
+
+
+@router.put("/runs/{run_id}/logs")
+async def update_parsing_logs_endpoint(
+    run_id: str,
+    request_data: Dict[str, Any] = Body(default={}),
+    db: AsyncSession = Depends(get_db)
+):
+    """Update parsing logs for a specific run ID (incremental updates during parsing)."""
+    import logging
+    import json
+    from fastapi import HTTPException
+    from sqlalchemy import text
+    
+    logger = logging.getLogger(__name__)
+    
+    # Get parsing run to check if it exists
+    run = await get_parsing_run.execute(db=db, run_id=run_id)
+    if not run:
+        raise HTTPException(status_code=404, detail="Parsing run not found")
+    
+    # Get parsing_logs from request
+    if isinstance(request_data, dict):
+        parsing_logs = request_data.get("parsing_logs", {})
+    else:
+        parsing_logs = {}
+    
+    if not parsing_logs:
+        return {"status": "no_logs_provided"}
+    
+    # Детальное логирование размера логов перед обновлением
+    logs_json = json.dumps(parsing_logs, ensure_ascii=False)
+    logs_size = len(logs_json)
+    engines = list(parsing_logs.keys())
+    logger.info(f"Updating parsing logs for run_id: {run_id}, size: {logs_size} bytes, engines: {engines}")
+    
+    # Детальное логирование для каждого движка
+    for engine_name, engine_logs in parsing_logs.items():
+        total_links = engine_logs.get("total_links", 0)
+        pages_processed = engine_logs.get("pages_processed", 0)
+        last_links_count = len(engine_logs.get("last_links", []))
+        links_by_page_count = len(engine_logs.get("links_by_page", {}))
+        logger.info(f"  {engine_name}: total_links={total_links}, pages_processed={pages_processed}, last_links_count={last_links_count}, pages_with_links={links_by_page_count}")
+    
+    # Update process_log with parsing_logs
+    # Get existing process_log or create new one
+    process_log = getattr(run, 'process_log', None)
+    existing_process_log = process_log if process_log and isinstance(process_log, dict) else {}
+    
+    # Update only parsing_logs in process_log, keep other fields
+    existing_process_log["parsing_logs"] = parsing_logs
+    
+    # Update in database
+    try:
+        process_log_json = json.dumps(existing_process_log, ensure_ascii=False)
+        final_size = len(process_log_json)
+        await db.execute(
+            text("""
+                UPDATE parsing_runs 
+                SET process_log = CAST(:process_log AS jsonb)
+                WHERE run_id = :run_id
+            """),
+            {
+                "process_log": process_log_json,
+                "run_id": run_id
+            }
+        )
+        await db.commit()
+        logger.info(f"Successfully updated parsing logs for run_id: {run_id}, final process_log size: {final_size} bytes")
+        return {"status": "updated", "run_id": run_id}
+    except Exception as e:
+        logger.error(f"Error updating parsing logs for run_id {run_id}: {e}", exc_info=True)
+        await db.rollback()
+        raise HTTPException(status_code=500, detail=f"Error updating parsing logs: {str(e)}")
 
 
 @router.get("/runs/{run_id}", response_model=ParsingRunDTO)
@@ -206,6 +313,8 @@ async def get_parsing_run_endpoint(
             "error": getattr(run, 'error_message', None),
             "resultsCount": results_count,
             "createdAt": created_at.isoformat() if created_at else None,
+            "depth": getattr(run, 'depth', None),
+            "source": getattr(run, 'source', None),
         }
         # #region agent log
         with open('d:\\tryagain\\.cursor\\debug.log', 'a', encoding='utf-8') as f:

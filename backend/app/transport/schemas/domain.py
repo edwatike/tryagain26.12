@@ -12,6 +12,7 @@ class DomainQueueEntryDTO(BaseDTO):
     keyword: str
     url: str
     parsingRunId: Optional[str] = Field(None, alias="parsing_run_id")
+    source: Optional[str] = Field(None, description="Source of the URL: google, yandex, or both")
     status: str
     createdAt: datetime = Field(alias="created_at")
     

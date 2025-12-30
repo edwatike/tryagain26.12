@@ -16,6 +16,7 @@ from app.transport.routers import (
     parsing_runs,
     domains_queue,
     attachments,
+    checko,
 )
 
 
@@ -122,8 +123,20 @@ class CORSExceptionMiddleware(BaseHTTPMiddleware):
         import logging
         logger = logging.getLogger(__name__)
         
+        # DEBUG: Log all requests to /parsing/runs/*/logs
+        if "/parsing/runs" in str(request.url.path) and "/logs" in str(request.url.path):
+            logger.info(f"[DEBUG MIDDLEWARE] Request to: {request.method} {request.url.path}")
+            logger.info(f"[DEBUG MIDDLEWARE] Request scope path: {request.scope.get('path', 'N/A')}")
+            logger.info(f"[DEBUG MIDDLEWARE] Request scope method: {request.scope.get('method', 'N/A')}")
+        
         try:
             response = await call_next(request)
+            
+            # DEBUG: Log response for /parsing/runs/*/logs
+            if "/parsing/runs" in str(request.url.path) and "/logs" in str(request.url.path):
+                logger.info(f"[DEBUG MIDDLEWARE] Response status: {response.status_code}")
+                logger.info(f"[DEBUG MIDDLEWARE] Response headers: {dict(response.headers)}")
+            
             # Убедимся, что CORS заголовки есть даже при ошибках
             origin = request.headers.get("origin")
             if origin and origin in settings.cors_origins_list:
@@ -237,16 +250,33 @@ async def root():
         }
     }
 
+@app.get("/debug/routes")
+async def debug_routes():
+    """Debug endpoint to check route registration."""
+    from fastapi.routing import APIRoute
+    routes_info = []
+    for route in app.routes:
+        if isinstance(route, APIRoute):
+            if '/parsing/runs' in route.path and 'logs' in route.path:
+                routes_info.append({
+                    "path": route.path,
+                    "methods": list(route.methods),
+                    "name": getattr(route, 'name', None),
+                    "endpoint": route.endpoint.__name__ if hasattr(route, 'endpoint') else None
+                })
+    return {"logs_routes": routes_info, "total_routes": len(app.routes)}
+
 
 # Include routers
 app.include_router(health.router, tags=["Health"])
 app.include_router(moderator_suppliers.router, prefix="/moderator", tags=["Suppliers"])
 app.include_router(keywords.router, prefix="/keywords", tags=["Keywords"])
 app.include_router(blacklist.router, prefix="/moderator", tags=["Blacklist"])
-app.include_router(parsing.router, prefix="/parsing", tags=["Parsing"])
 app.include_router(parsing_runs.router, prefix="/parsing", tags=["Parsing Runs"])
+app.include_router(parsing.router, prefix="/parsing", tags=["Parsing"])
 app.include_router(domains_queue.router, prefix="/domains", tags=["Domains Queue"])
 app.include_router(attachments.router, prefix="/attachments", tags=["Attachments"])
+app.include_router(checko.router, prefix="/moderator", tags=["Checko"])
 
 
 if __name__ == "__main__":

@@ -19,6 +19,9 @@ class Settings(BaseSettings):
     # Parser Service
     PARSER_SERVICE_URL: str = "http://127.0.0.1:9003"
 
+    # Checko API
+    CHECKO_API_KEY: str = ""
+
     # Application
     ENV: str = "development"
     LOG_LEVEL: str = "INFO"
@@ -54,3 +57,4 @@ Settings.log_level = property(lambda self: self.LOG_LEVEL)
 Settings.log_sql = property(lambda self: self.LOG_SQL)
 Settings.attachments_dir = property(lambda self: self.ATTACHMENTS_DIR)
 Settings.cors_origins = property(lambda self: self.CORS_ORIGINS)
+Settings.checko_api_key = property(lambda self: self.CHECKO_API_KEY)
