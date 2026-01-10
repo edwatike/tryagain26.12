@@ -9,7 +9,6 @@ from . import parsing_runs
 from . import domains_queue
 from . import attachments
 from . import checko
-from . import inn_extraction
 from . import comet
 
 __all__ = [
@@ -22,6 +21,5 @@ __all__ = [
     "domains_queue",
     "attachments",
     "checko",
-    "inn_extraction",
     "comet",
 ]

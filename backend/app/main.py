@@ -28,7 +28,6 @@ from app.transport.routers import (
     domains_queue,
     attachments,
     checko,
-    inn_extraction,
     comet,
 )
 
@@ -330,15 +329,13 @@ try:
     app.include_router(domains_queue.router, prefix="/domains", tags=["Domains Queue"])
     app.include_router(attachments.router, prefix="/attachments", tags=["Attachments"])
     app.include_router(checko.router, prefix="/moderator", tags=["Checko"])
-    _router_logger.info("=== Registering inn_extraction router ===")
-    app.include_router(inn_extraction.router, prefix="/inn-extraction", tags=["INN Extraction"])
     _router_logger.info("=== Registering comet router ===")
     app.include_router(comet.router, prefix="/comet", tags=["Comet Extraction"])
     _router_logger.info("=== All routers registered successfully ===")
     # Log registered routes for debugging
     from fastapi.routing import APIRoute
-    inn_routes = [r for r in app.routes if isinstance(r, APIRoute) and '/inn-extraction' in r.path]
-    _router_logger.info(f"=== INN Extraction routes: {[r.path for r in inn_routes]} ===")
+    comet_routes = [r for r in app.routes if isinstance(r, APIRoute) and '/comet' in r.path]
+    _router_logger.info(f"=== Comet routes: {[r.path for r in comet_routes]} ===")
     _router_logger.info(f"=== Total routes after registration: {len([r for r in app.routes if isinstance(r, APIRoute)])} ===")
     _router_logger.info(f"=== App instance ID after router registration: {id(app)} ===")
 except Exception as e:
