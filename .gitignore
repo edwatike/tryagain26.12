@@ -56,3 +56,17 @@ temp_start_all_output.txt
 # Logs directory (created by Tabby scripts)
 logs/
 
+# Domain Parser temporary files
+results_*.json
+results_*.csv
+domains_list.txt
+
+# Test files
+test_*.py
+test_*.html
+test_*.sql
+
+# Duplicate removal scripts (keep in repo)
+# remove_duplicates.py
+# remove_duplicates.sql
+

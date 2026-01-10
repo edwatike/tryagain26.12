@@ -698,7 +698,7 @@ export default function DashboardPage() {
                             </div>
                           )}
                           {/* Последние найденные ссылки */}
-                          {(parsingProgress.parsingLogs.google?.last_links?.length > 0 || parsingProgress.parsingLogs.yandex?.last_links?.length > 0) && (
+                          {((parsingProgress.parsingLogs.google?.last_links?.length ?? 0) > 0 || (parsingProgress.parsingLogs.yandex?.last_links?.length ?? 0) > 0) && (
                             <div className="mt-2">
                               <div className="font-medium text-muted-foreground mb-1">Последние найденные ссылки:</div>
                               <div className="space-y-1 max-h-24 overflow-y-auto pl-2">

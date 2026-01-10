@@ -273,17 +273,17 @@ export function SupplierCard({ supplier, onSupplierUpdate }: SupplierCardProps) 
 
   // Get current year financial data from checkoData if supplier fields are empty
   const currentYearData = supplier.financeYear && checkoData?._finances?.[supplier.financeYear.toString()]
-  const currentRevenue = supplier.revenue ?? currentYearData?.["2110"] ?? 0
-  const currentProfit = supplier.profit ?? currentYearData?.["2400"] ?? 0
+  const currentRevenue = supplier.revenue ?? (currentYearData as any)?.["2110"] ?? 0
+  const currentProfit = supplier.profit ?? (currentYearData as any)?.["2400"] ?? 0
 
   // Get previous year data for comparison
   const previousYear = supplier.financeYear ? supplier.financeYear - 1 : null
   const previousYearData = previousYear && checkoData?._finances?.[previousYear.toString()]
-  const revenueChange = previousYearData?.["2110"]
-    ? calculatePercentageChange(currentRevenue, previousYearData["2110"])
+  const revenueChange = (previousYearData as any)?.["2110"]
+    ? calculatePercentageChange(currentRevenue, (previousYearData as any)["2110"])
     : ""
-  const profitChange = previousYearData?.["2400"]
-    ? calculatePercentageChange(currentProfit, previousYearData["2400"])
+  const profitChange = (previousYearData as any)?.["2400"]
+    ? calculatePercentageChange(currentProfit, (previousYearData as any)["2400"])
     : ""
 
   // Get legal data from checkoData if supplier fields are empty
@@ -351,6 +351,7 @@ export function SupplierCard({ supplier, onSupplierUpdate }: SupplierCardProps) 
   const ratingStars = ratingToStars(reliabilityRating)
 
   return (
+    <>
     <Card className="w-full shadow-lg transition-all duration-300 hover:shadow-xl">
       {/* SECTION 1: HEADER */}
       <CardHeader className="space-y-4">
@@ -425,10 +426,11 @@ export function SupplierCard({ supplier, onSupplierUpdate }: SupplierCardProps) 
           )}
           {supplier.inn && (
             <a
-              href={`https://checko.ru/company/${supplier.inn}`}
+              href={`https://checko.ru/search?query=${supplier.inn}`}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-1 hover:text-foreground"
+              title="Открыть на Checko.ru"
             >
               <ExternalLink className="h-4 w-4" />
               <span className="font-semibold">Checko</span>
@@ -538,7 +540,7 @@ export function SupplierCard({ supplier, onSupplierUpdate }: SupplierCardProps) 
                               }}
                             />
                             <Tooltip 
-                              formatter={(value: number) => formatCurrency(value)}
+                              formatter={(value: number | undefined) => formatCurrency(value ?? 0)}
                               labelStyle={{ color: 'hsl(var(--foreground))' }}
                               contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }}
                             />
@@ -583,7 +585,7 @@ export function SupplierCard({ supplier, onSupplierUpdate }: SupplierCardProps) 
                               }}
                             />
                             <Tooltip 
-                              formatter={(value: number) => formatCurrency(value)}
+                              formatter={(value: number | undefined) => formatCurrency(value ?? 0)}
                               labelStyle={{ color: 'hsl(var(--foreground))' }}
                               contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }}
                             />
@@ -909,8 +911,8 @@ export function SupplierCard({ supplier, onSupplierUpdate }: SupplierCardProps) 
               <h3 className="font-semibold">Руководители</h3>
               <div className="space-y-2">
                 {checkoData.Руковод.map((leader, index) => {
-                  const leaderName = leader.name || leader.Наим || "Не указано"
-                  const leaderInn = leader.ИНН || leader.inn
+                  const leaderName = leader.name || (leader as any).Наим || "Не указано"
+                  const leaderInn = leader.ИНН || (leader as any).inn
                   const leaderPosition = leader.position || leader.Должность
                   
                   return (
@@ -963,7 +965,7 @@ export function SupplierCard({ supplier, onSupplierUpdate }: SupplierCardProps) 
                 variant="outline"
                 className="gap-2"
                 onClick={handleLoadCheckoData}
-                disabled={loadingCheckoData || hasFreshCheckoData}
+                disabled={loadingCheckoData || !!hasFreshCheckoData}
               >
                 <RefreshCw className={`h-4 w-4 ${loadingCheckoData ? "animate-spin" : ""}`} />
                 {loadingCheckoData 
@@ -992,7 +994,6 @@ export function SupplierCard({ supplier, onSupplierUpdate }: SupplierCardProps) 
         </div>
       </CardContent>
     </Card>
-    <>
       {/* Blacklist Dialog */}
       <Dialog open={blacklistDialogOpen} onOpenChange={setBlacklistDialogOpen}>
         <DialogContent>

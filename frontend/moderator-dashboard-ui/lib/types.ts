@@ -187,3 +187,25 @@ export interface CometStatusResponse {
   results: CometExtractionResult[]
 }
 
+export interface DomainParserResult {
+  domain: string
+  inn: string | null
+  emails: string[]
+  sourceUrls: string[]
+  error?: string | null
+}
+
+export interface DomainParserBatchResponse {
+  runId: string
+  parserRunId: string
+}
+
+export interface DomainParserStatusResponse {
+  runId: string
+  parserRunId: string
+  status: "running" | "completed" | "failed"
+  processed: number
+  total: number
+  results: DomainParserResult[]
+}
+

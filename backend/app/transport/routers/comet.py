@@ -18,6 +18,8 @@ from app.transport.schemas.comet import (
     CometExtractBatchResponseDTO,
     CometExtractionResultDTO,
     CometStatusResponseDTO,
+    CometManualBatchRequestDTO,
+    CometManualResultDTO,
 )
 from app.usecases import get_parsing_run
 
@@ -141,6 +143,56 @@ async def get_comet_status(
         total=len(run_data.get("results", [])),
         results=[CometExtractionResultDTO(**r) for r in run_data.get("results", [])]
     )
+
+
+@router.post("/manual-batch", response_model=CometExtractBatchResponseDTO)
+async def add_manual_comet_results(
+    request: CometManualBatchRequestDTO,
+    db: AsyncSession = Depends(get_db)
+):
+    """Manually add Comet results without running assistant (saves limits)."""
+    run_id = request.runId
+    manual_results = request.results
+    
+    logger.info(f"=== MANUAL COMET RESULTS ===")
+    logger.info(f"Run ID: {run_id}")
+    logger.info(f"Manual results: {len(manual_results)} domains")
+    
+    try:
+        # Verify parsing run exists
+        parsing_run = await get_parsing_run.execute(db=db, run_id=run_id)
+        if not parsing_run:
+            raise HTTPException(status_code=404, detail="Parsing run not found")
+        
+        # Generate unique Comet run ID
+        comet_run_id = f"comet_manual_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{uuid.uuid4().hex[:8]}"
+        
+        # Convert manual results to standard format
+        results = []
+        for manual_result in manual_results:
+            result = {
+                "domain": manual_result.domain,
+                "status": "success",
+                "inn": manual_result.inn,
+                "email": manual_result.email,
+                "sourceUrls": manual_result.sourceUrls,
+                "error": None
+            }
+            results.append(result)
+        
+        # Save directly to database
+        await _save_comet_results_to_db(run_id, comet_run_id, results, None)
+        
+        logger.info(f"Manual Comet results saved: {comet_run_id}")
+        
+        return CometExtractBatchResponseDTO(
+            runId=run_id,
+            cometRunId=comet_run_id
+        )
+        
+    except Exception as e:
+        logger.error(f"Error in add_manual_comet_results: {e}")
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
 
 async def _process_comet_batch(comet_run_id: str, run_id: str, domains: List[str]):
@@ -309,10 +361,10 @@ async def _save_comet_results_to_db(run_id: str, comet_run_id: str, results: Lis
     """Save Comet results to parsing run's process_log."""
     try:
         from app.adapters.db.repositories import ParsingRunRepository
-        from app.adapters.db.session import get_async_session
+        from app.adapters.db.session import AsyncSessionLocal
         
         # Create a new session to avoid transaction conflicts
-        async for new_session in get_async_session():
+        async with AsyncSessionLocal() as new_session:
             try:
                 repo = ParsingRunRepository(new_session)
                 parsing_run = await repo.get_by_id(run_id)
@@ -350,7 +402,6 @@ async def _save_comet_results_to_db(run_id: str, comet_run_id: str, results: Lis
                 await new_session.commit()
                 
                 logger.info(f"Saved Comet results for run {run_id}, comet_run_id {comet_run_id}")
-                break
             except Exception as e:
                 logger.error(f"Error in save transaction: {e}")
                 await new_session.rollback()

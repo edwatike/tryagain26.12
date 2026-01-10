@@ -38,3 +38,19 @@ class CometStatusResponseDTO(BaseModel):
     processed: int = Field(..., description="Number of processed domains")
     total: int = Field(..., description="Total number of domains")
     results: List[CometExtractionResultDTO] = Field(default_factory=list)
+
+
+class CometManualResultDTO(BaseModel):
+    """Manual Comet result input (from assistant screenshot)."""
+
+    domain: str = Field(..., description="Domain name")
+    inn: Optional[str] = Field(None, description="INN from assistant")
+    email: Optional[str] = Field(None, description="Email from assistant")
+    sourceUrls: List[str] = Field(default_factory=list, description="Source URLs from assistant")
+
+
+class CometManualBatchRequestDTO(BaseModel):
+    """Request for manually adding Comet results."""
+
+    runId: str = Field(..., description="Parsing run id")
+    results: List[CometManualResultDTO] = Field(..., description="Manual results from assistant", min_length=1)

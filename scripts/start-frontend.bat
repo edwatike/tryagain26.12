@@ -8,4 +8,7 @@ if not exist node_modules (
 echo [Frontend] Starting Next.js on port 3000...
 set NODE_OPTIONS=--max-old-space-size=4096
 npm run dev
-pause
+if errorlevel 1 (
+    echo [Frontend] ERROR: Failed to start
+    exit /b 1
+)

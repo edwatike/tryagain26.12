@@ -29,6 +29,7 @@ from app.transport.routers import (
     attachments,
     checko,
     comet,
+    domain_parser,
 )
 
 
@@ -331,6 +332,8 @@ try:
     app.include_router(checko.router, prefix="/moderator", tags=["Checko"])
     _router_logger.info("=== Registering comet router ===")
     app.include_router(comet.router, prefix="/comet", tags=["Comet Extraction"])
+    _router_logger.info("=== Registering domain_parser router ===")
+    app.include_router(domain_parser.router, prefix="/domain-parser", tags=["Domain Parser"])
     _router_logger.info("=== All routers registered successfully ===")
     # Log registered routes for debugging
     from fastapi.routing import APIRoute

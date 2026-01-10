@@ -122,6 +122,69 @@ async def execute(
     return _format_checko_data_for_frontend(full_data)
 
 
+def _extract_legal_address(company_data: Dict[str, Any]) -> Optional[str]:
+    """Extract legal address from Checko data.
+    
+    Checko API может возвращать адрес в разных форматах:
+    - Строка: "ЮрАдрес": "г Москва, ул Ленина, д 1"
+    - Объект: "ЮрАдрес": {"НасПункт": "г Москва", "Улица": "ул Ленина", ...}
+    - Для ИП может быть в другом поле
+    
+    Args:
+        company_data: Company data from Checko API
+        
+    Returns:
+        Legal address as string or None
+    """
+    import logging
+    logger = logging.getLogger(__name__)
+    
+    legal_addr = company_data.get("ЮрАдрес")
+    
+    # Если адрес уже строка - возвращаем как есть
+    if isinstance(legal_addr, str) and legal_addr.strip():
+        logger.info(f"Legal address (string): {legal_addr}")
+        return legal_addr.strip()
+    
+    # Если адрес - объект, собираем из частей
+    if isinstance(legal_addr, dict):
+        parts = []
+        
+        # Порядок важен для читаемости адреса
+        fields = ["Индекс", "Регион", "Район", "Город", "НасПункт", "Улица", "Дом", "Корпус", "Квартира", "Адрес"]
+        
+        for field in fields:
+            value = legal_addr.get(field)
+            if value and str(value).strip():
+                parts.append(str(value).strip())
+        
+        if parts:
+            address = ", ".join(parts)
+            logger.info(f"Legal address (object): {address}")
+            return address
+    
+    # Для ИП может быть адрес регистрации в другом поле
+    reg_addr = company_data.get("АдресРег")
+    if isinstance(reg_addr, str) and reg_addr.strip():
+        logger.info(f"Legal address (registration): {reg_addr}")
+        return reg_addr.strip()
+    
+    if isinstance(reg_addr, dict):
+        parts = []
+        fields = ["Индекс", "Регион", "Район", "Город", "НасПункт", "Улица", "Дом", "Корпус", "Квартира", "Адрес"]
+        for field in fields:
+            value = reg_addr.get(field)
+            if value and str(value).strip():
+                parts.append(str(value).strip())
+        if parts:
+            address = ", ".join(parts)
+            logger.info(f"Legal address (registration object): {address}")
+            return address
+    
+    logger.warning(f"Legal address not found in Checko data. Available keys: {list(company_data.keys())}")
+    return None
+
+
 def _format_checko_data_for_frontend(full_data: Dict[str, Any]) -> Dict[str, Any]:
     """Format Checko data for frontend consumption.
     
@@ -131,7 +194,15 @@ def _format_checko_data_for_frontend(full_data: Dict[str, Any]) -> Dict[str, Any
     Returns:
         Formatted data for frontend
     """
+    import logging
+    logger = logging.getLogger(__name__)
+    
     company_data = full_data
+    
+    # Определяем тип организации по длине ИНН
+    inn = company_data.get("ИНН", "")
+    is_ip = len(inn) == 12
+    logger.info(f"Processing {'ИП' if is_ip else 'ООО/ОАО'} with INN: {inn}")
     
     # Извлекаем основные поля
     result = {
@@ -146,13 +217,7 @@ def _format_checko_data_for_frontend(full_data: Dict[str, Any]) -> Dict[str, Any
         "okpo": company_data.get("ОКПО"),
         "companyStatus": company_data.get("Статус", {}).get("Наим") if isinstance(company_data.get("Статус"), dict) else None,
         "registrationDate": company_data.get("ДатаРег"),
-        "legalAddress": (
-            company_data.get("ЮрАдрес") if isinstance(company_data.get("ЮрАдрес"), str)
-            else (company_data.get("ЮрАдрес", {}).get("НасПункт") or 
-                  company_data.get("ЮрАдрес", {}).get("Адрес") or
-                  str(company_data.get("ЮрАдрес", "")) if company_data.get("ЮрАдрес") else None)
-            if isinstance(company_data.get("ЮрАдрес"), dict) else None
-        ),
+        "legalAddress": _extract_legal_address(company_data),
         "phone": company_data.get("Контакты", {}).get("Телефон") if isinstance(company_data.get("Контакты"), dict) else None,
         "website": company_data.get("Контакты", {}).get("ВебСайт") if isinstance(company_data.get("Контакты"), dict) else None,
         "vk": company_data.get("Контакты", {}).get("ВК") if isinstance(company_data.get("Контакты"), dict) else None,

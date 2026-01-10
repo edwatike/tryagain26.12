@@ -204,9 +204,10 @@ export function SupplierEditClient({ supplierId }: { supplierId: number }) {
         // Улучшенная обработка ошибок валидации
         if (err.status === 422) {
           // Ошибки валидации от Backend
-          const validationErrors = Array.isArray(err.data?.detail) 
-            ? err.data.detail.map((e: any) => e.msg || e.message || JSON.stringify(e)).join(', ')
-            : err.data?.detail || err.message
+          const errorData = err.data as any
+          const validationErrors = Array.isArray(errorData?.detail) 
+            ? errorData.detail.map((e: any) => e.msg || e.message || JSON.stringify(e)).join(', ')
+            : errorData?.detail || err.message
           setError(`Ошибка валидации: ${validationErrors}`)
         } else {
           setError(err.message || `Ошибка сохранения (${err.status})`)

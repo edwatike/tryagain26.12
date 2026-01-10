@@ -560,19 +560,18 @@ async def test_single_domain(domain: str) -> dict:
         result["error"] = "Playwright not installed"
         return result
     
-    # Проверяем CDP
+    # Проверяем CDP - пытаемся подключиться через Playwright
     cdp_url = "http://127.0.0.1:9222"
+    logger.info("🔍 Проверяю доступность CDP...")
+    
+    # Пробуем получить список targets (игнорируем статус код)
     try:
         response = requests.get(f"{cdp_url}/json", timeout=5)
-        if response.status_code != 200:
-            logger.error("❌ CDP недоступен")
-            result["error"] = "CDP unavailable"
-            return result
-        logger.info("✅ CDP доступен")
+        # Даже если статус 503, CDP может быть доступен для Playwright
+        logger.info(f"📍 CDP ответил со статусом {response.status_code}")
     except Exception as e:
-        logger.error(f"❌ Ошибка CDP: {e}")
-        result["error"] = f"CDP error: {e}"
-        return result
+        logger.warning(f"⚠️ Не удалось проверить CDP через HTTP: {e}")
+        logger.info("⏳ Попробую подключиться через Playwright напрямую...")
     
     # Подключаемся
     playwright = await async_playwright().start()

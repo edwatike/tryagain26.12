@@ -36,28 +36,34 @@ export function CheckoInfoDialog({ inn, onDataLoaded }: CheckoInfoDialogProps) {
       const data = await getCheckoData(inn)
 
       // Формируем данные в формате, ожидаемом onDataLoaded
+      // Гарантируем строковые значения вместо null/undefined для всех текстовых полей
       const updates: any = {
-        name: data.name,
-        ogrn: data.ogrn,
-        kpp: data.kpp,
-        okpo: data.okpo,
-        companyStatus: data.companyStatus,
-        registrationDate: data.registrationDate,
-        legalAddress: data.legalAddress,
-        phone: data.phone,
-        website: data.website,
-        vk: data.vk,
-        telegram: data.telegram,
-        authorizedCapital: data.authorizedCapital,
-        revenue: data.revenue,
-        profit: data.profit,
-        financeYear: data.financeYear,
-        legalCasesCount: data.legalCasesCount,
-        legalCasesSum: data.legalCasesSum,
-        legalCasesAsPlaintiff: data.legalCasesAsPlaintiff,
-        legalCasesAsDefendant: data.legalCasesAsDefendant,
-        checkoData: data.checkoData,
+        name: data.name || "",
+        ogrn: data.ogrn || "",
+        kpp: data.kpp || "",
+        okpo: data.okpo || "",
+        companyStatus: data.companyStatus || "",
+        registrationDate: data.registrationDate || "",
+        legalAddress: data.legalAddress || "",
+        address: data.legalAddress || "",  // ✅ Заполняем поле "Адрес" юридическим адресом
+        phone: data.phone || "",
+        website: data.website || "",
+        vk: data.vk || "",
+        telegram: data.telegram || "",
+        authorizedCapital: data.authorizedCapital ?? null,
+        revenue: data.revenue ?? null,
+        profit: data.profit ?? null,
+        financeYear: data.financeYear ?? null,
+        legalCasesCount: data.legalCasesCount ?? null,
+        legalCasesSum: data.legalCasesSum ?? null,
+        legalCasesAsPlaintiff: data.legalCasesAsPlaintiff ?? null,
+        legalCasesAsDefendant: data.legalCasesAsDefendant ?? null,
+        checkoData: data.checkoData || null,
       }
+      
+      console.log('[Checko] Loaded data:', updates)
+      console.log('[Checko] Legal Address:', updates.legalAddress)
+      console.log('[Checko] Address field:', updates.address)
 
       onDataLoaded(updates)
       setOpen(false)

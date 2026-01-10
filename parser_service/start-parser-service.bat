@@ -69,10 +69,8 @@ if errorlevel 1 (
     echo.
     echo [ERROR] Parser Service failed to start
     echo Check the error messages above
-    pause
     exit /b 1
 )
-pause
 
 
 

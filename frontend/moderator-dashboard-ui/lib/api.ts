@@ -9,6 +9,8 @@ import type {
   INNExtractionBatchResponse,
   CometExtractBatchResponse,
   CometStatusResponse,
+  DomainParserBatchResponse,
+  DomainParserStatusResponse,
 } from "./types"
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000"
@@ -592,5 +594,20 @@ export async function startCometExtractBatch(runId: string, domains: string[]): 
 export async function getCometStatus(runId: string, cometRunId: string): Promise<CometStatusResponse> {
   const q = new URLSearchParams({ cometRunId }).toString()
   return apiFetch<CometStatusResponse>(`/comet/status/${runId}?${q}`)
+}
+
+// Domain Parser API
+export async function startDomainParserBatch(runId: string, domains: string[]): Promise<DomainParserBatchResponse> {
+  return apiFetch<DomainParserBatchResponse>("/domain-parser/extract-batch", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ runId, domains }),
+  })
+}
+
+export async function getDomainParserStatus(parserRunId: string): Promise<DomainParserStatusResponse> {
+  return apiFetch<DomainParserStatusResponse>(`/domain-parser/status/${parserRunId}`)
 }
 

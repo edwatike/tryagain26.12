@@ -21,6 +21,7 @@
 - [Ошибка: Bulk delete не удаляет записи](#ошибка-bulk-delete-не-удаляет-записи)
 - [Ошибка: Неправильные пути после перемещения .bat файлов](#ошибка-неправильные-пути-после-перемещения-bat-файлов-в-scripts)
 - [Ошибка: Endpoint возвращает 404, хотя роутер зарегистрирован](#ошибка-endpoint-возвращает-404-хотя-роутер-зарегистрирован)
+- [Ошибка: Comet Extraction не работает](#ошибка-comet-extraction-не-работает)
 
 ### Как пользоваться этим файлом
 
@@ -1417,5 +1418,194 @@ curl -s "http://127.0.0.1:8000/moderator/blacklist?limit=100"
 - `DomainQueueRepository.delete()`
 - `ParsingRunRepository.delete()`
 - `ModeratorSupplierRepository.delete()`
+
+---
+
+## Ошибка: Comet Extraction не работает
+
+### Симптомы
+- Кнопка "Comet" на фронтенде не возвращает результаты
+- Backend логи показывают "CDP unavailable"
+- Скрипт `test_single_domain.py` возвращает ошибку
+- AI-ассистент не открывается или не отвечает
+
+### Причины и решения
+
+#### Причина 1: Comet browser не запущен с CDP
+
+**Симптомы:**
+- Ошибка "CDP unavailable"
+- `curl http://127.0.0.1:9222/json` возвращает ошибку подключения
+
+**Решение:**
+```powershell
+# Закрыть все процессы Comet
+Get-Process comet -ErrorAction SilentlyContinue | Stop-Process -Force
+Start-Sleep -Seconds 3
+
+# Запустить Comet с CDP
+Start-Process "C:\Users\admin\AppData\Local\Perplexity\Comet\Application\comet.exe" -ArgumentList "--remote-debugging-port=9222"
+Start-Sleep -Seconds 15
+
+# Проверить CDP
+curl http://127.0.0.1:9222/json
+```
+
+**Или через скрипт:**
+```batch
+cd d:\tryagain\scripts
+.\start-comet-cdp.bat
+```
+
+**Проверка успеха:**
+- CDP должен вернуть JSON с targets
+- В списке должна быть страница `perplexity.ai/sidecar?copilot=true`
+- В списке должна быть страница `chrome://sidebar`
+
+#### Причина 2: Исчерпан лимит Perplexity
+
+**Симптомы:**
+- CDP работает
+- Comet browser открывается
+- AI-ассистент показывает сообщение: "Вы исчерпали свой недельный лимит на автоматизированные задачи"
+- Скрипт возвращает "Assistant panel not opened"
+
+**Решение:**
+1. **Подождать до следующей недели** (лимит обновляется еженедельно)
+2. **Обновить тариф до Max** (в 5 раз больше использований)
+3. **Использовать другой аккаунт Perplexity**
+
+**Как проверить лимит:**
+1. Открыть Comet browser вручную
+2. Открыть любой сайт
+3. Нажать Alt+A для открытия AI-ассистента
+4. Попробовать отправить любой запрос
+5. Если появляется сообщение о лимите - нужно ждать или обновлять тариф
+
+#### Причина 3: Используется Chrome вместо Comet
+
+**Симптомы:**
+- CDP работает, но нет страницы `perplexity.ai/sidecar`
+- Только страницы `chrome://newtab/`
+- AI-ассистент не открывается
+
+**Решение:**
+**ВАЖНО:** Нужен именно **Comet browser от Perplexity**, а не обычный Chrome!
+
+```powershell
+# Закрыть Chrome
+Get-Process chrome -ErrorAction SilentlyContinue | Stop-Process -Force
+
+# Запустить COMET (не Chrome!)
+Start-Process "C:\Users\admin\AppData\Local\Perplexity\Comet\Application\comet.exe" -ArgumentList "--remote-debugging-port=9222"
+```
+
+#### Причина 4: CDP возвращает 503
+
+**Симптомы:**
+- Порт 9222 слушается
+- `curl` работает, но Python скрипт получает 503
+- Ошибка "CDP unavailable after 20 seconds"
+
+**Решение:**
+Это нормально - CDP нужно время для полного запуска. Скрипт уже исправлен и пытается подключиться через Playwright напрямую, игнорируя статус код HTTP.
+
+**Если проблема сохраняется:**
+```powershell
+# Перезапустить Comet и подождать дольше
+Get-Process comet | Stop-Process -Force
+Start-Sleep -Seconds 5
+Start-Process "C:\Users\admin\AppData\Local\Perplexity\Comet\Application\comet.exe" -ArgumentList "--remote-debugging-port=9222"
+Start-Sleep -Seconds 20  # Увеличено время ожидания
+```
+
+#### Причина 5: Порт 9222 занят другим процессом
+
+**Симптомы:**
+- Comet не запускается
+- Ошибка при попытке запуска
+
+**Решение:**
+```powershell
+# Найти процесс, занимающий порт
+netstat -ano | findstr "9222"
+
+# Убить процесс (замените PID на реальный)
+taskkill /F /PID <PID>
+
+# Перезапустить Comet
+.\scripts\start-comet-cdp.bat
+```
+
+### Проверка работоспособности
+
+**1. Проверить CDP:**
+```bash
+curl http://127.0.0.1:9222/json
+```
+
+Должны увидеть:
+```json
+[
+  {
+    "url": "https://www.perplexity.ai/sidecar?copilot=true",
+    "type": "page"
+  }
+]
+```
+
+**2. Тест через скрипт:**
+```bash
+cd d:\tryagain\experiments\comet-integration
+python test_single_domain.py --domain kranikoff.ru --json
+```
+
+**3. Тест через Backend:**
+```bash
+curl -X POST "http://127.0.0.1:8000/comet/extract-batch" \
+  -H "Content-Type: application/json" \
+  -d '{"runId":"test","domains":["kranikoff.ru"]}'
+```
+
+**4. Тест через Frontend:**
+- Открыть http://localhost:3000
+- Перейти на Parsing Run Details
+- Выбрать домены
+- Нажать "Comet"
+
+### Логи для отладки
+
+**Backend логи:**
+```powershell
+Get-Content "d:\tryagain\logs\Backend-*.log" -Tail 50 | Select-String "Comet"
+```
+
+**Comet скрипт логи:**
+```powershell
+Get-Content "d:\tryagain\experiments\comet-integration\single_domain_test.log" -Tail 100
+```
+
+**Debug артефакты:**
+```powershell
+Get-ChildItem "d:\tryagain\experiments\comet-integration\cdp_debug\" | Sort-Object LastWriteTime -Descending | Select-Object -First 10
+```
+
+### Измененные файлы
+- `experiments/comet-integration/test_single_domain.py` - исправлена проверка CDP (игнорирует 503)
+- `scripts/start-comet-cdp.bat` - скрипт запуска Comet с CDP
+- `docs/COMET_SETUP_GUIDE.md` - полное руководство по настройке
+
+### Дата решения
+2026-01-10 ✅ **РЕШЕНО И ПРОТЕСТИРОВАНО**
+
+### Важные замечания
+1. **Нужен именно Comet browser**, а не Chrome
+2. **Требуется аккаунт Perplexity** с доступными лимитами
+3. **CDP нужно время для запуска** - подождите 15-20 секунд
+4. **Лимиты обновляются еженедельно** - если исчерпан, нужно ждать
+
+### Документация
+- Полное руководство: `docs/COMET_SETUP_GUIDE.md`
+- Интеграция: `docs/COMET_INTEGRATION.md`
 
 ---

@@ -20,13 +20,13 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Navigation } from "@/components/navigation"
 import { CheckoInfoDialog } from "@/components/checko-info-dialog"
-import { getParsingRun, getDomainsQueue, getBlacklist, addToBlacklist, createSupplier, updateSupplier, getSuppliers, getParsingLogs, extractINNBatch, startCometExtractBatch, getCometStatus, getCheckoData, APIError } from "@/lib/api"
+import { getParsingRun, getDomainsQueue, getBlacklist, addToBlacklist, createSupplier, updateSupplier, getSuppliers, getParsingLogs, extractINNBatch, startCometExtractBatch, getCometStatus, getCheckoData, startDomainParserBatch, getDomainParserStatus, APIError } from "@/lib/api"
 import { groupByDomain, extractRootDomain, collectDomainSources, normalizeUrl } from "@/lib/utils-domain"
 import { getCachedSuppliers, setCachedSuppliers, getCachedBlacklist, setCachedBlacklist, invalidateSuppliersCache, invalidateBlacklistCache } from "@/lib/cache"
 import { toast } from "sonner"
 import { ExternalLink, Copy, FileSearch } from "lucide-react"
 import { Checkbox } from "@/components/ui/checkbox"
-import type { ParsingDomainGroup, ParsingRunDTO, INNExtractionResult, CometExtractionResult, CometStatusResponse, SupplierDTO } from "@/lib/types"
+import type { ParsingDomainGroup, ParsingRunDTO, INNExtractionResult, CometExtractionResult, CometStatusResponse, SupplierDTO, DomainParserResult, DomainParserStatusResponse } from "@/lib/types"
 
 export default function ParsingRunDetailsPage({ params }: { params: Promise<{ runId: string }> }) {
   const router = useRouter()
@@ -92,9 +92,16 @@ export default function ParsingRunDetailsPage({ params }: { params: Promise<{ ru
   const [cometLoading, setCometLoading] = useState(false)
   const [cometResultsMap, setCometResultsMap] = useState<Map<string, CometExtractionResult>>(new Map())
 
+  const [parserRunId, setParserRunId] = useState<string | null>(null)
+  const [parserStatus, setParserStatus] = useState<DomainParserStatusResponse | null>(null)
+  const [parserLoading, setParserLoading] = useState(false)
+  const [parserResultsMap, setParserResultsMap] = useState<Map<string, DomainParserResult>>(new Map())
+
   const suppliersByDomainRef = useRef<Map<string, SupplierDTO>>(new Map())
   const cometAutofillDoneRef = useRef<Set<string>>(new Set())
   const cometAutofillLockRef = useRef<Set<string>>(new Set())
+  const parserAutofillDoneRef = useRef<Set<string>>(new Set())
+  const parserAutoSaveProcessedRef = useRef<boolean>(false)
   
   // Функция для определения источников URL на основе parsing_logs и source из БД
   // Используем parsing_logs как основной источник, но fallback на source из БД
@@ -394,6 +401,197 @@ export default function ParsingRunDetailsPage({ params }: { params: Promise<{ ru
       void autoUpsert(domain, res)
     }
   }, [runId, cometRunId, cometResultsMap])
+
+  // Polling для Domain Parser статуса
+  useEffect(() => {
+    if (!parserRunId) return
+
+    const poll = async () => {
+      try {
+        const status = await getDomainParserStatus(parserRunId)
+        setParserStatus(status)
+        if (status.results && status.results.length > 0) {
+          setParserResultsMap((prev) => {
+            const next = new Map(prev)
+            for (const r of status.results) {
+              next.set(r.domain, r)
+            }
+            return next
+          })
+        }
+      } catch (e) {
+        // silent
+      }
+    }
+
+    poll()
+    const t = setInterval(poll, 2000)
+    return () => clearInterval(t)
+  }, [runId, parserRunId])
+
+  // Автоматическое сохранение доменов с ИНН+email после Domain Parser
+  // С ЗАЩИТОЙ ОТ ДУБЛИКАТОВ через проверку существования по домену
+  useEffect(() => {
+    if (!runId || !parserRunId || !parserStatus) return
+    if (parserStatus.status !== 'completed') return
+    if (!parserResultsMap || parserResultsMap.size === 0) return
+    
+    // Проверяем, не обработали ли мы уже этот parserRunId
+    if (parserAutoSaveProcessedRef.current) {
+      console.log('[Domain Parser AutoSave] Already processed, skipping')
+      return
+    }
+
+    // Автоматически сохраняем домены с ИНН и Email
+    const autoSaveDomains = async () => {
+      // Устанавливаем флаг сразу, чтобы предотвратить повторные запуски
+      parserAutoSaveProcessedRef.current = true
+      
+      console.log('[Domain Parser AutoSave] Starting auto-save for domains with INN+Email')
+      
+      // КРИТИЧНО: Загружаем актуальный список поставщиков из БД перед началом
+      let currentSuppliers: Map<string, SupplierDTO>
+      try {
+        const { suppliers } = await getSuppliers()
+        currentSuppliers = new Map()
+        for (const s of suppliers) {
+          if (s.domain) {
+            currentSuppliers.set(s.domain.toLowerCase(), s)
+          }
+        }
+        console.log(`[Domain Parser AutoSave] Loaded ${currentSuppliers.size} existing suppliers from DB`)
+      } catch (e) {
+        console.error('[Domain Parser AutoSave] Failed to load suppliers, aborting:', e)
+        toast.error('Ошибка загрузки списка поставщиков')
+        return
+      }
+      
+      let savedCount = 0
+      let skippedCount = 0
+      
+      for (const [domain, result] of parserResultsMap.entries()) {
+        // Пропускаем домены с ошибками или без данных
+        if (result.error || (!result.inn && !result.emails?.length)) {
+          console.log(`[Domain Parser AutoSave] Skipping ${domain}: no INN or email`)
+          skippedCount++
+          continue
+        }
+        
+        // Сохраняем только если есть ИНН И Email
+        if (!result.inn || !result.emails || result.emails.length === 0) {
+          console.log(`[Domain Parser AutoSave] Skipping ${domain}: missing INN or email`)
+          skippedCount++
+          continue
+        }
+        
+        const rootDomain = extractRootDomain(domain).toLowerCase()
+        
+        // КРИТИЧНО: Проверяем существование в актуальном списке из БД
+        const existing = currentSuppliers.get(rootDomain)
+        
+        if (existing) {
+          console.log(`[Domain Parser AutoSave] Skipping ${domain}: already exists as supplier (ID: ${existing.id})`)
+          skippedCount++
+          continue
+        }
+        
+        const inn = result.inn
+        const email = result.emails[0]
+        
+        console.log(`[Domain Parser AutoSave] Auto-saving ${domain}: INN=${inn}, Email=${email}`)
+        
+        try {
+          // ОБЯЗАТЕЛЬНО загружаем данные из Checko
+          let checko: any = null
+          try {
+            console.log(`[Domain Parser AutoSave] Fetching Checko data for INN: ${inn}`)
+            checko = await getCheckoData(inn, false)
+            console.log(`[Domain Parser AutoSave] Checko data received:`, checko ? 'success' : 'null')
+          } catch (e) {
+            console.error(`[Domain Parser AutoSave] Failed to fetch Checko data:`, e)
+            // Продолжаем без Checko данных
+          }
+          
+          const baseName = (checko?.name && String(checko.name).trim()) || rootDomain
+          
+          // Создаем поставщика сразу со всеми данными из Checko
+          const supplierData: any = {
+            name: baseName,
+            inn,
+            email,
+            domain: rootDomain,
+            type: "supplier",
+          }
+          
+          // Добавляем данные из Checko если есть
+          if (checko) {
+            supplierData.ogrn = checko.ogrn || null
+            supplierData.kpp = checko.kpp || null
+            supplierData.okpo = checko.okpo || null
+            // Обрезаем до лимитов БД
+            supplierData.companyStatus = checko.companyStatus ? checko.companyStatus.substring(0, 50) : null
+            supplierData.registrationDate = checko.registrationDate || null
+            supplierData.legalAddress = checko.legalAddress || null
+            supplierData.address = checko.legalAddress || null
+            supplierData.phone = checko.phone ? checko.phone.substring(0, 50) : null
+            supplierData.website = checko.website || null
+            supplierData.vk = checko.vk || null
+            supplierData.telegram = checko.telegram || null
+            // Числовые поля:确保传递 number | null
+            supplierData.authorizedCapital = (checko.authorizedCapital !== undefined && checko.authorizedCapital !== null) ? Number(checko.authorizedCapital) : null
+            supplierData.revenue = (checko.revenue !== undefined && checko.revenue !== null) ? Number(checko.revenue) : null
+            supplierData.profit = (checko.profit !== undefined && checko.profit !== null) ? Number(checko.profit) : null
+            supplierData.financeYear = (checko.financeYear !== undefined && checko.financeYear !== null) ? Number(checko.financeYear) : null
+            supplierData.legalCasesCount = (checko.legalCasesCount !== undefined && checko.legalCasesCount !== null) ? Number(checko.legalCasesCount) : null
+            supplierData.legalCasesSum = (checko.legalCasesSum !== undefined && checko.legalCasesSum !== null) ? Number(checko.legalCasesSum) : null
+            supplierData.legalCasesAsPlaintiff = (checko.legalCasesAsPlaintiff !== undefined && checko.legalCasesAsPlaintiff !== null) ? Number(checko.legalCasesAsPlaintiff) : null
+            supplierData.legalCasesAsDefendant = (checko.legalCasesAsDefendant !== undefined && checko.legalCasesAsDefendant !== null) ? Number(checko.legalCasesAsDefendant) : null
+            supplierData.checkoData = checko.checkoData || null
+          }
+          
+          const saved = await createSupplier(supplierData)
+          
+          console.log(`[Domain Parser AutoSave] Created supplier with Checko data:`, saved)
+          
+          // Добавляем в локальный список чтобы избежать повторного создания
+          currentSuppliers.set(rootDomain, saved)
+          
+          toast.success(`✅ ${domain}: сохранен как поставщик`)
+          savedCount++
+          
+          // Небольшая пауза между сохранениями
+          await new Promise(resolve => setTimeout(resolve, 500))
+          
+        } catch (error) {
+          console.error(`[Domain Parser AutoSave] Error saving ${domain}:`, error)
+          toast.error(`Ошибка сохранения ${domain}`)
+        }
+      }
+      
+      console.log(`[Domain Parser AutoSave] Completed: saved=${savedCount}, skipped=${skippedCount}`)
+      
+      // Перезагружаем список поставщиков
+      if (savedCount > 0) {
+        try {
+          const { suppliers } = await getSuppliers()
+          const newMap = new Map<string, SupplierDTO>()
+          for (const s of suppliers) {
+            if (s.domain) {
+              newMap.set(s.domain.toLowerCase(), s)
+            }
+          }
+          suppliersByDomainRef.current = newMap
+          invalidateSuppliersCache()
+          console.log('[Domain Parser AutoSave] Suppliers list refreshed')
+          toast.success(`Автосохранение завершено: ${savedCount} новых поставщиков`)
+        } catch (e) {
+          console.error('[Domain Parser AutoSave] Failed to refresh suppliers:', e)
+        }
+      }
+    }
+    
+    autoSaveDomains()
+  }, [runId, parserRunId, parserStatus, parserResultsMap])
 
   // Загрузка логов парсера (один раз при загрузке run, даже если парсинг завершен)
   useEffect(() => {
@@ -748,10 +946,26 @@ export default function ParsingRunDetailsPage({ params }: { params: Promise<{ ru
         })
       }
     } else {
+      // Для нового поставщика проверяем данные из Domain Parser
+      const rootDomain = extractRootDomain(domain).toLowerCase()
+      const parserResult = parserResultsMap.get(rootDomain) || parserResultsMap.get(domain)
+      
+      let prefillInn = ""
+      let prefillEmail = ""
+      
+      if (parserResult && !parserResult.error) {
+        prefillInn = parserResult.inn || ""
+        prefillEmail = parserResult.emails && parserResult.emails.length > 0 ? parserResult.emails[0] : ""
+        
+        if (prefillInn || prefillEmail) {
+          console.log(`[Domain Parser] Предзаполнение для ${domain}: INN=${prefillInn}, Email=${prefillEmail}`)
+        }
+      }
+      
       setSupplierForm({
         name: "",
-        inn: "",
-        email: "",
+        inn: prefillInn,
+        email: prefillEmail,
         domain: domain,
         address: "",
         type: type,
@@ -804,21 +1018,23 @@ export default function ParsingRunDetailsPage({ params }: { params: Promise<{ ru
           ogrn: supplierForm.ogrn || null,
           kpp: supplierForm.kpp || null,
           okpo: supplierForm.okpo || null,
-          companyStatus: supplierForm.companyStatus || null,
+          // Обрезаем до лимитов БД
+          companyStatus: supplierForm.companyStatus ? supplierForm.companyStatus.substring(0, 50) : null,
           registrationDate: supplierForm.registrationDate || null,
           legalAddress: supplierForm.legalAddress || null,
-          phone: supplierForm.phone || null,
+          phone: supplierForm.phone ? supplierForm.phone.substring(0, 50) : null,
           website: supplierForm.website || null,
           vk: supplierForm.vk || null,
           telegram: supplierForm.telegram || null,
-          authorizedCapital: supplierForm.authorizedCapital,
-          revenue: supplierForm.revenue,
-          profit: supplierForm.profit,
-          financeYear: supplierForm.financeYear,
-          legalCasesCount: supplierForm.legalCasesCount,
-          legalCasesSum: supplierForm.legalCasesSum,
-          legalCasesAsPlaintiff: supplierForm.legalCasesAsPlaintiff,
-          legalCasesAsDefendant: supplierForm.legalCasesAsDefendant,
+          // Числовые поля:确保传递 number | null
+          authorizedCapital: supplierForm.authorizedCapital !== undefined ? supplierForm.authorizedCapital : null,
+          revenue: supplierForm.revenue !== undefined ? supplierForm.revenue : null,
+          profit: supplierForm.profit !== undefined ? supplierForm.profit : null,
+          financeYear: supplierForm.financeYear !== undefined ? supplierForm.financeYear : null,
+          legalCasesCount: supplierForm.legalCasesCount !== undefined ? supplierForm.legalCasesCount : null,
+          legalCasesSum: supplierForm.legalCasesSum !== undefined ? supplierForm.legalCasesSum : null,
+          legalCasesAsPlaintiff: supplierForm.legalCasesAsPlaintiff !== undefined ? supplierForm.legalCasesAsPlaintiff : null,
+          legalCasesAsDefendant: supplierForm.legalCasesAsDefendant !== undefined ? supplierForm.legalCasesAsDefendant : null,
           checkoData: supplierForm.checkoData,
         })
         toast.success(`${supplierForm.type === "supplier" ? "Поставщик" : "Реселлер"} обновлен`)
@@ -835,21 +1051,23 @@ export default function ParsingRunDetailsPage({ params }: { params: Promise<{ ru
           ogrn: supplierForm.ogrn || null,
           kpp: supplierForm.kpp || null,
           okpo: supplierForm.okpo || null,
-          companyStatus: supplierForm.companyStatus || null,
+          // Обрезаем до лимитов БД
+          companyStatus: supplierForm.companyStatus ? supplierForm.companyStatus.substring(0, 50) : null,
           registrationDate: supplierForm.registrationDate || null,
           legalAddress: supplierForm.legalAddress || null,
-          phone: supplierForm.phone || null,
+          phone: supplierForm.phone ? supplierForm.phone.substring(0, 50) : null,
           website: supplierForm.website || null,
           vk: supplierForm.vk || null,
           telegram: supplierForm.telegram || null,
-          authorizedCapital: supplierForm.authorizedCapital,
-          revenue: supplierForm.revenue,
-          profit: supplierForm.profit,
-          financeYear: supplierForm.financeYear,
-          legalCasesCount: supplierForm.legalCasesCount,
-          legalCasesSum: supplierForm.legalCasesSum,
-          legalCasesAsPlaintiff: supplierForm.legalCasesAsPlaintiff,
-          legalCasesAsDefendant: supplierForm.legalCasesAsDefendant,
+          // Числовые поля:确保传递 number | null
+          authorizedCapital: supplierForm.authorizedCapital !== undefined ? supplierForm.authorizedCapital : null,
+          revenue: supplierForm.revenue !== undefined ? supplierForm.revenue : null,
+          profit: supplierForm.profit !== undefined ? supplierForm.profit : null,
+          financeYear: supplierForm.financeYear !== undefined ? supplierForm.financeYear : null,
+          legalCasesCount: supplierForm.legalCasesCount !== undefined ? supplierForm.legalCasesCount : null,
+          legalCasesSum: supplierForm.legalCasesSum !== undefined ? supplierForm.legalCasesSum : null,
+          legalCasesAsPlaintiff: supplierForm.legalCasesAsPlaintiff !== undefined ? supplierForm.legalCasesAsPlaintiff : null,
+          legalCasesAsDefendant: supplierForm.legalCasesAsDefendant !== undefined ? supplierForm.legalCasesAsDefendant : null,
           checkoData: supplierForm.checkoData,
         })
         toast.success(`${supplierForm.type === "supplier" ? "Поставщик" : "Реселлер"} создан`)
@@ -1028,48 +1246,51 @@ export default function ParsingRunDetailsPage({ params }: { params: Promise<{ ru
     toast.success(`Скопировано ${domainsArray.length} доменов`)
   }
 
-  // Функция для извлечения ИНН
-  const handleExtractINN = async () => {
+  // Функция для запуска Domain Parser (получение данных)
+  const handleDomainParser = async () => {
     if (selectedDomains.size === 0) {
       toast.error("Выберите хотя бы один домен")
       return
     }
+    if (!runId) {
+      toast.error("runId не найден")
+      return
+    }
 
-    setInnExtractionDialogOpen(true)
-    setInnExtractionLoading(true)
-    setInnExtractionResults([])
-    setInnExtractionProgress({ processed: 0, total: selectedDomains.size })
+    // Фильтруем домены: только те, которые НЕ являются поставщиками
+    const domainsArray = Array.from(selectedDomains)
+    const domainsWithoutSuppliers = domainsArray.filter(domain => {
+      const rootDomain = extractRootDomain(domain).toLowerCase()
+      const supplier = suppliersByDomainRef.current.get(rootDomain)
+      return !supplier // Только домены без поставщиков
+    })
 
+    if (domainsWithoutSuppliers.length === 0) {
+      toast.info("Все выбранные домены уже являются поставщиками")
+      return
+    }
+
+    console.log('[Domain Parser] Starting for domains:', domainsWithoutSuppliers)
+    setParserLoading(true)
+    
     try {
-      const domainsArray = Array.from(selectedDomains)
-      const response = await extractINNBatch(domainsArray)
-      setInnExtractionResults(response.results)
-      setInnExtractionProgress({ processed: response.processed, total: response.total })
-      toast.success(`Обработано ${response.processed} из ${response.total} доменов`)
+      const resp = await startDomainParserBatch(runId, domainsWithoutSuppliers)
+      setParserRunId(resp.parserRunId)
+      toast.success(`Парсер запущен для ${domainsWithoutSuppliers.length} доменов`)
+      
+      if (domainsArray.length > domainsWithoutSuppliers.length) {
+        const skipped = domainsArray.length - domainsWithoutSuppliers.length
+        toast.info(`Пропущено ${skipped} доменов (уже поставщики)`)
+      }
     } catch (error) {
-      // Обрабатываем разные типы ошибок
+      console.error('[Domain Parser] Error:', error)
       if (error instanceof APIError) {
-        if (error.status === 404) {
-          // 404 - ожидаемая ошибка (домен не найден в БД), не логируем как error
-          console.warn(`[INN Extraction] Some domains not found (404). This is expected if domains are not in database.`)
-          // Показываем информационное сообщение пользователю
-          toast.info("Некоторые домены не найдены в базе данных")
-        } else if (error.status === 503) {
-          // Сервер недоступен
-          console.error("[INN Extraction] Server unavailable:", error)
-          toast.error(`Сервер недоступен. Проверьте, что Backend запущен.`)
-        } else {
-          // Другие ошибки
-          console.error("[INN Extraction] Error:", error)
-          toast.error(`Ошибка при извлечении ИНН: ${error.message}`)
-        }
+        toast.error(`Ошибка парсера: ${error.message}`)
       } else {
-        // Неожиданная ошибка
-        console.error("[INN Extraction] Unexpected error:", error)
-        toast.error(error instanceof Error ? error.message : "Неожиданная ошибка при извлечении ИНН")
+        toast.error(error instanceof Error ? error.message : "Ошибка запуска парсера")
       }
     } finally {
-      setInnExtractionLoading(false)
+      setParserLoading(false)
     }
   }
 
@@ -1158,11 +1379,12 @@ export default function ParsingRunDetailsPage({ params }: { params: Promise<{ ru
                   </Button>
                   <Button
                     size="sm"
-                    onClick={handleExtractINN}
+                    onClick={handleDomainParser}
+                    disabled={parserLoading}
                     className="h-8 text-xs bg-blue-600 hover:bg-blue-700"
                   >
                     <FileSearch className="h-3 w-3 mr-1" />
-                    Извлечь ИНН ({selectedDomains.size})
+                    Получить данные ({selectedDomains.size})
                   </Button>
                   <Button
                     size="sm"
@@ -1178,6 +1400,32 @@ export default function ParsingRunDetailsPage({ params }: { params: Promise<{ ru
             {cometRunId && cometStatus && (
               <div className="text-xs text-muted-foreground mb-2">
                 Comet: {cometStatus.status} — {cometStatus.processed}/{cometStatus.total}
+              </div>
+            )}
+            {parserRunId && parserStatus && (
+              <div className="text-xs mb-2">
+                <div className="flex items-center gap-2">
+                  <span className={`font-medium ${
+                    parserStatus.status === 'running' ? 'text-blue-600' : 
+                    parserStatus.status === 'completed' ? 'text-green-600' : 
+                    'text-red-600'
+                  }`}>
+                    {parserStatus.status === 'running' ? '🔄 Получение данных...' : 
+                     parserStatus.status === 'completed' ? '✅ Данные получены' : 
+                     '❌ Ошибка'}
+                  </span>
+                  <span className="text-muted-foreground">
+                    {parserStatus.processed}/{parserStatus.total} доменов
+                  </span>
+                </div>
+                {parserStatus.status === 'running' && (
+                  <div className="mt-1 w-full bg-gray-200 rounded-full h-2">
+                    <div 
+                      className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                      style={{ width: `${(parserStatus.processed / parserStatus.total) * 100}%` }}
+                    />
+                  </div>
+                )}
               </div>
             )}
             {/* Кнопки выбора всех/снятия выбора */}
@@ -1278,6 +1526,31 @@ export default function ParsingRunDetailsPage({ params }: { params: Promise<{ ru
                             <div className="flex items-center gap-2 flex-1">
                               <span className="font-mono font-semibold text-sm">{group.domain}</span>
                             <Badge variant="outline" className="text-xs">{group.totalUrls} URL</Badge>
+                            {/* Индикаторы Domain Parser результатов */}
+                            {(() => {
+                              const parserResult = parserResultsMap.get(group.domain)
+                              if (!parserResult || parserResult.error) return null
+                              return (
+                                <>
+                                  {parserResult.inn && (
+                                    <span 
+                                      className="ml-1 px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded text-xs font-bold"
+                                      title={`ИНН получен: ${parserResult.inn}`}
+                                    >
+                                      I
+                                    </span>
+                                  )}
+                                  {parserResult.emails && parserResult.emails.length > 0 && (
+                                    <span 
+                                      className="ml-1 px-1.5 py-0.5 bg-green-100 text-green-700 rounded text-xs font-bold"
+                                      title={`Email получен: ${parserResult.emails.join(', ')}`}
+                                    >
+                                      @
+                                    </span>
+                                  )}
+                                </>
+                              )
+                            })()}
                             {/* Автоматически найденный ИНН - отображается желтым с ссылкой на пруф */}
                             {innResultsMap.get(group.domain)?.inn && (
                               <a
@@ -1708,13 +1981,25 @@ export default function ParsingRunDetailsPage({ params }: { params: Promise<{ ru
                     placeholder="1234567890"
                   />
                 </div>
-                <div className="pt-7">
+                <div className="pt-7 flex gap-2">
                   <CheckoInfoDialog
                     inn={supplierForm.inn}
                     onDataLoaded={(data) => {
                       setSupplierForm({ ...supplierForm, ...data })
                     }}
                   />
+                  {supplierForm.inn && supplierForm.inn.length >= 10 && (
+                    <Button
+                      variant="outline"
+                      size="default"
+                      onClick={() => window.open(`https://checko.ru/search?query=${supplierForm.inn}`, '_blank')}
+                      className="flex items-center gap-1"
+                      title="Открыть на Checko.ru"
+                    >
+                      <ExternalLink className="h-4 w-4" />
+                      Checko
+                    </Button>
+                  )}
                 </div>
               </div>
             </div>
