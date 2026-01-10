@@ -11,6 +11,7 @@
 - **`CRITICAL_INTEGRATIONS_AND_CHECKLISTS.md`** - критические точки интеграции и чеклисты для изменений
 - **`PROJECT_SPECIFICATION.md`** - детальная спецификация API и рабочих связок Backend-Frontend
 - **`PROJECT_MAP.md`** - полная карта структуры проекта
+- **`COMET_INTEGRATION.md`** - документация по Comet AI-ассистенту для извлечения ИНН и email
 
 ---
 
