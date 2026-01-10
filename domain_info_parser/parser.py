@@ -44,21 +44,31 @@ class DomainInfoParser:
         """Извлечь ИНН из текста и HTML с улучшенными паттернами."""
         # Расширенные паттерны для поиска ИНН с контекстом
         inn_patterns = [
+            # КРИТИЧНО: Формат ИНН/КПП с косой чертой (самый частый случай!)
+            r'ИНН[/\s]*КПП[:\s]*(\d{10})[/\s]+\d{9}',  # ИНН/КПП: 7703412988/772001001
+            r'ИНН[/\s]*КПП[:\s\n]+(\d{10})[\s/]+\d{9}',  # ИНН/КПП 7703412988/772001001
+            r'(?:ИНН|INN)[/\s]*(?:КПП|KPP)[:\s]*(\d{10})[/\s]+\d{9}',  # INN/KPP: 7703412988/772001001
+            
             # Прямое упоминание ИНН (с учетом пробелов и переносов)
             r'ИНН[:\s\n]+(\d{10}|\d{12})',
             r'INN[:\s\n]+(\d{10}|\d{12})',
             r'инн[:\s\n]+(\d{10}|\d{12})',
+            
             # С разделителями
             r'ИНН[:\s\n]+(\d{4}[\s\-\n]?\d{6})',  # ИНН: 1234 567890
             r'ИНН[:\s\n]+(\d{4}[\s\-\n]?\d{4}[\s\-\n]?\d{4})',  # ИНН: 1234 5678 9012
+            
             # В таблицах/реквизитах
             r'(?:реквизит|requisite|details|юридическ).*?ИНН[:\s\n]*(\d{10}|\d{12})',
             r'(?:реквизит|requisite|details|legal).*?INN[:\s\n]*(\d{10}|\d{12})',
+            
             # Рядом с ОГРН/КПП
             r'(?:ОГРН|OGRN)[:\s\n]+\d+.*?ИНН[:\s\n]*(\d{10}|\d{12})',
             r'(?:КПП|KPP)[:\s\n]+\d+.*?ИНН[:\s\n]*(\d{10}|\d{12})',
+            
             # В контактах/о компании
             r'(?:о компании|about|контакт|contact|company).*?ИНН[:\s\n]*(\d{10}|\d{12})',
+            
             # В футере
             r'(?:footer|подвал).*?ИНН[:\s\n]*(\d{10}|\d{12})',
         ]
@@ -185,7 +195,17 @@ class DomainInfoParser:
     
     async def find_contact_pages(self, page: Page, base_url: str) -> List[str]:
         """Найти страницы с контактами."""
-        contact_keywords = ['контакт', 'contact', 'о компании', 'about', 'реквизит']
+        # Расширенные ключевые слова для поиска страниц с реквизитами
+        contact_keywords = [
+            'контакт', 'contact', 'о компании', 'компани', 'about', 
+            'реквизит', 'реквизиты', 'requisites',
+            'politics', 'company', 'юридическ', 'legal', 'details', 'информация'
+        ]
+        # Ключевые слова в URL
+        url_keywords = [
+            'contact', 'about', 'requisites', 'requisite', 'politics', 
+            'company', 'legal', 'details'
+        ]
         contact_urls = []
         
         try:
@@ -200,9 +220,14 @@ class DomainInfoParser:
             for link in links:
                 href = link['href']
                 text = link['text']
+                href_lower = href.lower()
+                text_lower = text.lower()
                 
-                # Проверяем, содержит ли текст ссылки ключевые слова
-                if any(keyword in text for keyword in contact_keywords):
+                # Проверяем текст ссылки ИЛИ URL (частичное совпадение)
+                text_match = any(keyword in text_lower for keyword in contact_keywords)
+                url_match = any(keyword in href_lower for keyword in url_keywords)
+                
+                if text_match or url_match:
                     # Преобразуем в абсолютный URL
                     full_url = urljoin(base_url, href)
                     # Проверяем, что это тот же домен
@@ -212,7 +237,7 @@ class DomainInfoParser:
         except Exception as e:
             logger.warning(f"Ошибка поиска контактных страниц: {e}")
         
-        return list(set(contact_urls))[:3]  # Максимум 3 страницы
+        return list(set(contact_urls))[:5]  # Максимум 5 страниц
     
     async def parse_domain(self, domain: str) -> Dict:
         """
@@ -269,6 +294,28 @@ class DomainInfoParser:
             if not inn or not emails:
                 logger.info(f"  → Поиск контактных страниц...")
                 contact_urls = await self.find_contact_pages(page, base_url)
+                
+                # Если автоматический поиск не нашел страниц, пробуем популярные URL
+                if not contact_urls:
+                    logger.info(f"  → Пробуем популярные URL...")
+                    common_paths = [
+                        '/pages/requisites/', '/requisites/', '/requisites', 
+                        '/company/', '/company', '/about/', '/about',
+                        '/contacts/', '/contacts', '/politics/', '/politics',
+                        '/legal/', '/legal', '/details/', '/details'
+                    ]
+                    for path in common_paths:
+                        test_url = urljoin(base_url, path)
+                        try:
+                            response = await page.goto(test_url, wait_until='domcontentloaded', timeout=10000)
+                            # Проверяем статус ответа
+                            if response and response.ok:
+                                contact_urls.append(page.url)
+                                logger.info(f"  ✅ Найдена страница: {path}")
+                                break  # Нашли хотя бы одну - достаточно
+                        except Exception as e:
+                            logger.debug(f"  ⏭️ Пропуск {path}: {str(e)[:50]}")
+                            pass  # Страница не существует, пробуем следующую
                 
                 for contact_url in contact_urls:
                     if inn and emails:
