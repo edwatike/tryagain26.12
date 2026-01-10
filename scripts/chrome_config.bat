@@ -6,7 +6,12 @@ REM Used by all scripts that need to start Chrome in CDP mode
 REM ========================================
 
 REM Chrome executable path
-set "CHROME_PATH=C:\Program Files\Google\Chrome\Application\chrome.exe"
+set "COMET_PATH=%LOCALAPPDATA%\Perplexity\Comet\Application\comet.exe"
+if exist "%COMET_PATH%" (
+    set "CHROME_PATH=%COMET_PATH%"
+) else (
+    set "CHROME_PATH=C:\Program Files\Google\Chrome\Application\chrome.exe"
+)
 
 REM Chrome CDP port
 set "CHROME_CDP_PORT=9222"
@@ -20,6 +25,12 @@ set "CHROME_DEBUG_PROFILE=%~dp0..\temp\chrome_debug_profile"
 
 REM Chrome CDP version endpoint
 set "CHROME_CDP_VERSION_URL=%CHROME_CDP_URL%/json/version"
+
+
+
+
+
+
 
 
 

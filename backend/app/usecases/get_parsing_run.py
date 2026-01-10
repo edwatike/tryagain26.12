@@ -2,6 +2,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, text
 from types import SimpleNamespace
+import json
 from app.adapters.db.repositories import DomainQueueRepository
 from app.adapters.db.models import ParsingRequestModel
 
@@ -62,7 +63,13 @@ async def execute(db: AsyncSession, run_id: str):
     run.started_at = row[8]
     run.finished_at = row[9]
     run.error_message = row[10]
-    run.process_log = row[11]  # JSONB field
+    process_log_val = row[11]
+    if isinstance(process_log_val, str):
+        try:
+            process_log_val = json.loads(process_log_val)
+        except Exception:
+            process_log_val = None
+    run.process_log = process_log_val if isinstance(process_log_val, dict) else None  # JSONB field
     
     # CRITICAL FIX: Load request using direct SQL to avoid any SQLAlchemy model loading
     # Even loading ParsingRequestModel might trigger SQLAlchemy to check ParsingRunModel

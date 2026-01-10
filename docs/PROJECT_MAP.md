@@ -12,7 +12,8 @@ tryagain/
 │   └── moderator-dashboard-ui/  # Основной Frontend приложение
 ├── parser_service/       # Parser Service (Python, Chrome CDP)
 ├── docs/                 # Документация проекта
-├── scripts/              # Скрипты автоматизации
+│   └── archive/          # Архивная документация
+├── scripts/              # Скрипты автоматизации и запуска
 ├── logs/                 # Логи сервисов
 ├── temp/                 # Временные файлы и эксперименты
 └── migrations/           # Миграции БД (в backend/migrations)
@@ -360,16 +361,34 @@ parser_service/
 
 ```
 docs/
-├── DOCUMENTATION_INDEX.md          # Главная точка входа в документацию
-├── PROJECT_SPECIFICATION.md        # Спецификация проекта (рабочие связки)
+├── MASTER_INSTRUCTION.md           # Главная инструкция (обязательна к прочтению)
 ├── TROUBLESHOOTING.md              # Библия ошибок и решений
-├── CRITICAL_INTEGRATION_POINTS.md  # Критические точки интеграции
-├── SOURCE_DETERMINATION_FLOW.md    # Поток данных: определение источников
-├── AI_AGENT_IMPROVEMENTS.md        # Рекомендации по улучшению работы AI
+├── CRITICAL_INTEGRATIONS_AND_CHECKLISTS.md  # Критические точки интеграции
+├── PROJECT_SPECIFICATION.md        # Детальная спецификация API
 ├── PROJECT_MAP.md                  # Карта проекта (этот файл)
-├── CHANGE_IMPACT_CHECKLIST.md      # Чеклист проверки изменений
+├── archive/                        # Архивная документация
+│   ├── QUICK_START.md              # Быстрый старт (архив)
+│   ├── CREATE_ENV.md               # Создание .env (архив)
+│   ├── DATABASE_SETUP_GUIDE.md     # Настройка БД (архив)
+│   ├── START_HERE.md               # Точка входа (архив)
+│   ├── APPLY_MIGRATIONS.md         # Применение миграций (архив)
+│   ├── README_START.md             # Запуск в 2 клика (архив)
+│   ├── FIXED_ISSUES.md             # Исправленные проблемы (архив)
+│   ├── LAUNCH_STATUS.md            # Статус запуска (архив)
+│   └── RUN_STATUS.md               # Статус запуска (архив)
 └── ...                             # Другие документы
 ```
+
+### Архивная документация
+
+**Расположение:** `docs/archive/`
+
+**Содержит:**
+- Устаревшие файлы запуска и настройки
+- Исторические статусные файлы
+- Старые версии инструкций
+
+**Примечание:** Актуальная информация находится в `docs/MASTER_INSTRUCTION.md`. Архивные файлы сохранены для истории.
 
 ### Ключевые документы
 
@@ -418,11 +437,21 @@ docs/
 
 ```
 scripts/
-├── quick-check.ps1              # Быстрая проверка всех сервисов
-├── monitor-services.ps1         # Мониторинг сервисов
-├── validate-migration.ps1       # Валидация миграций
-├── check-sequences-after-migration.ps1  # Проверка последовательностей
-└── ...                          # Другие скрипты
+├── PowerShell скрипты (.ps1):
+│   ├── quick-check.ps1              # Быстрая проверка всех сервисов
+│   ├── monitor-services.ps1         # Мониторинг сервисов
+│   ├── validate-migration.ps1       # Валидация миграций
+│   ├── check-sequences-after-migration.ps1  # Проверка последовательностей
+│   └── start-all-services-single-window.ps1  # Запуск всех сервисов
+│
+└── Batch скрипты (.bat):
+    ├── start-backend.bat            # Запуск Backend
+    ├── start-frontend.bat           # Запуск Frontend
+    ├── start-parser.bat              # Запуск Parser Service
+    ├── start-chrome.bat              # Запуск Chrome CDP
+    ├── setup-database.bat           # Настройка базы данных
+    ├── start-all-tabby.bat          # Запуск всех сервисов (один клик)
+    └── stop-all.bat                 # Остановка всех сервисов
 ```
 
 ### Ключевые скрипты
@@ -530,7 +559,25 @@ scripts/
 
 ## Временные файлы
 
-### `temp/`
+### `temp/` и `temp/experiments/`
+
+**Назначение:** Временные файлы, эксперименты, старые версии интерфейса
+
+**Структура:**
+```
+temp/
+├── backend/              # Временные скрипты для Backend
+├── experiments/          # Экспериментальные версии и дизайн-проекты
+│   ├── moderator-dashboardNEW/        # Старая версия frontend
+│   ├── supplier-card-design/          # Дизайн-проект карточки поставщика
+│   └── supplier-moderation-dashboard/  # Старая версия dashboard
+└── temp_start_all_output.txt  # Временные файлы вывода
+```
+
+**Правило:** 
+- Все временные файлы, debug-код, проверки гипотез, старые версии интерфейса должны быть только в `temp/` или `temp/experiments/`
+- Запрещено создавать тестовые файлы в `backend/app/**`, `frontend/moderator-dashboard-ui/**`, `parser_service/src/**`
+- Если эксперимент стал постоянной частью системы - перенести из `temp/` в нужный рабочий каталог
 **Назначение:** Временные файлы и эксперименты  
 **Содержит:**
 - Тестовые скрипты
@@ -561,6 +608,7 @@ scripts/
 - [CRITICAL_INTEGRATION_POINTS.md](CRITICAL_INTEGRATION_POINTS.md) - критические точки
 - [SOURCE_DETERMINATION_FLOW.md](SOURCE_DETERMINATION_FLOW.md) - поток данных
 - [AI_AGENT_IMPROVEMENTS.md](AI_AGENT_IMPROVEMENTS.md) - рекомендации по улучшению работы AI
+
 
 
 

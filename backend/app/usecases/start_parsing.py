@@ -2,6 +2,8 @@
 import uuid
 import json
 from datetime import datetime
+import os
+from pathlib import Path
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.adapters.db.repositories import ParsingRequestRepository, ParsingRunRepository
 from app.adapters.parser_client import ParserClient
@@ -10,6 +12,26 @@ from app.usecases import create_keyword
 
 # Track running parsing tasks to prevent duplicates
 _running_parsing_tasks = set()
+
+
+def _agent_debug_log(payload: dict) -> None:
+    """Write debug payload to a local file if explicitly enabled.
+
+    This is intentionally gated to avoid hardcoded absolute paths and file IO
+    in production or on other machines.
+    """
+    if os.environ.get("AGENT_DEBUG_LOG", "0") != "1":
+        return
+    try:
+        project_root = Path(__file__).resolve().parents[3]
+        out_dir = project_root / ".cursor"
+        out_dir.mkdir(parents=True, exist_ok=True)
+        out_path = out_dir / "debug.log"
+        with out_path.open("a", encoding="utf-8") as f:
+            f.write(json.dumps(payload, ensure_ascii=False) + "\n")
+    except Exception:
+        # Never fail business logic because debug logging failed
+        return
 
 
 async def execute(db: AsyncSession, keyword: str, depth: int = 10, source: str = "google", background_tasks=None):
@@ -24,12 +46,20 @@ async def execute(db: AsyncSession, keyword: str, depth: int = 10, source: str =
     import logging
     logger = logging.getLogger(__name__)
     logger.info(f"start_parsing.execute called: keyword={keyword}, depth={depth}, source={source}")
-    # #region agent log
-    import json
-    from datetime import datetime
-    with open('d:\\tryagain\\.cursor\\debug.log', 'a', encoding='utf-8') as f:
-        f.write(json.dumps({"location":"start_parsing.py:11","message":"start_parsing.execute called","data":{"keyword":keyword,"depth":depth,"source":source,"has_background_tasks":background_tasks is not None},"timestamp":int(datetime.utcnow().timestamp()*1000),"sessionId":"debug-session","runId":"","hypothesisId":"A"})+'\n')
-    # #endregion
+    _agent_debug_log({
+        "location": "start_parsing.py:11",
+        "message": "start_parsing.execute called",
+        "data": {
+            "keyword": keyword,
+            "depth": depth,
+            "source": source,
+            "has_background_tasks": background_tasks is not None,
+        },
+        "timestamp": int(datetime.utcnow().timestamp() * 1000),
+        "sessionId": "debug-session",
+        "runId": "",
+        "hypothesisId": "A",
+    })
     
     # Create parsing request first
     request_repo = ParsingRequestRepository(db)
@@ -108,37 +138,60 @@ async def execute(db: AsyncSession, keyword: str, depth: int = 10, source: str =
             try:
                 # CRITICAL: Wrap entire function in try-except to catch ALL errors
                 logger.info(f"Background task started for run_id: {run_id}")
-                # #region agent log
-                import json
-                with open('d:\\tryagain\\.cursor\\debug.log', 'a', encoding='utf-8') as f:
-                    f.write(json.dumps({"location":"start_parsing.py:56","message":"run_parsing function started","data":{"run_id":run_id,"keyword":keyword},"timestamp":int(datetime.utcnow().timestamp()*1000),"sessionId":"debug-session","runId":run_id,"hypothesisId":"A"})+'\n')
-                # #endregion
+                _agent_debug_log({
+                    "location": "start_parsing.py:56",
+                    "message": "run_parsing function started",
+                    "data": {"run_id": run_id, "keyword": keyword},
+                    "timestamp": int(datetime.utcnow().timestamp() * 1000),
+                    "sessionId": "debug-session",
+                    "runId": run_id,
+                    "hypothesisId": "A",
+                })
                 # Create parser client inside background task
                 parser_client = ParserClient(settings.parser_service_url)
-                # #region agent log
-                with open('d:\\tryagain\\.cursor\\debug.log', 'a', encoding='utf-8') as f:
-                    f.write(json.dumps({"location":"start_parsing.py:61","message":"ParserClient created","data":{"run_id":run_id,"parser_service_url":settings.parser_service_url},"timestamp":int(datetime.utcnow().timestamp()*1000),"sessionId":"debug-session","runId":run_id,"hypothesisId":"A"})+'\n')
-                # #endregion
+                _agent_debug_log({
+                    "location": "start_parsing.py:61",
+                    "message": "ParserClient created",
+                    "data": {"run_id": run_id, "parser_service_url": settings.parser_service_url},
+                    "timestamp": int(datetime.utcnow().timestamp() * 1000),
+                    "sessionId": "debug-session",
+                    "runId": run_id,
+                    "hypothesisId": "A",
+                })
                 
                 # Create new database session for background task
                 from app.adapters.db.session import AsyncSessionLocal
                 async with AsyncSessionLocal() as bg_db:
                     try:
                         logger.info(f"Starting parsing for keyword: {keyword}, source: {source}, depth: {depth}")
-                        # #region agent log
-                        with open('d:\\tryagain\\.cursor\\debug.log', 'a', encoding='utf-8') as f:
-                            f.write(json.dumps({"location":"start_parsing.py:67","message":"Before parser_client.parse call","data":{"run_id":run_id,"keyword":keyword,"source":source,"depth":depth},"timestamp":int(datetime.utcnow().timestamp()*1000),"sessionId":"debug-session","runId":run_id,"hypothesisId":"A"})+'\n')
-                        # #endregion
+                        _agent_debug_log({
+                            "location": "start_parsing.py:67",
+                            "message": "Before parser_client.parse call",
+                            "data": {"run_id": run_id, "keyword": keyword, "source": source, "depth": depth},
+                            "timestamp": int(datetime.utcnow().timestamp() * 1000),
+                            "sessionId": "debug-session",
+                            "runId": run_id,
+                            "hypothesisId": "A",
+                        })
                         result = await parser_client.parse(
                             keyword=keyword,
                             depth=depth,
                             source=source,
                             run_id=run_id
                         )
-                        # #region agent log
-                        with open('d:\\tryagain\\.cursor\\debug.log', 'a', encoding='utf-8') as f:
-                            f.write(json.dumps({"location":"start_parsing.py:73","message":"parser_client.parse completed","data":{"run_id":run_id,"total_found":result.get('total_found', 0),"suppliers_count":len(result.get('suppliers', []))},"timestamp":int(datetime.utcnow().timestamp()*1000),"sessionId":"debug-session","runId":run_id,"hypothesisId":"A"})+'\n')
-                        # #endregion
+                        _agent_debug_log({
+                            "location": "start_parsing.py:73",
+                            "message": "parser_client.parse completed",
+                            "data": {
+                                "run_id": run_id,
+                                "total_found": result.get("total_found", 0),
+                                "suppliers_count": len(result.get("suppliers", [])),
+                            },
+                            "timestamp": int(datetime.utcnow().timestamp() * 1000),
+                            "sessionId": "debug-session",
+                            "runId": run_id,
+                            "hypothesisId": "A",
+                        })
                         logger.info(f"Parsing completed for run_id: {run_id}, found {result.get('total_found', 0)} suppliers")
                         
                         # Get parsing logs from result if available
@@ -152,11 +205,15 @@ async def execute(db: AsyncSession, keyword: str, depth: int = 10, source: str =
                         
                         suppliers = result.get('suppliers', [])
                         logger.info(f"Processing {len(suppliers)} suppliers for run_id: {run_id}")
-                        # #region agent log
-                        import json
-                        with open('d:\\tryagain\\.cursor\\debug.log', 'a', encoding='utf-8') as f:
-                            f.write(json.dumps({"location":"start_parsing.py:79","message":"Before saving domains","data":{"run_id":run_id,"suppliers_count":len(suppliers),"keyword":keyword},"timestamp":int(datetime.utcnow().timestamp()*1000),"sessionId":"debug-session","runId":run_id,"hypothesisId":"E"})+'\n')
-                        # #endregion
+                        _agent_debug_log({
+                            "location": "start_parsing.py:79",
+                            "message": "Before saving domains",
+                            "data": {"run_id": run_id, "suppliers_count": len(suppliers), "keyword": keyword},
+                            "timestamp": int(datetime.utcnow().timestamp() * 1000),
+                            "sessionId": "debug-session",
+                            "runId": run_id,
+                            "hypothesisId": "E",
+                        })
                         saved_count = 0
                         errors_count = 0
                         
@@ -197,11 +254,22 @@ async def execute(db: AsyncSession, keyword: str, depth: int = 10, source: str =
                                                     "status": "pending"
                                                 })
                                                 saved_count += 1
-                                                # #region agent log
-                                                if saved_count <= 3:  # Log first 3 to avoid spam
-                                                    with open('d:\\tryagain\\.cursor\\debug.log', 'a', encoding='utf-8') as f:
-                                                        f.write(json.dumps({"location":"start_parsing.py:108","message":"Domain saved","data":{"run_id":run_id,"domain":domain,"keyword":keyword,"parsing_run_id":run_id,"saved_count":saved_count},"timestamp":int(datetime.utcnow().timestamp()*1000),"sessionId":"debug-session","runId":run_id,"hypothesisId":"E"})+'\n')
-                                                # #endregion
+                                                if saved_count <= 3:
+                                                    _agent_debug_log({
+                                                        "location": "start_parsing.py:108",
+                                                        "message": "Domain saved",
+                                                        "data": {
+                                                            "run_id": run_id,
+                                                            "domain": domain,
+                                                            "keyword": keyword,
+                                                            "parsing_run_id": run_id,
+                                                            "saved_count": saved_count,
+                                                        },
+                                                        "timestamp": int(datetime.utcnow().timestamp() * 1000),
+                                                        "sessionId": "debug-session",
+                                                        "runId": run_id,
+                                                        "hypothesisId": "E",
+                                                    })
                                                 logger.debug(f"Saved domain {domain} for run_id {run_id}")
                                             except Exception as create_error:
                                                 # CRITICAL FIX: If sequence permission error, try to fix it
@@ -258,9 +326,15 @@ async def execute(db: AsyncSession, keyword: str, depth: int = 10, source: str =
                                         logger.warning(f"Error saving domain {supplier.get('source_url')}: {e}", exc_info=True)
                             
                             # CRITICAL: Log immediately after loop to verify we reach this point
-                            # Write to debug.log FIRST to ensure we see it even if logger fails
-                            with open('d:\\tryagain\\.cursor\\debug.log', 'a', encoding='utf-8') as f:
-                                f.write(json.dumps({"location":"start_parsing.py:259","message":"LOOP COMPLETE","data":{"run_id":run_id,"saved_count":saved_count,"errors_count":errors_count},"timestamp":int(datetime.utcnow().timestamp()*1000),"sessionId":"debug-session","runId":run_id,"hypothesisId":"LOOP"})+'\n')
+                            _agent_debug_log({
+                                "location": "start_parsing.py:259",
+                                "message": "LOOP COMPLETE",
+                                "data": {"run_id": run_id, "saved_count": saved_count, "errors_count": errors_count},
+                                "timestamp": int(datetime.utcnow().timestamp() * 1000),
+                                "sessionId": "debug-session",
+                                "runId": run_id,
+                                "hypothesisId": "LOOP",
+                            })
                             logger.info(f"[LOOP COMPLETE] Finished supplier loop for run_id: {run_id}, saved_count: {saved_count}, errors_count: {errors_count}")
                             
                             # CRITICAL: Commit domains IMMEDIATELY after saving - BEFORE any other operations
@@ -358,23 +432,27 @@ async def execute(db: AsyncSession, keyword: str, depth: int = 10, source: str =
                             logger.warning(f"Error checking CAPTCHA for run_id {run_id}: {captcha_error}")
                             process_info["captcha_detected"] = False
                         
-                        # #region agent log
-                        with open('d:\\tryagain\\.cursor\\debug.log', 'a', encoding='utf-8') as f:
-                            f.write(json.dumps({"location":"start_parsing.py:150","message":"Before updating status","data":{"run_id":run_id,"saved_count":saved_count,"total_suppliers":total_suppliers},"timestamp":int(datetime.utcnow().timestamp()*1000),"sessionId":"debug-session","runId":run_id,"hypothesisId":"A"})+'\n')
-                        # #endregion
+                        _agent_debug_log({
+                            "location": "start_parsing.py:150",
+                            "message": "Before updating status",
+                            "data": {"run_id": run_id, "saved_count": saved_count, "total_suppliers": total_suppliers},
+                            "timestamp": int(datetime.utcnow().timestamp() * 1000),
+                            "sessionId": "debug-session",
+                            "runId": run_id,
+                            "hypothesisId": "A",
+                        })
                         
                         # Log process information to file
                         logger.info(f"Process information for run_id {run_id}: {json.dumps(process_info, default=str)}")
-                        with open('d:\\tryagain\\.cursor\\debug.log', 'a', encoding='utf-8') as f:
-                            f.write(json.dumps({
-                                "location": "start_parsing.py:process_log",
-                                "message": "Parsing process completed - full process log",
-                                "data": process_info,
-                                "timestamp": int(datetime.utcnow().timestamp()*1000),
-                                "sessionId": "debug-session",
-                                "runId": run_id,
-                                "hypothesisId": "PROCESS_LOG"
-                            })+'\n')
+                        _agent_debug_log({
+                            "location": "start_parsing.py:process_log",
+                            "message": "Parsing process completed - full process log",
+                            "data": process_info,
+                            "timestamp": int(datetime.utcnow().timestamp() * 1000),
+                            "sessionId": "debug-session",
+                            "runId": run_id,
+                            "hypothesisId": "PROCESS_LOG",
+                        })
                         
                         # Update status in SEPARATE transaction (domains already committed)
                         from sqlalchemy import text
@@ -422,10 +500,15 @@ async def execute(db: AsyncSession, keyword: str, depth: int = 10, source: str =
                             
                             # Commit status update
                             await bg_db.commit()
-                            # #region agent log
-                            with open('d:\\tryagain\\.cursor\\debug.log', 'a', encoding='utf-8') as f:
-                                f.write(json.dumps({"location":"start_parsing.py:185","message":"Status update committed to DB","data":{"run_id":run_id,"saved_count":saved_count,"rows_updated":rows_updated},"timestamp":int(datetime.utcnow().timestamp()*1000),"sessionId":"debug-session","runId":run_id,"hypothesisId":"A"})+'\n')
-                            # #endregion
+                            _agent_debug_log({
+                                "location": "start_parsing.py:185",
+                                "message": "Status update committed to DB",
+                                "data": {"run_id": run_id, "saved_count": saved_count, "rows_updated": rows_updated},
+                                "timestamp": int(datetime.utcnow().timestamp() * 1000),
+                                "sessionId": "debug-session",
+                                "runId": run_id,
+                                "hypothesisId": "A",
+                            })
                             logger.info(f"✅ Committed status update to database for run_id: {run_id}")
                             
                             # Verify update worked by querying directly
@@ -437,10 +520,15 @@ async def execute(db: AsyncSession, keyword: str, depth: int = 10, source: str =
                             if verify_row:
                                 verified_status = verify_row[0]
                                 verified_count = verify_row[1]
-                                # #region agent log
-                                with open('d:\\tryagain\\.cursor\\debug.log', 'a', encoding='utf-8') as f:
-                                    f.write(json.dumps({"location":"start_parsing.py:197","message":"Status verification","data":{"run_id":run_id,"verified_status":verified_status,"verified_count":verified_count},"timestamp":int(datetime.utcnow().timestamp()*1000),"sessionId":"debug-session","runId":run_id,"hypothesisId":"A"})+'\n')
-                                # #endregion
+                                _agent_debug_log({
+                                    "location": "start_parsing.py:197",
+                                    "message": "Status verification",
+                                    "data": {"run_id": run_id, "verified_status": verified_status, "verified_count": verified_count},
+                                    "timestamp": int(datetime.utcnow().timestamp() * 1000),
+                                    "sessionId": "debug-session",
+                                    "runId": run_id,
+                                    "hypothesisId": "A",
+                                })
                                 if verified_status == "completed":
                                     logger.info(f"✅ Successfully updated parsing run {run_id} to 'completed', results_count={verified_count}")
                                 else:
@@ -450,10 +538,15 @@ async def execute(db: AsyncSession, keyword: str, depth: int = 10, source: str =
                         except Exception as update_error:
                             logger.error(f"❌ Error updating status for run_id {run_id}: {update_error}", exc_info=True)
                             await bg_db.rollback()
-                            # #region agent log
-                            with open('d:\\tryagain\\.cursor\\debug.log', 'a', encoding='utf-8') as f:
-                                f.write(json.dumps({"location":"start_parsing.py:210","message":"Status update error","data":{"run_id":run_id,"error":str(update_error)[:200]},"timestamp":int(datetime.utcnow().timestamp()*1000),"sessionId":"debug-session","runId":run_id,"hypothesisId":"A"})+'\n')
-                            # #endregion
+                            _agent_debug_log({
+                                "location": "start_parsing.py:210",
+                                "message": "Status update error",
+                                "data": {"run_id": run_id, "error": str(update_error)[:200]},
+                                "timestamp": int(datetime.utcnow().timestamp() * 1000),
+                                "sessionId": "debug-session",
+                                "runId": run_id,
+                                "hypothesisId": "A",
+                            })
                             # Try one more time with direct SQL
                             try:
                                 await bg_db.execute(
@@ -476,12 +569,17 @@ async def execute(db: AsyncSession, keyword: str, depth: int = 10, source: str =
                                 logger.error(f"❌ Retry update also failed for run_id {run_id}: {retry_error}", exc_info=True)
                                 await bg_db.rollback()
                     except Exception as parse_error:
-                        # #region agent log
-                        with open('d:\\tryagain\\.cursor\\debug.log', 'a', encoding='utf-8') as f:
-                            f.write(json.dumps({"location":"start_parsing.py:189","message":"parse_error caught","data":{"run_id":run_id,"error":str(parse_error)[:200]},"timestamp":int(datetime.utcnow().timestamp()*1000),"sessionId":"debug-session","runId":run_id,"hypothesisId":"A"})+'\n')
-                        # #endregion
+                        _agent_debug_log({
+                            "location": "start_parsing.py:189",
+                            "message": "parse_error caught",
+                            "data": {"run_id": run_id, "error": str(parse_error)[:200]},
+                            "timestamp": int(datetime.utcnow().timestamp() * 1000),
+                            "sessionId": "debug-session",
+                            "runId": run_id,
+                            "hypothesisId": "A",
+                        })
                         # Log parsing error but don't fail the whole task
-                        logger.error(f"Error during parsing for run_id {run_id}: {parse_error}", exc_info=True)
+                        logger.error(f"Parsing error in background task for run_id {run_id}: {parse_error}", exc_info=True)
                         # CRITICAL FIX: Don't re-raise, handle error gracefully
                         # Re-raise would cause the task to fail silently
                         # Instead, update status to failed and log the error
@@ -530,16 +628,15 @@ async def execute(db: AsyncSession, keyword: str, depth: int = 10, source: str =
                             
                             # Log process information to file
                             logger.info(f"Process information (FAILED) for run_id {run_id}: {json.dumps(process_info_failed, default=str)}")
-                            with open('d:\\tryagain\\.cursor\\debug.log', 'a', encoding='utf-8') as f:
-                                f.write(json.dumps({
-                                    "location": "start_parsing.py:process_log_failed",
-                                    "message": "Parsing process failed - full process log",
-                                    "data": process_info_failed,
-                                    "timestamp": int(datetime.utcnow().timestamp()*1000),
-                                    "sessionId": "debug-session",
-                                    "runId": run_id,
-                                    "hypothesisId": "PROCESS_LOG_FAILED"
-                                })+'\n')
+                            _agent_debug_log({
+                                "location": "start_parsing.py:process_log_failed",
+                                "message": "Parsing process failed - full process log",
+                                "data": process_info_failed,
+                                "timestamp": int(datetime.utcnow().timestamp() * 1000),
+                                "sessionId": "debug-session",
+                                "runId": run_id,
+                                "hypothesisId": "PROCESS_LOG_FAILED",
+                            })
                             
                             bg_run_repo = ParsingRunRepository(bg_db)
                             error_msg = str(parse_error)[:1000]  # Limit error message length
@@ -574,13 +671,17 @@ async def execute(db: AsyncSession, keyword: str, depth: int = 10, source: str =
                         _running_parsing_tasks.discard(run_id)
                         logger.info(f"Removed run_id {run_id} from running tasks (remaining: {len(_running_parsing_tasks)})")
             except Exception as task_error:
-                # #region agent log
-                with open('d:\\tryagain\\.cursor\\debug.log', 'a', encoding='utf-8') as f:
-                    f.write(json.dumps({"location":"start_parsing.py:211","message":"task_error caught in run_parsing","data":{"run_id":run_id,"error":str(task_error)[:200]},"timestamp":int(datetime.utcnow().timestamp()*1000),"sessionId":"debug-session","runId":run_id,"hypothesisId":"A"})+'\n')
-                # #endregion
+                _agent_debug_log({
+                    "location": "start_parsing.py:211",
+                    "message": "task_error caught in run_parsing",
+                    "data": {"run_id": run_id, "error": str(task_error)[:200]},
+                    "timestamp": int(datetime.utcnow().timestamp() * 1000),
+                    "sessionId": "debug-session",
+                    "runId": run_id,
+                    "hypothesisId": "A",
+                })
                 # CRITICAL FIX: Catch ALL errors in background task
-                # If we don't catch errors here, the task fails silently
-                logger.error(f"CRITICAL: Background task failed for run_id {run_id}: {task_error}", exc_info=True)
+                logger.error(f"Error in background task for run_id {run_id}: {task_error}", exc_info=True)
                 # Try to update status to failed
                 try:
                     from app.adapters.db.session import AsyncSessionLocal
@@ -603,11 +704,15 @@ async def execute(db: AsyncSession, keyword: str, depth: int = 10, source: str =
         
         # Start background task (fire and forget)
         # CRITICAL FIX: Use FastAPI BackgroundTasks if available, otherwise use asyncio.create_task()
-        # #region agent log
-        import json
-        with open('d:\\tryagain\\.cursor\\debug.log', 'a', encoding='utf-8') as f:
-            f.write(json.dumps({"location":"start_parsing.py:232","message":"Before starting background task","data":{"run_id":run_id,"has_background_tasks":background_tasks is not None},"timestamp":int(datetime.utcnow().timestamp()*1000),"sessionId":"debug-session","runId":run_id,"hypothesisId":"A"})+'\n')
-        # #endregion
+        _agent_debug_log({
+            "location": "start_parsing.py:232",
+            "message": "Before starting background task",
+            "data": {"run_id": run_id, "has_background_tasks": background_tasks is not None},
+            "timestamp": int(datetime.utcnow().timestamp() * 1000),
+            "sessionId": "debug-session",
+            "runId": run_id,
+            "hypothesisId": "A",
+        })
         if background_tasks is not None:
             # Use FastAPI BackgroundTasks - more reliable
             # CRITICAL: FastAPI BackgroundTasks can handle async functions directly

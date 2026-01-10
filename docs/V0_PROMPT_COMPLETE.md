@@ -1,3 +1,5 @@
+⚠️ **АРХИВ. Актуальная версия: см. `docs/MASTER_INSTRUCTION.md`**
+
 # Полный промпт для V0 - B2B Platform Moderator Dashboard
 
 ## ⚠️ ВАЖНО: ВСЯ ИНФОРМАЦИЯ ПЕРЕДАНА ОДИН РАЗ

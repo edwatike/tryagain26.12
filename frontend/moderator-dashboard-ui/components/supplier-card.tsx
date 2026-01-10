@@ -7,6 +7,16 @@ import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import { Textarea } from "@/components/ui/textarea"
+import { Label } from "@/components/ui/label"
 import type { SupplierDTO } from "@/lib/types"
 import {
   formatCurrency,
@@ -100,6 +110,8 @@ interface SupplierCardProps {
 export function SupplierCard({ supplier, onSupplierUpdate }: SupplierCardProps) {
   const router = useRouter()
   const [addingToBlacklist, setAddingToBlacklist] = useState(false)
+  const [blacklistDialogOpen, setBlacklistDialogOpen] = useState(false)
+  const [blacklistReason, setBlacklistReason] = useState("")
   const [loadingCheckoData, setLoadingCheckoData] = useState(false)
   
   // Parse checkoData if available
@@ -158,6 +170,15 @@ export function SupplierCard({ supplier, onSupplierUpdate }: SupplierCardProps) 
     (Date.now() / 1000 - checkoData.timestamp) < 24 * 60 * 60
 
   
+  function openBlacklistDialog() {
+    if (!supplier.domain) {
+      toast.error("Домен не указан")
+      return
+    }
+    setBlacklistReason("")
+    setBlacklistDialogOpen(true)
+  }
+
   async function handleAddToBlacklist() {
     if (!supplier.domain) {
       toast.error("Домен не указан")
@@ -167,8 +188,13 @@ export function SupplierCard({ supplier, onSupplierUpdate }: SupplierCardProps) 
     try {
       setAddingToBlacklist(true)
       const normalizedDomain = extractRootDomain(supplier.domain)
-      await addToBlacklist({ domain: normalizedDomain })
+      await addToBlacklist({ 
+        domain: normalizedDomain,
+        reason: blacklistReason.trim() || null
+      })
       toast.success("Домен добавлен в blacklist")
+      setBlacklistDialogOpen(false)
+      setBlacklistReason("")
     } catch (error) {
       toast.error("Ошибка при добавлении в blacklist")
       console.error("Error adding to blacklist:", error)
@@ -950,11 +976,11 @@ export function SupplierCard({ supplier, onSupplierUpdate }: SupplierCardProps) 
             <Button 
               variant="destructive" 
               className="gap-2"
-              onClick={handleAddToBlacklist}
-              disabled={addingToBlacklist || !supplier.domain}
+              onClick={openBlacklistDialog}
+              disabled={!supplier.domain}
             >
               <Ban className="h-4 w-4" />
-              {addingToBlacklist ? "Добавление..." : "Blacklist"}
+              Blacklist
             </Button>
             <Button asChild variant="outline" className="gap-2 bg-transparent">
               <Link href={`/suppliers/${supplier.id}/keywords`}>
@@ -966,6 +992,52 @@ export function SupplierCard({ supplier, onSupplierUpdate }: SupplierCardProps) 
         </div>
       </CardContent>
     </Card>
+    <>
+      {/* Blacklist Dialog */}
+      <Dialog open={blacklistDialogOpen} onOpenChange={setBlacklistDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Добавить домен в черный список</DialogTitle>
+            <DialogDescription>
+              Добавить "{supplier.domain}" в blacklist?
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="blacklist-reason">Причина добавления в черный список (необязательно)</Label>
+              <Textarea
+                id="blacklist-reason"
+                placeholder="Укажите причину добавления домена в черный список..."
+                value={blacklistReason}
+                onChange={(e) => setBlacklistReason(e.target.value)}
+                rows={4}
+                className="mt-1"
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setBlacklistDialogOpen(false)
+                setBlacklistReason("")
+              }}
+            >
+              Отмена
+            </Button>
+            <Button
+              onClick={handleAddToBlacklist}
+              disabled={addingToBlacklist}
+              variant="destructive"
+            >
+              {addingToBlacklist ? "Добавление..." : "Добавить"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   )
 }
 

@@ -169,11 +169,11 @@ Start-ServiceInTab -TabName "Parser Service" -ServiceName "Parser Service" -Comm
 Start-Sleep -Seconds 1
 
 # Tab 4: Backend
-Start-ServiceInTab -TabName "Backend API" -ServiceName "Backend" -Command "start-backend.bat" -WorkingDir $ProjectRoot
+Start-ServiceInTab -TabName "Backend API" -ServiceName "Backend" -Command "scripts\start-backend.bat" -WorkingDir $ProjectRoot
 Start-Sleep -Seconds 1
 
 # Tab 5: Frontend
-Start-ServiceInTab -TabName "Frontend" -ServiceName "Frontend" -Command "start-frontend.bat" -WorkingDir $ProjectRoot
+Start-ServiceInTab -TabName "Frontend" -ServiceName "Frontend" -Command "scripts\start-frontend.bat" -WorkingDir $ProjectRoot
 
 Write-Host ""
 Write-Success -Service "Tabby" -Message "All services started in Tabby terminal (same window)!"

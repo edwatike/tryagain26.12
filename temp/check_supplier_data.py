@@ -61,3 +61,9 @@ for key in rating_keys:
 else:
     print("\n❌ Рейтинг не найден")
 
+
+
+
+
+
+

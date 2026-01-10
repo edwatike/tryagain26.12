@@ -85,7 +85,7 @@ if %errorlevel% == 0 (
     echo   4. Port %CHROME_CDP_PORT% is blocked by firewall
     echo.
     echo Solution:
-    echo   1. Run start-chrome.bat to start Chrome with CDP
+    echo   1. Run scripts\start-chrome.bat to start Chrome with CDP
     echo   2. Or run start-all.bat to start all services
 )
 echo.

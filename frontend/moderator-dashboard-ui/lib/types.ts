@@ -138,3 +138,52 @@ export interface ParsingDomainGroup {
   sources?: string[]  // Массив источников URL (google, yandex или оба)
 }
 
+export interface INNExtractionProof {
+  url: string  // URL откуда взят ИНН
+  context: string  // Фрагмент текста (50-100 символов вокруг ИНН)
+  method: "regex" | "ollama"  // Метод извлечения
+  confidence?: "high" | "medium" | "low"  // Уверенность (для Ollama)
+}
+
+export interface INNExtractionResult {
+  domain: string
+  status: "success" | "not_found" | "error"
+  inn: string | null
+  proof: INNExtractionProof | null
+  error?: string
+  processingTime?: number  // Время обработки в мс
+}
+
+export interface INNExtractionBatchResponse {
+  results: INNExtractionResult[]
+  total: number
+  processed: number
+  successful: number
+  failed: number
+  notFound: number
+}
+
+
+export interface CometExtractionResult {
+  domain: string
+  status: "pending" | "running" | "success" | "not_found" | "error"
+  inn: string | null
+  email: string | null
+  sourceUrls: string[]
+  error?: string | null
+}
+
+export interface CometExtractBatchResponse {
+  runId: string
+  cometRunId: string
+}
+
+export interface CometStatusResponse {
+  runId: string
+  cometRunId: string
+  status: "running" | "completed" | "failed"
+  processed: number
+  total: number
+  results: CometExtractionResult[]
+}
+

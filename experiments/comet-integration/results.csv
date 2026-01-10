@@ -1,0 +1,9 @@
+domain,inn,email,status,timestamp,error,execution_time
+metallsnab-nn.ru,,,error,2026-01-06T17:37:16.022714,'ElementHandle' object has no attribute 'clear',45.966060638427734
+promsnab.ru,,,error,2026-01-06T17:38:03.997292,Ассистент не найден,97.60871863365173
+stroysnab.ru,,,error,2026-01-06T17:39:43.621595,"Page.goto: net::ERR_NAME_NOT_RESOLVED at https://stroysnab.ru/
+Call log:
+  - navigating to ""https://stroysnab.ru/"", waiting until ""domcontentloaded""
+",0.20685148239135742
+electrosnab.ru,,,error,2026-01-06T17:39:45.837017,Ассистент не найден,96.40609312057495
+medsnab.ru,,,error,2026-01-06T17:41:24.248464,'ElementHandle' object has no attribute 'clear',41.742804288864136

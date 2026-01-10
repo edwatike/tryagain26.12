@@ -159,3 +159,9 @@ Write-Host "=== ТЕСТ ЗАВЕРШЕН ===" -ForegroundColor Cyan
 
 
 
+
+
+
+
+
+

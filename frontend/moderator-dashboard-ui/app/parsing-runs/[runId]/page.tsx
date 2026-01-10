@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, use } from "react"
+import { useState, useEffect, use, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -15,16 +15,18 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Navigation } from "@/components/navigation"
 import { CheckoInfoDialog } from "@/components/checko-info-dialog"
-import { getParsingRun, getDomainsQueue, getBlacklist, addToBlacklist, createSupplier, updateSupplier, getSuppliers, getParsingLogs, APIError } from "@/lib/api"
+import { getParsingRun, getDomainsQueue, getBlacklist, addToBlacklist, createSupplier, updateSupplier, getSuppliers, getParsingLogs, extractINNBatch, startCometExtractBatch, getCometStatus, getCheckoData, APIError } from "@/lib/api"
 import { groupByDomain, extractRootDomain, collectDomainSources, normalizeUrl } from "@/lib/utils-domain"
 import { getCachedSuppliers, setCachedSuppliers, getCachedBlacklist, setCachedBlacklist, invalidateSuppliersCache, invalidateBlacklistCache } from "@/lib/cache"
 import { toast } from "sonner"
-import { ExternalLink } from "lucide-react"
-import type { ParsingDomainGroup, ParsingRunDTO } from "@/lib/types"
+import { ExternalLink, Copy, FileSearch } from "lucide-react"
+import { Checkbox } from "@/components/ui/checkbox"
+import type { ParsingDomainGroup, ParsingRunDTO, INNExtractionResult, CometExtractionResult, CometStatusResponse, SupplierDTO } from "@/lib/types"
 
 export default function ParsingRunDetailsPage({ params }: { params: Promise<{ runId: string }> }) {
   const router = useRouter()
@@ -35,6 +37,10 @@ export default function ParsingRunDetailsPage({ params }: { params: Promise<{ ru
   const [loading, setLoading] = useState(true)
   const [refreshKey, setRefreshKey] = useState(0) // Ключ для принудительного обновления
   const [supplierDialogOpen, setSupplierDialogOpen] = useState(false)
+  const [blacklistDialogOpen, setBlacklistDialogOpen] = useState(false)
+  const [blacklistDomain, setBlacklistDomain] = useState("")
+  const [blacklistReason, setBlacklistReason] = useState("")
+  const [addingToBlacklist, setAddingToBlacklist] = useState(false)
   const [selectedDomain, setSelectedDomain] = useState("")
   const [editingSupplierId, setEditingSupplierId] = useState<number | null>(null) // ID существующего поставщика для редактирования
   const [supplierForm, setSupplierForm] = useState({
@@ -73,6 +79,22 @@ export default function ParsingRunDetailsPage({ params }: { params: Promise<{ ru
     yandex?: { total_links: number; pages_processed: number; last_links: string[]; links_by_page?: Record<number, number> }
   } | null>(null)
   const [accordionValue, setAccordionValue] = useState<string[]>([]) // Состояние аккордеона для логов парсинга
+  const [selectedDomains, setSelectedDomains] = useState<Set<string>>(new Set()) // Выбранные домены для извлечения ИНН
+  const [innExtractionDialogOpen, setInnExtractionDialogOpen] = useState(false) // Модальное окно извлечения ИНН
+  const [innExtractionResults, setInnExtractionResults] = useState<INNExtractionResult[]>([]) // Результаты извлечения ИНН
+  const [innExtractionLoading, setInnExtractionLoading] = useState(false) // Загрузка извлечения ИНН
+  const [innExtractionProgress, setInnExtractionProgress] = useState({ processed: 0, total: 0 }) // Прогресс извлечения
+  const [innResultsMap, setInnResultsMap] = useState<Map<string, INNExtractionResult>>(new Map()) // Кэш результатов извлечения ИНН по домену
+  const [extractingDomains, setExtractingDomains] = useState<Set<string>>(new Set()) // Домены, для которых идет извлечение
+
+  const [cometRunId, setCometRunId] = useState<string | null>(null)
+  const [cometStatus, setCometStatus] = useState<CometStatusResponse | null>(null)
+  const [cometLoading, setCometLoading] = useState(false)
+  const [cometResultsMap, setCometResultsMap] = useState<Map<string, CometExtractionResult>>(new Map())
+
+  const suppliersByDomainRef = useRef<Map<string, SupplierDTO>>(new Map())
+  const cometAutofillDoneRef = useRef<Set<string>>(new Set())
+  const cometAutofillLockRef = useRef<Set<string>>(new Set())
   
   // Функция для определения источников URL на основе parsing_logs и source из БД
   // Используем parsing_logs как основной источник, но fallback на source из БД
@@ -123,6 +145,255 @@ export default function ParsingRunDetailsPage({ params }: { params: Promise<{ ru
       loadData()
     }
   }, [runId, refreshKey]) // Добавляем refreshKey для принудительной перезагрузки
+
+  // Восстанавливаем кэш результатов ИНН из localStorage при загрузке
+  useEffect(() => {
+    if (!runId) return
+    try {
+      const cached = localStorage.getItem(`inn-results-${runId}`)
+      if (cached) {
+        const cachedMap = new Map<string, INNExtractionResult>(JSON.parse(cached))
+        setInnResultsMap(cachedMap)
+      }
+    } catch (error) {
+      // Игнорируем ошибки парсинга кэша
+    }
+  }, [runId])
+
+  useEffect(() => {
+    if (!runId || !cometRunId) return
+    try {
+      const key = `comet-autofill-done-${runId}-${cometRunId}`
+      const raw = localStorage.getItem(key)
+      if (!raw) return
+      const parsed = JSON.parse(raw)
+      if (Array.isArray(parsed)) {
+        for (const d of parsed) {
+          if (typeof d === "string" && d) {
+            cometAutofillDoneRef.current.add(d)
+          }
+        }
+      }
+    } catch {
+      // ignore
+    }
+  }, [runId, cometRunId])
+
+  useEffect(() => {
+    if (!runId) return
+    try {
+      const cached = localStorage.getItem(`comet-results-${runId}`)
+      if (cached) {
+        const cachedMap = new Map<string, CometExtractionResult>(JSON.parse(cached))
+        setCometResultsMap(cachedMap)
+      }
+      const cachedRunId = localStorage.getItem(`comet-run-${runId}`)
+      if (cachedRunId) {
+        setCometRunId(cachedRunId)
+      }
+    } catch (error) {
+      // ignore
+    }
+  }, [runId])
+
+  // Сохраняем кэш результатов ИНН в localStorage при изменении
+  useEffect(() => {
+    if (!runId || innResultsMap.size === 0) return
+    try {
+      const serialized = JSON.stringify(Array.from(innResultsMap.entries()))
+      localStorage.setItem(`inn-results-${runId}`, serialized)
+    } catch (error) {
+      // Игнорируем ошибки сохранения кэша
+    }
+  }, [innResultsMap, runId])
+
+  useEffect(() => {
+    if (!runId || cometResultsMap.size === 0) return
+    try {
+      const serialized = JSON.stringify(Array.from(cometResultsMap.entries()))
+      localStorage.setItem(`comet-results-${runId}`, serialized)
+    } catch (error) {
+      // ignore
+    }
+  }, [cometResultsMap, runId])
+
+  useEffect(() => {
+    if (!runId || !cometRunId) return
+    try {
+      localStorage.setItem(`comet-run-${runId}`, cometRunId)
+    } catch (error) {
+      // ignore
+    }
+  }, [cometRunId, runId])
+
+  useEffect(() => {
+    if (!runId || !cometRunId) return
+
+    const poll = async () => {
+      try {
+        const status = await getCometStatus(runId, cometRunId)
+        setCometStatus(status)
+        if (status.results && status.results.length > 0) {
+          setCometResultsMap((prev) => {
+            const next = new Map(prev)
+            for (const r of status.results) {
+              next.set(r.domain, r)
+            }
+            return next
+          })
+        }
+      } catch (e) {
+        // silent
+      }
+    }
+
+    poll()
+    const t = setInterval(poll, 2000)
+    return () => clearInterval(t)
+  }, [runId, cometRunId])
+
+  useEffect(() => {
+    if (!runId || !cometRunId) return
+    if (!cometResultsMap || cometResultsMap.size === 0) return
+
+    const isValidInn = (inn: string | null | undefined) => {
+      const v = String(inn || "").trim()
+      return /^\d{10}$/.test(v) || /^\d{12}$/.test(v)
+    }
+
+    const markDone = (domain: string) => {
+      cometAutofillDoneRef.current.add(domain)
+      try {
+        const key = `comet-autofill-done-${runId}-${cometRunId}`
+        const arr = Array.from(cometAutofillDoneRef.current)
+        localStorage.setItem(key, JSON.stringify(arr))
+      } catch {
+        // ignore
+      }
+    }
+
+    const autoUpsert = async (domain: string, res: CometExtractionResult) => {
+      const lockKey = `${runId}|${cometRunId}|${domain}`
+      if (cometAutofillDoneRef.current.has(domain)) return
+      if (cometAutofillLockRef.current.has(lockKey)) return
+
+      console.log(`[Comet AutoUpsert] Processing ${domain}:`, res)
+      console.log(`[Comet AutoUpsert] res.status:`, res.status)
+      console.log(`[Comet AutoUpsert] res.inn:`, res.inn)
+      console.log(`[Comet AutoUpsert] res.email:`, res.email)
+      
+      if (res.status !== "success") {
+        console.log(`[Comet AutoUpsert] Skipping ${domain}: status is ${res.status}`)
+        return
+      }
+      if (!isValidInn(res.inn) && !res.email) {
+        console.log(`[Comet AutoUpsert] Skipping ${domain}: no valid INN or email`)
+        console.log(`[Comet AutoUpsert] isValidInn check:`, isValidInn(res.inn))
+        return
+      }
+
+      console.log(`[Comet AutoUpsert] Creating/updating supplier for ${domain}`)
+      cometAutofillLockRef.current.add(lockKey)
+      try {
+        const rootDomain = extractRootDomain(domain).toLowerCase()
+        const existing = suppliersByDomainRef.current.get(rootDomain)
+        
+        // Parse INN: convert to string, trim, and set to null if empty
+        const innRaw = res.inn ? String(res.inn).trim() : ""
+        const inn = innRaw && /^\d{10,12}$/.test(innRaw) ? innRaw : null
+        
+        const email = res.email ? String(res.email).trim() : null
+        
+        console.log(`[Comet AutoUpsert] Parsed data - INN: ${inn}, Email: ${email}`)
+
+        let checko: any = null
+        if (inn) {
+          console.log(`[Comet AutoUpsert] Fetching Checko data for INN: ${inn}`)
+          try {
+            checko = await getCheckoData(inn, false)
+            console.log(`[Comet AutoUpsert] Checko data received:`, checko ? 'success' : 'null')
+          } catch (e) {
+            console.error(`[Comet AutoUpsert] Failed to fetch Checko data:`, e)
+            checko = null
+          }
+        } else {
+          console.log(`[Comet AutoUpsert] No valid INN, skipping Checko`)
+        }
+
+        const baseName = (checko?.name && String(checko.name).trim()) || rootDomain
+        const supplierType: "supplier" | "reseller" = existing?.type || "supplier"
+
+        let saved: SupplierDTO
+        if (existing?.id) {
+          console.log(`[Comet AutoUpsert] Updating existing supplier ID ${existing.id}`)
+          console.log(`[Comet AutoUpsert] Data to send:`, { name: baseName, inn, email, domain: rootDomain, type: supplierType })
+          saved = await updateSupplier(existing.id, {
+            name: baseName,
+            inn,
+            email,
+            domain: rootDomain,
+            type: supplierType,
+          })
+          console.log(`[Comet AutoUpsert] Updated supplier:`, saved)
+        } else {
+          console.log(`[Comet AutoUpsert] Creating new supplier`)
+          console.log(`[Comet AutoUpsert] Data to send:`, { name: baseName, inn, email, domain: rootDomain, address: null, type: supplierType })
+          saved = await createSupplier({
+            name: baseName,
+            inn,
+            email,
+            domain: rootDomain,
+            address: null,
+            type: supplierType,
+          })
+          console.log(`[Comet AutoUpsert] Created supplier:`, saved)
+        }
+
+        if (checko) {
+          saved = await updateSupplier(saved.id, {
+            name: checko.name || saved.name,
+            inn,
+            email,
+            domain: rootDomain,
+            type: supplierType,
+            ogrn: checko.ogrn || null,
+            kpp: checko.kpp || null,
+            okpo: checko.okpo || null,
+            companyStatus: checko.companyStatus || null,
+            registrationDate: checko.registrationDate || null,
+            legalAddress: checko.legalAddress || null,
+            phone: checko.phone || null,
+            website: checko.website || null,
+            vk: checko.vk || null,
+            telegram: checko.telegram || null,
+            authorizedCapital: checko.authorizedCapital ?? null,
+            revenue: checko.revenue ?? null,
+            profit: checko.profit ?? null,
+            financeYear: checko.financeYear ?? null,
+            legalCasesCount: checko.legalCasesCount ?? null,
+            legalCasesSum: checko.legalCasesSum ?? null,
+            legalCasesAsPlaintiff: checko.legalCasesAsPlaintiff ?? null,
+            legalCasesAsDefendant: checko.legalCasesAsDefendant ?? null,
+            checkoData: checko.checkoData || null,
+          })
+        }
+
+        suppliersByDomainRef.current.set(rootDomain, saved)
+        invalidateSuppliersCache()
+        setRefreshKey((k) => k + 1)
+        markDone(domain)
+        toast.success(`Comet: создан/обновлён поставщик для ${rootDomain}`)
+      } catch (e) {
+        // silent, to avoid noisy UI; user can retry via manual edit
+      } finally {
+        cometAutofillLockRef.current.delete(lockKey)
+      }
+    }
+
+    for (const [domain, res] of cometResultsMap.entries()) {
+      void autoUpsert(domain, res)
+    }
+  }, [runId, cometRunId, cometResultsMap])
 
   // Загрузка логов парсера (один раз при загрузке run, даже если парсинг завершен)
   useEffect(() => {
@@ -233,6 +504,19 @@ export default function ParsingRunDetailsPage({ params }: { params: Promise<{ ru
         suppliersData = suppliersResult
         setCachedSuppliers(suppliersData.suppliers)
       }
+
+      try {
+        const nextMap = new Map<string, SupplierDTO>()
+        for (const s of suppliersData.suppliers) {
+          if ((s as any)?.domain) {
+            const root = extractRootDomain(String((s as any).domain)).toLowerCase()
+            nextMap.set(root, s as SupplierDTO)
+          }
+        }
+        suppliersByDomainRef.current = nextMap
+      } catch {
+        // ignore
+      }
       
       // Всегда загружаем свежие данные blacklist (чтобы видеть актуальный список после добавления)
       const blacklistResult = await getBlacklist({ limit: 1000 })
@@ -247,6 +531,44 @@ export default function ParsingRunDetailsPage({ params }: { params: Promise<{ ru
       ])
 
       setRun(runData)
+
+      // Fallback restore Comet state from DB process_log if localStorage is empty
+      // (after refresh/new device) so user still sees results.
+      try {
+        const hasLocalCometRun = !!localStorage.getItem(`comet-run-${runId}`)
+        const hasLocalCometResults = !!localStorage.getItem(`comet-results-${runId}`)
+        const pl: any = (runData as any)?.processLog ?? (runData as any)?.process_log
+        const runs: any = pl?.comet?.runs
+        if ((!hasLocalCometRun || !hasLocalCometResults) && runs && typeof runs === "object") {
+          const ids = Object.keys(runs).sort()
+          const latestId = ids[ids.length - 1]
+          const latest = latestId ? runs[latestId] : null
+          if (latestId && latest) {
+            if (!hasLocalCometRun) {
+              setCometRunId(latestId)
+            }
+            if (!hasLocalCometResults && Array.isArray(latest.results)) {
+              const map = new Map<string, CometExtractionResult>()
+              for (const r of latest.results) {
+                if (r?.domain) {
+                  map.set(String(r.domain), r as CometExtractionResult)
+                }
+              }
+              setCometResultsMap(map)
+              setCometStatus({
+                runId,
+                cometRunId: latestId,
+                status: (latest.status || "running") as any,
+                processed: Number(latest.processed || 0),
+                total: Number(latest.total || map.size),
+                results: Array.from(map.values()),
+              })
+            }
+          }
+        }
+      } catch (e) {
+        // ignore restore errors
+      }
       
       // Загружаем логи сразу при загрузке данных (даже если парсинг завершен)
       if (logsData.parsing_logs && Object.keys(logsData.parsing_logs).length > 0) {
@@ -311,17 +633,35 @@ export default function ParsingRunDetailsPage({ params }: { params: Promise<{ ru
     }
   }
 
-  async function handleAddToBlacklist(domain: string) {
-    if (!confirm(`Добавить "${domain}" в blacklist?`)) return
+  function openBlacklistDialog(domain: string) {
+    setBlacklistDomain(domain)
+    setBlacklistReason("")
+    setBlacklistDialogOpen(true)
+  }
 
+  async function handleAddToBlacklist() {
+    if (!blacklistDomain.trim()) {
+      toast.error("Домен не указан")
+      return
+    }
+
+    setAddingToBlacklist(true)
     try {
       // НОРМАЛИЗАЦИЯ: Используем extractRootDomain для нормализации домена
       // Это гарантирует, что домен будет добавлен в том же формате, что используется при фильтрации
-      const normalizedDomain = extractRootDomain(domain)
-      await addToBlacklist({ domain: normalizedDomain, parsingRunId: runId || undefined })
+      const normalizedDomain = extractRootDomain(blacklistDomain)
+      await addToBlacklist({ 
+        domain: normalizedDomain, 
+        parsingRunId: runId || undefined,
+        reason: blacklistReason.trim() || null
+      })
       // Инвалидируем кэш blacklist ПЕРЕД перезагрузкой данных
       invalidateBlacklistCache()
       toast.success(`Домен "${normalizedDomain}" добавлен в blacklist`)
+      // Закрываем модальное окно
+      setBlacklistDialogOpen(false)
+      setBlacklistDomain("")
+      setBlacklistReason("")
       // Увеличиваем задержку, чтобы backend успел закоммитить изменения
       await new Promise(resolve => setTimeout(resolve, 500))
       // Принудительно перезагружаем данные (await чтобы дождаться завершения)
@@ -334,6 +674,8 @@ export default function ParsingRunDetailsPage({ params }: { params: Promise<{ ru
       toast.error("Ошибка добавления в blacklist")
       console.error("Error adding to blacklist:", error)
       setLoading(false)
+    } finally {
+      setAddingToBlacklist(false)
     }
   }
 
@@ -592,6 +934,183 @@ export default function ParsingRunDetailsPage({ params }: { params: Promise<{ ru
     }
   }
 
+  // Функции для работы с выбранными доменами
+  const toggleDomainSelection = async (domain: string) => {
+    setSelectedDomains((prev) => {
+      const newSet = new Set(prev)
+      if (newSet.has(domain)) {
+        newSet.delete(domain)
+        // Удаляем результат из кэша при снятии выбора (опционально)
+        // setInnResultsMap((prevMap) => {
+        //   const newMap = new Map(prevMap)
+        //   newMap.delete(domain)
+        //   return newMap
+        // })
+      } else {
+        newSet.add(domain)
+        // Автоматически запускаем извлечение ИНН для выбранного домена
+        if (!innResultsMap.has(domain) && !extractingDomains.has(domain)) {
+          extractINNForDomain(domain)
+        }
+      }
+      return newSet
+    })
+  }
+
+  // Функция для извлечения ИНН для одного домена
+  const extractINNForDomain = async (domain: string) => {
+    // Проверяем кэш
+    if (innResultsMap.has(domain)) {
+      return
+    }
+
+    // Помечаем домен как обрабатываемый
+    setExtractingDomains((prev) => new Set(prev).add(domain))
+
+    try {
+      const response = await extractINNBatch([domain])
+      if (response.results && response.results.length > 0) {
+        const result = response.results[0]
+        // Сохраняем только если ИНН найден
+        if (result.inn) {
+          setInnResultsMap((prev) => {
+            const newMap = new Map(prev)
+            newMap.set(domain, result)
+            return newMap
+          })
+        }
+      }
+    } catch (error) {
+      // Обрабатываем разные типы ошибок
+      if (error instanceof APIError) {
+        if (error.status === 404) {
+          // Endpoint не найден - возможно Backend не запущен
+          console.warn(`[INN Extraction] Endpoint not found for ${domain}. Backend may not be running.`)
+          // Не показываем toast для 404 - это техническая ошибка
+        } else if (error.status === 503) {
+          // Сервер недоступен
+          toast.error(`Сервер недоступен. Проверьте, что Backend запущен.`)
+        } else {
+          // Другие ошибки
+          toast.error(`Ошибка при извлечении ИНН для ${domain}: ${error.message}`)
+        }
+      } else {
+        // Неожиданная ошибка
+        console.error(`[INN Extraction] Unexpected error for ${domain}:`, error)
+        toast.error(`Неожиданная ошибка при извлечении ИНН для ${domain}`)
+      }
+    } finally {
+      // Убираем домен из списка обрабатываемых
+      setExtractingDomains((prev) => {
+        const newSet = new Set(prev)
+        newSet.delete(domain)
+        return newSet
+      })
+    }
+  }
+
+  const selectAllDomains = () => {
+    const allDomains = groups.map((g) => g.domain)
+    setSelectedDomains(new Set(allDomains))
+  }
+
+  const deselectAllDomains = () => {
+    setSelectedDomains(new Set())
+  }
+
+  const copySelectedDomains = () => {
+    const domainsArray = Array.from(selectedDomains)
+    if (domainsArray.length === 0) {
+      toast.error("Нет выбранных доменов")
+      return
+    }
+    navigator.clipboard.writeText(domainsArray.join("\n"))
+    toast.success(`Скопировано ${domainsArray.length} доменов`)
+  }
+
+  // Функция для извлечения ИНН
+  const handleExtractINN = async () => {
+    if (selectedDomains.size === 0) {
+      toast.error("Выберите хотя бы один домен")
+      return
+    }
+
+    setInnExtractionDialogOpen(true)
+    setInnExtractionLoading(true)
+    setInnExtractionResults([])
+    setInnExtractionProgress({ processed: 0, total: selectedDomains.size })
+
+    try {
+      const domainsArray = Array.from(selectedDomains)
+      const response = await extractINNBatch(domainsArray)
+      setInnExtractionResults(response.results)
+      setInnExtractionProgress({ processed: response.processed, total: response.total })
+      toast.success(`Обработано ${response.processed} из ${response.total} доменов`)
+    } catch (error) {
+      // Обрабатываем разные типы ошибок
+      if (error instanceof APIError) {
+        if (error.status === 404) {
+          // 404 - ожидаемая ошибка (домен не найден в БД), не логируем как error
+          console.warn(`[INN Extraction] Some domains not found (404). This is expected if domains are not in database.`)
+          // Показываем информационное сообщение пользователю
+          toast.info("Некоторые домены не найдены в базе данных")
+        } else if (error.status === 503) {
+          // Сервер недоступен
+          console.error("[INN Extraction] Server unavailable:", error)
+          toast.error(`Сервер недоступен. Проверьте, что Backend запущен.`)
+        } else {
+          // Другие ошибки
+          console.error("[INN Extraction] Error:", error)
+          toast.error(`Ошибка при извлечении ИНН: ${error.message}`)
+        }
+      } else {
+        // Неожиданная ошибка
+        console.error("[INN Extraction] Unexpected error:", error)
+        toast.error(error instanceof Error ? error.message : "Неожиданная ошибка при извлечении ИНН")
+      }
+    } finally {
+      setInnExtractionLoading(false)
+    }
+  }
+
+  const handleCometExtract = async () => {
+    console.log('[Comet] Button clicked')
+    console.log('[Comet] selectedDomains:', selectedDomains)
+    console.log('[Comet] selectedDomains.size:', selectedDomains.size)
+    
+    if (selectedDomains.size === 0) {
+      console.log('[Comet] No domains selected, showing error')
+      toast.error("Выберите хотя бы один домен")
+      return
+    }
+    if (!runId) {
+      console.log('[Comet] No runId, showing error')
+      toast.error("runId не найден")
+      return
+    }
+
+    console.log('[Comet] Starting extraction...')
+    setCometLoading(true)
+    try {
+      const domainsArray = Array.from(selectedDomains)
+      console.log('[Comet] Domains array:', domainsArray)
+      console.log('[Comet] Calling startCometExtractBatch...')
+      const resp = await startCometExtractBatch(runId, domainsArray)
+      console.log('[Comet] Response:', resp)
+      setCometRunId(resp.cometRunId)
+      toast.success(`Comet запущен для ${domainsArray.length} доменов`)
+    } catch (error) {
+      console.error('[Comet] Error:', error)
+      if (error instanceof APIError) {
+        toast.error(`Ошибка Comet: ${error.message}`)
+      } else {
+        toast.error(error instanceof Error ? error.message : "Ошибка запуска Comet")
+      }
+    } finally {
+      setCometLoading(false)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
@@ -625,6 +1144,65 @@ export default function ParsingRunDetailsPage({ params }: { params: Promise<{ ru
           <CardHeader className="border-b">
             <div className="flex items-center justify-between mb-2">
               <CardTitle>Результаты парсинга</CardTitle>
+              {/* Кнопки для работы с выбранными доменами */}
+              {selectedDomains.size > 0 && (
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={copySelectedDomains}
+                    className="h-8 text-xs"
+                  >
+                    <Copy className="h-3 w-3 mr-1" />
+                    Копировать ({selectedDomains.size})
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={handleExtractINN}
+                    className="h-8 text-xs bg-blue-600 hover:bg-blue-700"
+                  >
+                    <FileSearch className="h-3 w-3 mr-1" />
+                    Извлечь ИНН ({selectedDomains.size})
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={handleCometExtract}
+                    disabled={cometLoading}
+                    className="h-8 text-xs bg-black hover:bg-black/90 text-white"
+                  >
+                    Comet ({selectedDomains.size})
+                  </Button>
+                </div>
+              )}
+            </div>
+            {cometRunId && cometStatus && (
+              <div className="text-xs text-muted-foreground mb-2">
+                Comet: {cometStatus.status} — {cometStatus.processed}/{cometStatus.total}
+              </div>
+            )}
+            {/* Кнопки выбора всех/снятия выбора */}
+            <div className="flex items-center gap-2 mb-2">
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={selectAllDomains}
+                className="h-7 text-xs"
+              >
+                Выбрать все
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={deselectAllDomains}
+                className="h-7 text-xs"
+              >
+                Снять выбор
+              </Button>
+              {selectedDomains.size > 0 && (
+                <span className="text-xs text-muted-foreground">
+                  Выбрано: {selectedDomains.size}
+                </span>
+              )}
             </div>
             {/* Фильтры и поиск */}
             <div className="flex gap-2 flex-wrap">
@@ -690,16 +1268,69 @@ export default function ParsingRunDetailsPage({ params }: { params: Promise<{ ru
                   {filteredGroups.map((group) => (
                     <AccordionItem key={group.domain} value={group.domain} className="border-b border-border/50 last:border-b-0">
                       <div className="flex items-center justify-between py-0.5">
-                        <AccordionTrigger className="hover:no-underline flex-1 py-1">
-                          <div className="flex items-center gap-1 flex-1">
-                            <span className="font-mono font-semibold text-sm">{group.domain}</span>
+                        <div className="flex items-center gap-2 flex-1">
+                          <Checkbox
+                            checked={selectedDomains.has(group.domain)}
+                            onCheckedChange={() => toggleDomainSelection(group.domain)}
+                            onClick={(e) => e.stopPropagation()}
+                          />
+                          <AccordionTrigger className="hover:no-underline flex-1 py-1">
+                            <div className="flex items-center gap-2 flex-1">
+                              <span className="font-mono font-semibold text-sm">{group.domain}</span>
                             <Badge variant="outline" className="text-xs">{group.totalUrls} URL</Badge>
-                            {/* Источники, которые нашли этот домен */}
-                            {group.sources && group.sources.includes("google") && (
-                              <Badge variant="outline" className="bg-blue-100 text-blue-700 border-blue-300 text-xs">
-                                Google
-                              </Badge>
+                            {/* Автоматически найденный ИНН - отображается желтым с ссылкой на пруф */}
+                            {innResultsMap.get(group.domain)?.inn && (
+                              <a
+                                href={innResultsMap.get(group.domain)?.proof?.url || "#"}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="ml-1 px-2 py-0.5 bg-yellow-200 hover:bg-yellow-300 text-yellow-900 rounded text-xs font-semibold underline transition-colors"
+                                title={`ИНН найден: ${innResultsMap.get(group.domain)?.inn}. Контекст: ${innResultsMap.get(group.domain)?.proof?.context || "нет"}`}
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                ИНН: {innResultsMap.get(group.domain)?.inn}
+                                <ExternalLink className="h-3 w-3 inline ml-1" />
+                              </a>
                             )}
+                            {/* Индикатор загрузки для домена, у которого идет извлечение */}
+                            {extractingDomains.has(group.domain) && (
+                              <span className="ml-1 text-xs text-muted-foreground animate-pulse">
+                                Извлечение...
+                              </span>
+                            )}
+
+                            {(() => {
+                              const comet = cometResultsMap.get(group.domain)
+                              if (!comet) return null
+                              return (
+                                <>
+                                  {(comet.status === "running" || comet.status === "pending") && (
+                                    <span className="ml-1 text-xs text-muted-foreground animate-pulse">Comet...</span>
+                                  )}
+                                  {comet.inn && (
+                                    <span className="ml-1 px-2 py-0.5 bg-emerald-200 text-emerald-900 rounded text-xs font-semibold">
+                                      Comet ИНН: {comet.inn}
+                                    </span>
+                                  )}
+                                  {comet.email && (
+                                    <span className="ml-1 px-2 py-0.5 bg-emerald-200 text-emerald-900 rounded text-xs font-semibold">
+                                      Comet email: {comet.email}
+                                    </span>
+                                  )}
+                                  {comet.sourceUrls && comet.sourceUrls.length > 0 && (
+                                    <a
+                                      href={comet.sourceUrls[0]}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="ml-1 px-2 py-0.5 bg-emerald-100 text-emerald-900 rounded text-xs font-semibold underline"
+                                      onClick={(e) => e.stopPropagation()}
+                                    >
+                                      Источник <ExternalLink className="h-3 w-3 inline ml-1" />
+                                    </a>
+                                  )}
+                                </>
+                              )
+                            })()}
                             {group.sources && group.sources.includes("yandex") && (
                               <Badge variant="outline" className="bg-yellow-100 text-yellow-700 border-yellow-300 text-xs">
                                 Яндекс
@@ -713,6 +1344,7 @@ export default function ParsingRunDetailsPage({ params }: { params: Promise<{ ru
                             )}
                           </div>
                         </AccordionTrigger>
+                        </div>
                         {/* Действия на уровне домена (вынесены из AccordionTrigger для исправления hydration error) */}
                         <div className="flex gap-1 px-1" onClick={(e) => e.stopPropagation()}>
                           {group.supplierType ? (
@@ -731,7 +1363,7 @@ export default function ParsingRunDetailsPage({ params }: { params: Promise<{ ru
                               <Button 
                                 variant="destructive" 
                                 size="sm" 
-                                onClick={() => handleAddToBlacklist(group.domain)}
+                                onClick={() => openBlacklistDialog(group.domain)}
                                 className="h-7 text-xs"
                               >
                                 В Blacklist
@@ -1125,6 +1757,163 @@ export default function ParsingRunDetailsPage({ params }: { params: Promise<{ ru
             </Button>
             <Button onClick={handleCreateSupplier}>
               {editingSupplierId ? "Сохранить" : "Создать"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Blacklist Dialog */}
+      <Dialog open={blacklistDialogOpen} onOpenChange={setBlacklistDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Добавить домен в черный список</DialogTitle>
+            <DialogDescription>
+              Добавить "{blacklistDomain}" в blacklist?
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="blacklist-reason">Причина добавления в черный список (необязательно)</Label>
+              <Textarea
+                id="blacklist-reason"
+                placeholder="Укажите причину добавления домена в черный список..."
+                value={blacklistReason}
+                onChange={(e) => setBlacklistReason(e.target.value)}
+                rows={4}
+                className="mt-1"
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setBlacklistDialogOpen(false)
+                setBlacklistDomain("")
+                setBlacklistReason("")
+              }}
+            >
+              Отмена
+            </Button>
+            <Button
+              onClick={handleAddToBlacklist}
+              disabled={addingToBlacklist}
+              variant="destructive"
+            >
+              {addingToBlacklist ? "Добавление..." : "Добавить"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* INN Extraction Results Dialog */}
+      <Dialog open={innExtractionDialogOpen} onOpenChange={setInnExtractionDialogOpen}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Результаты извлечения ИНН</DialogTitle>
+            <DialogDescription>
+              {innExtractionLoading
+                ? `Обработка: ${innExtractionProgress.processed} из ${innExtractionProgress.total} доменов`
+                : `Обработано: ${innExtractionProgress.processed} из ${innExtractionProgress.total} доменов`}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            {innExtractionLoading && (
+              <div className="text-center py-4">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+                <p className="mt-2 text-sm text-muted-foreground">Извлечение ИНН...</p>
+              </div>
+            )}
+
+            {!innExtractionLoading && innExtractionResults.length > 0 && (
+              <div className="space-y-2">
+                <div className="grid grid-cols-1 gap-2">
+                  {innExtractionResults.map((result, index) => (
+                    <Card key={index} className="p-3">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className="font-mono font-semibold text-sm">{result.domain}</span>
+                            {result.status === "success" && result.inn && (
+                              <Badge className="bg-green-600">ИНН: {result.inn}</Badge>
+                            )}
+                            {result.status === "not_found" && (
+                              <Badge variant="outline">ИНН не найден</Badge>
+                            )}
+                            {result.status === "error" && (
+                              <Badge variant="destructive">Ошибка</Badge>
+                            )}
+                          </div>
+
+                          {result.proof && (
+                            <div className="mt-2 p-2 bg-muted rounded text-xs space-y-1">
+                              <div>
+                                <span className="font-semibold">URL:</span>{" "}
+                                <a
+                                  href={result.proof.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-blue-600 hover:underline"
+                                >
+                                  {result.proof.url}
+                                  <ExternalLink className="h-3 w-3 inline ml-1" />
+                                </a>
+                              </div>
+                              <div>
+                                <span className="font-semibold">Метод:</span> {result.proof.method}
+                                {result.proof.confidence && (
+                                  <span className="ml-1">
+                                    ({result.proof.confidence === "high" ? "высокая" : result.proof.confidence === "medium" ? "средняя" : "низкая"} уверенность)
+                                  </span>
+                                )}
+                              </div>
+                              <div>
+                                <span className="font-semibold">Контекст:</span>
+                                <div className="mt-1 p-2 bg-background rounded border">
+                                  {result.proof.context}
+                                </div>
+                              </div>
+                            </div>
+                          )}
+
+                          {result.error && (
+                            <div className="mt-2 text-xs text-destructive">
+                              Ошибка: {result.error}
+                            </div>
+                          )}
+
+                          {result.processingTime && (
+                            <div className="mt-1 text-xs text-muted-foreground">
+                              Время обработки: {result.processingTime} мс
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {!innExtractionLoading && innExtractionResults.length === 0 && (
+              <div className="text-center py-4 text-muted-foreground">
+                Нет результатов для отображения
+              </div>
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setInnExtractionDialogOpen(false)
+                setInnExtractionResults([])
+              }}
+            >
+              Закрыть
             </Button>
           </DialogFooter>
         </DialogContent>

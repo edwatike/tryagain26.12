@@ -1,0 +1,83 @@
+[
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@81613192193ccffe8b499e9ddd97f85f85c3da25/inspector.html?ws=127.0.0.1:9222/devtools/page/6620A784D9AA8593974A36F8E766BE67",
+    "faviconUrl": "https://kranikoff.ru/favicon.ico",
+    "id": "6620A784D9AA8593974A36F8E766BE67",
+    "title": "Купить инженерную сантехнику в Санкт-Петербурге | Магазин сантехнического оборудования Kranikoff",
+    "type": "page",
+    "url": "https://kranikoff.ru/",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/6620A784D9AA8593974A36F8E766BE67"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@81613192193ccffe8b499e9ddd97f85f85c3da25/inspector.html?ws=127.0.0.1:9222/devtools/page/A7D14384FD2E8CE2DCA96BD7121368A8",
+    "faviconUrl": "https://kranikoff.ru/favicon.ico",
+    "id": "A7D14384FD2E8CE2DCA96BD7121368A8",
+    "parentId": "6620A784D9AA8593974A36F8E766BE67",
+    "title": "https://yandex.ru/maps-reviews-widget/1025917162?comments",
+    "type": "iframe",
+    "url": "https://yandex.ru/maps-reviews-widget/1025917162?comments",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/A7D14384FD2E8CE2DCA96BD7121368A8"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@81613192193ccffe8b499e9ddd97f85f85c3da25/inspector.html?ws=127.0.0.1:9222/devtools/page/A75D8FF8EE7876EEA1C6536E39892C2E",
+    "faviconUrl": "https://kranikoff.ru/favicon.ico",
+    "id": "A75D8FF8EE7876EEA1C6536E39892C2E",
+    "parentId": "6620A784D9AA8593974A36F8E766BE67",
+    "title": "https://yandex.ru/sprav/widget/rating-badge/1025917162",
+    "type": "iframe",
+    "url": "https://yandex.ru/sprav/widget/rating-badge/1025917162",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/A75D8FF8EE7876EEA1C6536E39892C2E"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@81613192193ccffe8b499e9ddd97f85f85c3da25/inspector.html?ws=127.0.0.1:9222/devtools/page/B96486BD3C17C8792C80A03D4D88265B",
+    "faviconUrl": "https://kranikoff.ru/favicon.ico",
+    "id": "B96486BD3C17C8792C80A03D4D88265B",
+    "parentId": "6620A784D9AA8593974A36F8E766BE67",
+    "title": "https://www.google.com/recaptcha/api2/anchor?ar=1&amp;k=6LdYZlgpAAAAAFQ8P9IrE5bSaE5K8-qxBRZyCepo&amp;co=aHR0cHM6Ly9rcmFuaWtvZmYucnU6NDQz&amp;hl=ru&amp;v=9TiwnJFHeuIw_s0wSd3fiKfN&amp;theme=light&amp;size=normal&amp;anchor-ms=20000&amp;execute-ms=30000&amp;cb=m61j0l591qeb",
+    "type": "iframe",
+    "url": "https://www.google.com/recaptcha/api2/anchor?ar=1&k=6LdYZlgpAAAAAFQ8P9IrE5bSaE5K8-qxBRZyCepo&co=aHR0cHM6Ly9rcmFuaWtvZmYucnU6NDQz&hl=ru&v=9TiwnJFHeuIw_s0wSd3fiKfN&theme=light&size=normal&anchor-ms=20000&execute-ms=30000&cb=m61j0l591qeb",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/B96486BD3C17C8792C80A03D4D88265B"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@81613192193ccffe8b499e9ddd97f85f85c3da25/inspector.html?ws=127.0.0.1:9222/devtools/page/0B17A73E37CB671101C911EB48B74E31",
+    "faviconUrl": "https://kranikoff.ru/favicon.ico",
+    "id": "0B17A73E37CB671101C911EB48B74E31",
+    "parentId": "6620A784D9AA8593974A36F8E766BE67",
+    "title": "https://www.google.com/recaptcha/api2/bframe?hl=ru&amp;v=9TiwnJFHeuIw_s0wSd3fiKfN&amp;k=6LdYZlgpAAAAAFQ8P9IrE5bSaE5K8-qxBRZyCepo&amp;bft=0dAFcWeA5T48jwiDR9cduGlHwnnfDaoRl-3JHy-oowr8NiQGfCvsz3ocuBvloW1Yw6H_yQ4tdb0lITQ2MjlRKnHJpo839hgpjC-w",
+    "type": "iframe",
+    "url": "https://www.google.com/recaptcha/api2/bframe?hl=ru&v=9TiwnJFHeuIw_s0wSd3fiKfN&k=6LdYZlgpAAAAAFQ8P9IrE5bSaE5K8-qxBRZyCepo&bft=0dAFcWeA5T48jwiDR9cduGlHwnnfDaoRl-3JHy-oowr8NiQGfCvsz3ocuBvloW1Yw6H_yQ4tdb0lITQ2MjlRKnHJpo839hgpjC-w",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/0B17A73E37CB671101C911EB48B74E31"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@81613192193ccffe8b499e9ddd97f85f85c3da25/inspector.html?ws=127.0.0.1:9222/devtools/page/B005BD1BB70797AA47F5C4380A0042C6",
+    "id": "B005BD1BB70797AA47F5C4380A0042C6",
+    "title": "B2B Platform - Moderator Dashboard",
+    "type": "page",
+    "url": "http://localhost:3000/parsing-runs/a0097613-61ab-4831-8d48-ef9c8cbfac8b",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/B005BD1BB70797AA47F5C4380A0042C6"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@81613192193ccffe8b499e9ddd97f85f85c3da25/inspector.html?ws=127.0.0.1:9222/devtools/page/30F589B7452FE488AB69869C29D0F6CE",
+    "id": "30F589B7452FE488AB69869C29D0F6CE",
+    "title": "Tab Search",
+    "type": "other",
+    "url": "chrome://tab-search.top-chrome/",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/30F589B7452FE488AB69869C29D0F6CE"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@81613192193ccffe8b499e9ddd97f85f85c3da25/inspector.html?ws=127.0.0.1:9222/devtools/page/450E58B55ECD7A7CD7A12553A09707C6",
+    "id": "450E58B55ECD7A7CD7A12553A09707C6",
+    "title": "https://www.google.com/recaptcha/api2/webworker.js?hl=ru&amp;v=9TiwnJFHeuIw_s0wSd3fiKfN",
+    "type": "worker",
+    "url": "https://www.google.com/recaptcha/api2/webworker.js?hl=ru&v=9TiwnJFHeuIw_s0wSd3fiKfN",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/450E58B55ECD7A7CD7A12553A09707C6"
+  }
+]

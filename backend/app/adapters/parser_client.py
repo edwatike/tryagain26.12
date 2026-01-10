@@ -89,6 +89,71 @@ class ParserClient:
         except Exception as e:
             return {"status": "unhealthy", "error": str(e)}
     
+    async def get_html_via_cdp(self, url: str) -> Dict[str, Any]:
+        """Get HTML content from URL using Chrome CDP via Parser Service.
+        
+        This method connects to Chrome via CDP, navigates to the URL,
+        and returns the HTML content. This is used for INN extraction
+        where we need to get the actual rendered HTML from the browser.
+        
+        Args:
+            url: URL to fetch HTML from
+            
+        Returns:
+            Dict with structure:
+            {
+                "url": str,
+                "html": str,
+                "title": str | None,
+                "success": bool,
+                "error": str | None
+            }
+            
+        Raises:
+            httpx.HTTPError: If request fails
+        """
+        import logging
+        logger = logging.getLogger(__name__)
+        
+        try:
+            logger.info(f"Fetching HTML via Chrome CDP for URL: {url}")
+            response = await self.client.post(
+                "/get-html",
+                json={"url": url},
+                headers={
+                    "Content-Type": "application/json; charset=utf-8"
+                }
+            )
+            response.raise_for_status()
+            result = response.json()
+            
+            if result.get("success"):
+                logger.info(f"Successfully fetched HTML via CDP for {url}, length: {len(result.get('html', ''))} chars")
+            else:
+                logger.warning(f"Failed to fetch HTML via CDP for {url}: {result.get('error')}")
+            
+            return result
+        except httpx.HTTPStatusError as e:
+            error_detail = "Unknown error"
+            try:
+                error_data = e.response.json()
+                error_detail = error_data.get("detail", error_data.get("error", str(e.response.status_code)))
+            except Exception:
+                try:
+                    error_detail = f"HTTP {e.response.status_code}: {e.response.text[:500]}"
+                except:
+                    error_detail = f"HTTP {e.response.status_code}: {e.response.status_text}"
+            
+            logger.error(f"Parser Service error while fetching HTML ({e.response.status_code}): {error_detail}")
+            raise
+        except httpx.RequestError as e:
+            error_msg = f"Failed to connect to Parser Service at {self.base_url}: {str(e)}"
+            logger.error(f"Parser Service connection error: {error_msg}")
+            raise Exception(error_msg)
+        except Exception as e:
+            logger.error(f"Unexpected error in parser_client.get_html_via_cdp: {e}", exc_info=True)
+            raise
+    
     async def close(self):
         """Close HTTP client."""
         await self.client.aclose()

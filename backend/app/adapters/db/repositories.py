@@ -374,6 +374,7 @@ class ParsingRunRepository:
         """Get parsing run by ID."""
         from app.adapters.db.models import ParsingRequestModel
         from sqlalchemy import text
+        import json
         
         # CRITICAL FIX: Always use direct SQL to avoid AttributeError
         # SQLAlchemy tries to load all columns including results_count when using select(ParsingRunModel)
@@ -385,7 +386,8 @@ class ParsingRunRepository:
             text("""
                 SELECT pr.id, pr.run_id, pr.request_id, pr.parser_task_id, 
                        pr.status, pr.depth, pr.source, pr.created_at, 
-                       pr.started_at, pr.finished_at, pr.error_message
+                       pr.started_at, pr.finished_at, pr.error_message,
+                       pr.process_log
                 FROM parsing_runs pr
                 WHERE pr.run_id = :run_id
             """),
@@ -410,6 +412,17 @@ class ParsingRunRepository:
         run.started_at = row[8]
         run.finished_at = row[9]
         run.error_message = row[10]
+        process_log_value = row[11] if len(row) > 11 else None
+        if isinstance(process_log_value, dict):
+            run.process_log = process_log_value
+        elif isinstance(process_log_value, str):
+            try:
+                parsed = json.loads(process_log_value)
+                run.process_log = parsed if isinstance(parsed, dict) else None
+            except Exception:
+                run.process_log = None
+        else:
+            run.process_log = None
         
         # Load request separately using select (this should work)
         try:

@@ -1,0 +1,41 @@
+[
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@81613192193ccffe8b499e9ddd97f85f85c3da25/inspector.html?ws=127.0.0.1:9222/devtools/page/B005BD1BB70797AA47F5C4380A0042C6",
+    "id": "B005BD1BB70797AA47F5C4380A0042C6",
+    "title": "B2B Platform - Moderator Dashboard",
+    "type": "page",
+    "url": "http://localhost:3000/parsing-runs/a0097613-61ab-4831-8d48-ef9c8cbfac8b",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/B005BD1BB70797AA47F5C4380A0042C6"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@81613192193ccffe8b499e9ddd97f85f85c3da25/inspector.html?ws=127.0.0.1:9222/devtools/page/6620A784D9AA8593974A36F8E766BE67",
+    "faviconUrl": "https://kranikoff.ru/favicon.ico",
+    "id": "6620A784D9AA8593974A36F8E766BE67",
+    "title": "Купить товары бренда «Valtec» по выгодной цене в интернет-магазине «Краникофф»",
+    "type": "page",
+    "url": "https://kranikoff.ru/valtec",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/6620A784D9AA8593974A36F8E766BE67"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@81613192193ccffe8b499e9ddd97f85f85c3da25/inspector.html?ws=127.0.0.1:9222/devtools/page/809B5E330D9D9012EF731D35471A93B0",
+    "faviconUrl": "https://kranikoff.ru/favicon.ico",
+    "id": "809B5E330D9D9012EF731D35471A93B0",
+    "parentId": "6620A784D9AA8593974A36F8E766BE67",
+    "title": "https://yandex.ru/sprav/widget/rating-badge/1025917162",
+    "type": "iframe",
+    "url": "https://yandex.ru/sprav/widget/rating-badge/1025917162",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/809B5E330D9D9012EF731D35471A93B0"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@81613192193ccffe8b499e9ddd97f85f85c3da25/inspector.html?ws=127.0.0.1:9222/devtools/page/30F589B7452FE488AB69869C29D0F6CE",
+    "id": "30F589B7452FE488AB69869C29D0F6CE",
+    "title": "Tab Search",
+    "type": "other",
+    "url": "chrome://tab-search.top-chrome/",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/30F589B7452FE488AB69869C29D0F6CE"
+  }
+]

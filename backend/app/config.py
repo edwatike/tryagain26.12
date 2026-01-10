@@ -11,13 +11,13 @@ class Settings(BaseSettings):
     """Application settings loaded from environment variables."""
 
     # Database
-    # ⚠️ ВАЖНО: Используется база данных b2bplatform
-    # Пароль: Jnvnszoe5971312059001
-    # НЕ МЕНЯТЬ без обновления всех документов и миграций!
-    DATABASE_URL: str = "postgresql+asyncpg://postgres:Jnvnszoe5971312059001@localhost:5432/b2bplatform"
+    DATABASE_URL: str = "postgresql+asyncpg://postgres:CHANGE_ME@localhost:5432/b2bplatform"
 
     # Parser Service
     PARSER_SERVICE_URL: str = "http://127.0.0.1:9003"
+
+    # Ollama INN Extractor Service
+    OLLAMA_SERVICE_URL: str = "http://127.0.0.1:9004"
 
     # Checko API
     CHECKO_API_KEY: str = ""
@@ -58,3 +58,4 @@ Settings.log_sql = property(lambda self: self.LOG_SQL)
 Settings.attachments_dir = property(lambda self: self.ATTACHMENTS_DIR)
 Settings.cors_origins = property(lambda self: self.CORS_ORIGINS)
 Settings.checko_api_key = property(lambda self: self.CHECKO_API_KEY)
+Settings.ollama_service_url = property(lambda self: self.OLLAMA_SERVICE_URL)

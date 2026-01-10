@@ -67,7 +67,7 @@ if (Test-Path "$backendDir\venv\Scripts\Activate.ps1") {
     $script = @"
 cd '$backendDir'
 & .\venv\Scripts\Activate.ps1
-uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
+python run_api.py
 "@
     Start-Process powershell -ArgumentList "-NoExit", "-Command", $script -WindowStyle Minimized
     Write-Host "  Backend запускается..."
@@ -110,6 +110,7 @@ Write-Host "========================================"
 Write-Host "Backend доступен на: http://127.0.0.1:8000"
 Write-Host "Документация API: http://127.0.0.1:8000/docs"
 Write-Host ""
+
 
 
 

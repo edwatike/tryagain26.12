@@ -19,3 +19,9 @@ COMMENT ON COLUMN domains_queue.source IS 'Source of the URL: google, yandex, or
 
 
 
+
+
+
+
+
+

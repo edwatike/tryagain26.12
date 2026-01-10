@@ -81,7 +81,7 @@ Write-Host "Запуск Backend в новом окне PowerShell..."
 $script = @"
 cd `"$backendPath`"
 & `"$venvPath`"
-uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
+python run_api.py
 "@
 
 Start-Process powershell -ArgumentList "-NoExit", "-Command", $script -WindowStyle Normal
@@ -126,6 +126,7 @@ Write-Host "2. Проверьте endpoint: http://127.0.0.1:8000/health"
 Write-Host "3. Протестируйте endpoint: http://127.0.0.1:8000/parsing/runs/{run_id}"
 Write-Host ""
 Write-Host "Если ошибка AttributeError все еще возникает, перезагрузите компьютер" -ForegroundColor Red
+
 
 
 

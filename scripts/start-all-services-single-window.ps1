@@ -226,10 +226,10 @@ Write-Host ""
 Start-ServiceBackground -ServiceName "Parser Service" -Command "parser_service\start-parser-service.bat" -WorkingDir $ProjectRoot
 
 # Start Backend
-Start-ServiceBackground -ServiceName "Backend" -Command "start-backend.bat" -WorkingDir $ProjectRoot
+Start-ServiceBackground -ServiceName "Backend" -Command "scripts\start-backend.bat" -WorkingDir $ProjectRoot
 
 # Start Frontend
-Start-ServiceBackground -ServiceName "Frontend" -Command "start-frontend.bat" -WorkingDir $ProjectRoot
+Start-ServiceBackground -ServiceName "Frontend" -Command "scripts\start-frontend.bat" -WorkingDir $ProjectRoot
 
 Write-Host ""
 Write-Host "========================================" -ForegroundColor Cyan

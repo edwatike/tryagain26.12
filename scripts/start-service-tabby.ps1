@@ -1,5 +1,5 @@
 # Script to start a service in Tabby terminal with logging
-# Usage: .\scripts\start-service-tabby.ps1 -ServiceName "Backend" -Command "start-backend.bat" -WorkingDir "D:\tryagain"
+# Usage: .\scripts\start-service-tabby.ps1 -ServiceName "Backend" -Command "scripts\start-backend.bat" -WorkingDir "D:\tryagain"
 
 param(
     [Parameter(Mandatory=$true)]
@@ -76,6 +76,7 @@ try {
 } catch {
     Write-Error -Service $ServiceName -Message "Failed to start $ServiceName : $_"
 }
+
 
 
 

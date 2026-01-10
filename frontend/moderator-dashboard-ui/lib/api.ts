@@ -1,4 +1,15 @@
-import { DomainQueueEntryDTO, ParsingRunDTO, SupplierDTO, BlacklistEntryDTO, KeywordDTO, ParsingLogsDTO } from "./types"
+import type {
+  SupplierDTO,
+  KeywordDTO,
+  SupplierKeyword,
+  BlacklistEntryDTO,
+  ParsingRunDTO,
+  DomainQueueEntryDTO,
+  ParsingLogsDTO,
+  INNExtractionBatchResponse,
+  CometExtractBatchResponse,
+  CometStatusResponse,
+} from "./types"
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000"
 
@@ -112,13 +123,23 @@ export async function apiFetch<T>(
       // Extract detailed error message
       const errorMessage = errorData.detail || errorData.message || errorData.error || `HTTP ${response.status}`
       
-      // Log detailed error to console for debugging (F12)
-      console.error(`[API Error] ${response.status}:`, {
-        message: errorMessage,
-        data: errorData,
-        url: url,
-        endpoint: endpoint
-      })
+      // Разные уровни логирования для разных статусов
+      // 404 - ожидаемая ошибка (ресурс не найден), логируем как warning
+      // 400 - ожидаемая ошибка (неверный запрос), логируем как warning
+      // 500+ - реальная ошибка сервера, логируем как error
+      if (response.status === 404 || response.status === 400) {
+        console.warn(`[API] ${response.status} ${errorMessage}:`, {
+          endpoint: endpoint,
+          url: url
+        })
+      } else {
+        console.error(`[API Error] ${response.status}:`, {
+          message: errorMessage,
+          data: errorData,
+          url: url,
+          endpoint: endpoint
+        })
+      }
       
       throw new APIError(
         errorMessage,
@@ -144,7 +165,19 @@ export async function apiFetch<T>(
     }
     return {} as T
   } catch (error) {
-    // Log all errors to console (visible in F12)
+    // Если это APIError, не логируем здесь - уже залогировано выше (строка 116)
+    if (error instanceof APIError) {
+      throw error
+    }
+    
+    // Логируем только неожиданные ошибки
+    if (error instanceof TypeError && error.message.includes("fetch")) {
+      const connectionError = new APIError("Unable to connect to server. Please ensure the backend is running.", 503)
+      console.error("[API Fetch] Connection error:", connectionError.message)
+      throw connectionError
+    }
+    
+    // Логируем только действительно неожиданные ошибки
     console.error("[API Fetch] Unexpected error:", {
       error: error,
       url: url,
@@ -153,14 +186,7 @@ export async function apiFetch<T>(
       errorMessage: error instanceof Error ? error.message : String(error)
     })
     
-    if (error instanceof APIError) throw error
-    if (error instanceof TypeError && error.message.includes("fetch")) {
-      const connectionError = new APIError("Unable to connect to server. Please ensure the backend is running.", 503)
-      console.error("[API Fetch] Connection error:", connectionError.message)
-      throw connectionError
-    }
     const unexpectedError = new APIError("An unexpected error occurred", 500)
-    console.error("[API Fetch] Unexpected error:", unexpectedError.message, error)
     throw unexpectedError
   }
 }
@@ -539,5 +565,32 @@ export async function deleteKeyword(keywordId: number): Promise<void> {
   return apiFetch<void>(`/keywords/${keywordId}`, {
     method: "DELETE",
   })
+}
+
+// INN Extraction API
+export async function extractINNBatch(domains: string[]): Promise<INNExtractionBatchResponse> {
+  return apiFetch<INNExtractionBatchResponse>("/inn-extraction/extract-batch", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ domains }),
+  })
+}
+
+// Comet Extraction API
+export async function startCometExtractBatch(runId: string, domains: string[]): Promise<CometExtractBatchResponse> {
+  return apiFetch<CometExtractBatchResponse>("/comet/extract-batch", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ runId, domains }),
+  })
+}
+
+export async function getCometStatus(runId: string, cometRunId: string): Promise<CometStatusResponse> {
+  const q = new URLSearchParams({ cometRunId }).toString()
+  return apiFetch<CometStatusResponse>(`/comet/status/${runId}?${q}`)
 }
 

@@ -28,3 +28,9 @@ class CheckoDataResponseDTO(BaseModel):
 
 
 
+
+
+
+
+
+

@@ -4,6 +4,8 @@ import { useState, useEffect } from "react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { Label } from "@/components/ui/label"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Navigation } from "@/components/navigation"
 import { getBlacklist, addToBlacklist, removeFromBlacklist } from "@/lib/api"
@@ -16,6 +18,7 @@ export default function BlacklistPage() {
   const [entries, setEntries] = useState<BlacklistEntryDTO[]>([])
   const [loading, setLoading] = useState(true)
   const [newDomain, setNewDomain] = useState("")
+  const [newReason, setNewReason] = useState("")
   const [addingDomain, setAddingDomain] = useState(false)
 
   useEffect(() => {
@@ -60,10 +63,14 @@ export default function BlacklistPage() {
 
     setAddingDomain(true)
     try {
-      await addToBlacklist({ domain: newDomain.trim() })
+      await addToBlacklist({ 
+        domain: newDomain.trim(),
+        reason: newReason.trim() || null
+      })
       invalidateBlacklistCache()
       toast.success(`Домен "${newDomain}" добавлен в blacklist`)
       setNewDomain("")
+      setNewReason("")
       loadBlacklist()
     } catch (error) {
       toast.error("Ошибка добавления домена")
@@ -96,13 +103,29 @@ export default function BlacklistPage() {
 
         <Card className="mb-4">
           <div className="p-4">
-            <div className="flex gap-2 mb-3">
-              <Input
-                placeholder="Введите домен (example.com)"
-                value={newDomain}
-                onChange={(e) => setNewDomain(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleAdd()}
-              />
+            <div className="space-y-3 mb-4">
+              <div>
+                <Label htmlFor="domain-input">Домен</Label>
+                <Input
+                  id="domain-input"
+                  placeholder="Введите домен (example.com)"
+                  value={newDomain}
+                  onChange={(e) => setNewDomain(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleAdd()}
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label htmlFor="reason-input">Причина добавления в черный список (необязательно)</Label>
+                <Textarea
+                  id="reason-input"
+                  placeholder="Укажите причину добавления домена в черный список..."
+                  value={newReason}
+                  onChange={(e) => setNewReason(e.target.value)}
+                  rows={3}
+                  className="mt-1"
+                />
+              </div>
               <Button onClick={handleAdd} disabled={addingDomain}>
                 <Plus className="mr-2 h-4 w-4" />
                 Добавить

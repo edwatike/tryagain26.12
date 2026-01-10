@@ -1,4 +1,7 @@
 """Router for parsing runs."""
+import os
+from pathlib import Path
+import json
 from typing import Optional, Dict, Any
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Body
 from fastapi.responses import JSONResponse
@@ -17,6 +20,20 @@ from app.usecases import (
 )
 
 router = APIRouter()
+
+
+def _agent_debug_log(payload: dict) -> None:
+    if os.environ.get("AGENT_DEBUG_LOG", "0") != "1":
+        return
+    try:
+        project_root = Path(__file__).resolve().parents[4]
+        out_dir = project_root / ".cursor"
+        out_dir.mkdir(parents=True, exist_ok=True)
+        out_path = out_dir / "debug.log"
+        with out_path.open("a", encoding="utf-8") as f:
+            f.write(json.dumps(payload, ensure_ascii=False) + "\n")
+    except Exception:
+        return
 
 
 @router.get("/runs", response_model=ParsingRunsListResponseDTO)
@@ -225,25 +242,32 @@ async def get_parsing_run_endpoint(
     db: AsyncSession = Depends(get_db)
 ):
     """Get parsing run by ID."""
-    import json
     import logging
     logger = logging.getLogger(__name__)
-    
-    # #region agent log
-    import json
     from datetime import datetime
-    with open('d:\\tryagain\\.cursor\\debug.log', 'a', encoding='utf-8') as f:
-        f.write(json.dumps({"location":"parsing_runs.py:127","message":"get_parsing_run_endpoint called","data":{"run_id":run_id},"timestamp":int(datetime.utcnow().timestamp()*1000),"sessionId":"debug-session","runId":run_id,"hypothesisId":"D"})+'\n')
-    # #endregion
+    _agent_debug_log({
+        "location": "parsing_runs.py:127",
+        "message": "get_parsing_run_endpoint called",
+        "data": {"run_id": run_id},
+        "timestamp": int(datetime.utcnow().timestamp() * 1000),
+        "sessionId": "debug-session",
+        "runId": run_id,
+        "hypothesisId": "D",
+    })
     # CRITICAL FIX: Wrap get_parsing_run in try-except to catch AttributeError
     # SQLAlchemy might try to load results_count even if we don't access it
     try:
         run = await get_parsing_run.execute(db=db, run_id=run_id)
-        # #region agent log
         run_status = getattr(run, 'status', None) if run else None
-        with open('d:\\tryagain\\.cursor\\debug.log', 'a', encoding='utf-8') as f:
-            f.write(json.dumps({"location":"parsing_runs.py:128","message":"get_parsing_run.execute returned","data":{"run_id":run_id,"status":run_status,"has_run":run is not None},"timestamp":int(datetime.utcnow().timestamp()*1000),"sessionId":"debug-session","runId":run_id,"hypothesisId":"D"})+'\n')
-        # #endregion
+        _agent_debug_log({
+            "location": "parsing_runs.py:128",
+            "message": "get_parsing_run.execute returned",
+            "data": {"run_id": run_id, "status": run_status, "has_run": run is not None},
+            "timestamp": int(datetime.utcnow().timestamp() * 1000),
+            "sessionId": "debug-session",
+            "runId": run_id,
+            "hypothesisId": "D",
+        })
     except AttributeError as e:
         if "results_count" in str(e):
             # SQLAlchemy tried to load results_count but model doesn't have it
@@ -293,16 +317,23 @@ async def get_parsing_run_endpoint(
             parsing_run_id=run_id
         )
         results_count = count if count > 0 else None
-        # #region agent log
-        with open('d:\\tryagain\\.cursor\\debug.log', 'a', encoding='utf-8') as f:
-            f.write(json.dumps({"location":"parsing_runs.py:176","message":"results_count calculated","data":{"run_id":run_id,"count":count,"results_count":results_count},"timestamp":int(datetime.utcnow().timestamp()*1000),"sessionId":"debug-session","runId":run_id,"hypothesisId":"F"})+'\n')
-        # #endregion
+        from datetime import datetime
+        _agent_debug_log({
+            "location": "parsing_runs.py:176",
+            "message": "results_count calculated",
+            "data": {"run_id": run_id, "count": count, "results_count": results_count},
+            "timestamp": int(datetime.utcnow().timestamp() * 1000),
+            "sessionId": "debug-session",
+            "runId": run_id,
+            "hypothesisId": "F",
+        })
         
         # Create DTO with extracted keyword
         # Use getattr for all attributes to avoid AttributeError
         started_at = getattr(run, 'started_at', None)
         finished_at = getattr(run, 'finished_at', None)
         created_at = getattr(run, 'created_at', None)
+        process_log = getattr(run, 'process_log', None)
         
         run_dict = {
             "runId": getattr(run, 'run_id', None),
@@ -315,11 +346,17 @@ async def get_parsing_run_endpoint(
             "createdAt": created_at.isoformat() if created_at else None,
             "depth": getattr(run, 'depth', None),
             "source": getattr(run, 'source', None),
+            "processLog": process_log if isinstance(process_log, dict) else None,
         }
-        # #region agent log
-        with open('d:\\tryagain\\.cursor\\debug.log', 'a', encoding='utf-8') as f:
-            f.write(json.dumps({"location":"parsing_runs.py:193","message":"Returning run_dict","data":{"run_id":run_id,"status":run_dict["status"],"resultsCount":run_dict["resultsCount"]},"timestamp":int(datetime.utcnow().timestamp()*1000),"sessionId":"debug-session","runId":run_id,"hypothesisId":"D"})+'\n')
-        # #endregion
+        _agent_debug_log({
+            "location": "parsing_runs.py:193",
+            "message": "Returning run_dict",
+            "data": {"run_id": run_id, "status": run_dict["status"], "resultsCount": run_dict["resultsCount"]},
+            "timestamp": int(datetime.utcnow().timestamp() * 1000),
+            "sessionId": "debug-session",
+            "runId": run_id,
+            "hypothesisId": "D",
+        })
         return ParsingRunDTO.model_validate(run_dict)
     except Exception as e:
         logger.error(f"Error converting parsing run {run_id}: {e}", exc_info=True)

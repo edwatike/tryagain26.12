@@ -70,6 +70,214 @@ async def health_check():
     return {"status": "ok"}
 
 
+class GetHtmlRequest(BaseModel):
+    """Request model for getting HTML from URL via Chrome CDP."""
+    url: str
+
+
+class GetHtmlResponse(BaseModel):
+    """Response model for HTML content."""
+    url: str
+    html: str
+    title: Optional[str] = None
+    success: bool
+    error: Optional[str] = None
+
+
+@app.post("/get-html", response_model=GetHtmlResponse)
+async def get_html_via_cdp(request: GetHtmlRequest):
+    """Get HTML content from URL using Chrome CDP.
+    
+    This endpoint connects to Chrome via CDP, navigates to the URL,
+    and returns the HTML content. This is used for INN extraction
+    where we need to get the actual rendered HTML from the browser.
+    
+    Args:
+        request: Request with URL to fetch
+        
+    Returns:
+        Response with HTML content
+    """
+    import traceback
+    import logging
+    import asyncio
+    import sys
+    from concurrent.futures import ThreadPoolExecutor
+    
+    logger = logging.getLogger(__name__)
+    
+    try:
+        logger.info(f"=== GET HTML REQUEST === URL: {request.url}")
+        logger.info(f"Platform: {sys.platform}, is Windows: {sys.platform == 'win32'}")
+        
+        # On Windows, run in a separate thread with asyncio.run() to avoid NotImplementedError
+        if sys.platform == 'win32':
+            logger.info("Using Windows-specific HTML fetching in separate thread with asyncio.run()")
+            
+            def get_html_in_thread(url_param, chrome_cdp_url_param):
+                """Run HTML fetching in a separate thread with its own event loop."""
+                import asyncio
+                import sys
+                
+                # Set event loop policy for this thread
+                if sys.platform == 'win32':
+                    asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
+                
+                # Import here AFTER setting policy
+                import httpx
+                from playwright.async_api import async_playwright
+                from src.parser import Parser
+                
+                async def get_html_async():
+                    """Async function to get HTML via Chrome CDP."""
+                    import logging
+                    thread_logger = logging.getLogger(__name__)
+                    thread_logger.info(f"Starting get_html_async() for URL: {url_param}")
+                    
+                    # Get WebSocket URL from Chrome CDP
+                    thread_logger.info("Getting Chrome CDP WebSocket URL...")
+                    async with httpx.AsyncClient(timeout=5.0) as client:
+                        response = await client.get(f"{chrome_cdp_url_param}/json/version")
+                        if response.status_code != 200:
+                            raise Exception(f"Chrome CDP returned status {response.status_code}")
+                        cdp_info = response.json()
+                        ws_url = cdp_info.get("webSocketDebuggerUrl")
+                        if not ws_url:
+                            raise Exception("No webSocketDebuggerUrl in CDP response")
+                        thread_logger.info(f"Got WebSocket URL: {ws_url}")
+                    
+                    # Start Playwright and connect to Chrome
+                    thread_logger.info("Starting Playwright...")
+                    playwright = await async_playwright().start()
+                    thread_logger.info("Playwright started, connecting to Chrome CDP...")
+                    browser = await playwright.chromium.connect_over_cdp(ws_url)
+                    thread_logger.info("Connected to Chrome CDP successfully!")
+                    
+                    try:
+                        # Get browser contexts
+                        contexts = browser.contexts
+                        thread_logger.info(f"Found {len(contexts)} browser context(s)")
+                        
+                        # Select context based on profile index
+                        from src.config import settings
+                        profile_index = settings.CHROME_PROFILE_INDEX
+                        
+                        if len(contexts) == 0:
+                            thread_logger.warning("No existing contexts found, creating new context")
+                            context = await browser.new_context(
+                                viewport={"width": 1920, "height": 1080}
+                            )
+                        else:
+                            if 0 <= profile_index < len(contexts):
+                                context = contexts[profile_index]
+                                thread_logger.info(f"Using profile context at index {profile_index}")
+                            else:
+                                thread_logger.warning(f"Profile index {profile_index} out of range, using first context")
+                                context = contexts[0]
+                        
+                        # Set HTTP headers
+                        await context.set_extra_http_headers({
+                            'Accept-Language': 'ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7',
+                            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+                        })
+                        
+                        # Create page and navigate
+                        page = await context.new_page()
+                        try:
+                            thread_logger.info(f"Navigating to URL: {url_param}")
+                            await page.goto(url_param, wait_until="networkidle", timeout=settings.page_load_timeout)
+                            
+                            # Simulate human behavior (small delay)
+                            await asyncio.sleep(1)
+                            
+                            # Get page content
+                            html = await page.content()
+                            title = await page.title()
+                            
+                            thread_logger.info(f"Successfully fetched HTML from {url_param}, length: {len(html)} chars")
+                            
+                            return {
+                                "url": url_param,
+                                "html": html,
+                                "title": title,
+                                "success": True,
+                                "error": None
+                            }
+                        finally:
+                            await page.close()
+                    finally:
+                        # Don't close browser, just disconnect
+                        await browser.close()
+                        await playwright.stop()
+                
+                # Use asyncio.run() to create a new event loop
+                return asyncio.run(get_html_async())
+            
+            # Run in a separate thread
+            current_loop = asyncio.get_running_loop()
+            executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="get-html")
+            try:
+                logger.info("Running HTML fetching in separate thread with asyncio.run() (Windows)...")
+                result = await current_loop.run_in_executor(
+                    executor,
+                    get_html_in_thread,
+                    request.url,
+                    settings.CHROME_CDP_URL
+                )
+            finally:
+                executor.shutdown(wait=False)
+        else:
+            # Non-Windows: run normally
+            parser = Parser(settings.CHROME_CDP_URL)
+            await parser.connect_browser()
+            try:
+                # Use parse_page but only get HTML
+                page = await parser.context.new_page() if parser.context else await parser.browser.new_page()
+                try:
+                    await page.goto(request.url, wait_until="networkidle", timeout=settings.page_load_timeout)
+                    await asyncio.sleep(1)  # Small delay
+                    html = await page.content()
+                    title = await page.title()
+                    result = {
+                        "url": request.url,
+                        "html": html,
+                        "title": title,
+                        "success": True,
+                        "error": None
+                    }
+                finally:
+                    await page.close()
+            finally:
+                await parser.close()
+        
+        return GetHtmlResponse(**result)
+        
+    except httpx.ConnectError as e:
+        error_message = f"Cannot connect to Chrome CDP at {settings.CHROME_CDP_URL}. Please ensure Chrome is running with --remote-debugging-port=9222. Error: {str(e)}"
+        logger.error(f"Connection error in get_html_via_cdp: {error_message}")
+        return GetHtmlResponse(
+            url=request.url,
+            html="",
+            title=None,
+            success=False,
+            error=error_message
+        )
+    except Exception as e:
+        error_traceback = traceback.format_exc()
+        error_message = str(e) if e else "Unknown error"
+        error_type = type(e).__name__
+        
+        logger.error(f"Error in get_html_via_cdp ({error_type}): {error_message}\n{error_traceback}")
+        
+        return GetHtmlResponse(
+            url=request.url,
+            html="",
+            title=None,
+            success=False,
+            error=f"{error_type}: {error_message}"
+        )
+
+
 # Track running parse requests to prevent duplicates
 _running_parse_requests = set()
 # Create lock lazily to avoid issues with event loop

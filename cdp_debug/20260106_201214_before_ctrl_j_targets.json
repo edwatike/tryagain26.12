@@ -1,0 +1,173 @@
+[
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/inspector.html?ws=127.0.0.1:9222/devtools/page/C3E8E4497E852C38BC28E0EDABDF4572",
+    "faviconUrl": "https://www.metallsnab-nn.ru/favicon.ico",
+    "id": "C3E8E4497E852C38BC28E0EDABDF4572",
+    "parentId": "95FD75FFBB7B377974CA9F11E56D77CC",
+    "title": "https://www.pulscen.ru/istorage",
+    "type": "iframe",
+    "url": "https://www.pulscen.ru/istorage",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/C3E8E4497E852C38BC28E0EDABDF4572"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/inspector.html?ws=127.0.0.1:9222/devtools/page/95FD75FFBB7B377974CA9F11E56D77CC",
+    "faviconUrl": "https://www.metallsnab-nn.ru/favicon.ico",
+    "id": "95FD75FFBB7B377974CA9F11E56D77CC",
+    "title": "Металлопрокат в Нижнем Новгороде в наличии - прайс-лист МеталлСнаб",
+    "type": "page",
+    "url": "https://www.metallsnab-nn.ru/",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/95FD75FFBB7B377974CA9F11E56D77CC"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/inspector.html?ws=127.0.0.1:9222/devtools/page/E3E312B518550A808F20470A242A8481",
+    "id": "E3E312B518550A808F20470A242A8481",
+    "title": "chrome://sidebar/?window_id=1808858757",
+    "type": "page",
+    "url": "chrome://sidebar/?window_id=1808858757",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/E3E312B518550A808F20470A242A8481"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/inspector.html?ws=127.0.0.1:9222/devtools/page/BBDC98794266D5FE56DF3D693F9D5496",
+    "faviconUrl": "https://windsurf.com/favicon.ico",
+    "id": "BBDC98794266D5FE56DF3D693F9D5496",
+    "title": "Windsurf - The best AI for Coding",
+    "type": "page",
+    "url": "https://windsurf.com/",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/BBDC98794266D5FE56DF3D693F9D5496"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/inspector.html?ws=127.0.0.1:9222/devtools/page/87EEDDF93F8627509D82A2158558FAA6",
+    "faviconUrl": "https://www.perplexity.ai/favicon.ico",
+    "id": "87EEDDF93F8627509D82A2158558FAA6",
+    "title": "Perplexity",
+    "type": "page",
+    "url": "https://www.perplexity.ai/sidecar",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/87EEDDF93F8627509D82A2158558FAA6"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/inspector.html?ws=127.0.0.1:9222/devtools/page/8ADFBDEE6C9F28CC3269EC7F1AF4F8BE",
+    "faviconUrl": "https://www.perplexity.ai/favicon.ico",
+    "id": "8ADFBDEE6C9F28CC3269EC7F1AF4F8BE",
+    "title": "New Tab",
+    "type": "page",
+    "url": "chrome://newtab/",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/8ADFBDEE6C9F28CC3269EC7F1AF4F8BE"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/inspector.html?ws=127.0.0.1:9222/devtools/page/7376C8B1FFC417AC00F9013B32C1E99E",
+    "faviconUrl": "https://www.metallsnab-nn.ru/favicon.ico",
+    "id": "7376C8B1FFC417AC00F9013B32C1E99E",
+    "title": "Металлопрокат в Нижнем Новгороде в наличии - прайс-лист МеталлСнаб",
+    "type": "page",
+    "url": "https://www.metallsnab-nn.ru/",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/7376C8B1FFC417AC00F9013B32C1E99E"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/inspector.html?ws=127.0.0.1:9222/devtools/page/5D97FFE12FFA2C485FF04B42DBB5E2F6",
+    "faviconUrl": "https://www.metallsnab-nn.ru/favicon.ico",
+    "id": "5D97FFE12FFA2C485FF04B42DBB5E2F6",
+    "parentId": "7376C8B1FFC417AC00F9013B32C1E99E",
+    "title": "https://www.pulscen.ru/istorage",
+    "type": "iframe",
+    "url": "https://www.pulscen.ru/istorage",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/5D97FFE12FFA2C485FF04B42DBB5E2F6"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/inspector.html?ws=127.0.0.1:9222/devtools/page/7FC84A91B0FC4099CC55C075AEA3B983",
+    "id": "7FC84A91B0FC4099CC55C075AEA3B983",
+    "title": "chrome-extension://npclhjbddhklpbnacpjloidibaggcgon/offscreen.html",
+    "type": "background_page",
+    "url": "chrome-extension://npclhjbddhklpbnacpjloidibaggcgon/offscreen.html",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/7FC84A91B0FC4099CC55C075AEA3B983"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/inspector.html?ws=127.0.0.1:9222/devtools/page/2A3D0E9E67472099D037DCDD149738E7",
+    "id": "2A3D0E9E67472099D037DCDD149738E7",
+    "title": "chrome-extension://mcjlamohcooanphmebaiigheeeoplihb/src/pages/offscreen/index.html",
+    "type": "background_page",
+    "url": "chrome-extension://mcjlamohcooanphmebaiigheeeoplihb/src/pages/offscreen/index.html",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/2A3D0E9E67472099D037DCDD149738E7"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/inspector.html?ws=127.0.0.1:9222/devtools/page/A0546909267026BA74983979244AB14E",
+    "id": "A0546909267026BA74983979244AB14E",
+    "title": "blob:https://www.perplexity.ai/9e757cb6-690c-47b9-b36c-abd5c2b1a673",
+    "type": "worker",
+    "url": "blob:https://www.perplexity.ai/9e757cb6-690c-47b9-b36c-abd5c2b1a673",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/A0546909267026BA74983979244AB14E"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/inspector.html?ws=127.0.0.1:9222/devtools/page/6262A9C935138144D3740DB7F0BE712C",
+    "id": "6262A9C935138144D3740DB7F0BE712C",
+    "title": "blob:https://www.perplexity.ai/f5d094a8-303e-4a05-90cf-26b2c6ff0192",
+    "type": "worker",
+    "url": "blob:https://www.perplexity.ai/f5d094a8-303e-4a05-90cf-26b2c6ff0192",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/6262A9C935138144D3740DB7F0BE712C"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/worker_app.html?ws=127.0.0.1:9222/devtools/page/A2ED9F6D7A6142B0855D440F66E62735",
+    "id": "A2ED9F6D7A6142B0855D440F66E62735",
+    "title": "Service Worker chrome-extension://majdfhpaihoncoakbjgbdhglocklcgno/service-worker-loader.js",
+    "type": "service_worker",
+    "url": "chrome-extension://majdfhpaihoncoakbjgbdhglocklcgno/service-worker-loader.js",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/A2ED9F6D7A6142B0855D440F66E62735"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/worker_app.html?ws=127.0.0.1:9222/devtools/page/C9A26A0A8BA4F3B7F4B80A541110DF49",
+    "id": "C9A26A0A8BA4F3B7F4B80A541110DF49",
+    "title": "Service Worker chrome-extension://kpiecbcckbofpmkkkdibbllpinceiihk/js/worker.js",
+    "type": "service_worker",
+    "url": "chrome-extension://kpiecbcckbofpmkkkdibbllpinceiihk/js/worker.js",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/C9A26A0A8BA4F3B7F4B80A541110DF49"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/worker_app.html?ws=127.0.0.1:9222/devtools/page/B74347E2C2292A6A774CAE598EA5B169",
+    "id": "B74347E2C2292A6A774CAE598EA5B169",
+    "title": "Service Worker https://www.perplexity.ai/service-worker.js?v=7743e68",
+    "type": "service_worker",
+    "url": "https://www.perplexity.ai/service-worker.js?v=7743e68",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/B74347E2C2292A6A774CAE598EA5B169"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/worker_app.html?ws=127.0.0.1:9222/devtools/page/D39506523E8B8418C960810D87E719EA",
+    "id": "D39506523E8B8418C960810D87E719EA",
+    "title": "Service Worker chrome-extension://omghfjlpggmjjaagoclmmobgdodcjboh/background.js",
+    "type": "service_worker",
+    "url": "chrome-extension://omghfjlpggmjjaagoclmmobgdodcjboh/background.js",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/D39506523E8B8418C960810D87E719EA"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/worker_app.html?ws=127.0.0.1:9222/devtools/page/09E74F03AE2421E952AB0B0757DD462A",
+    "id": "09E74F03AE2421E952AB0B0757DD462A",
+    "title": "Service Worker chrome-extension://mcjlamohcooanphmebaiigheeeoplihb/service-worker-loader.js",
+    "type": "service_worker",
+    "url": "chrome-extension://mcjlamohcooanphmebaiigheeeoplihb/service-worker-loader.js",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/09E74F03AE2421E952AB0B0757DD462A"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/worker_app.html?ws=127.0.0.1:9222/devtools/page/357E9A5959110BAFB58A875A4F96E4BF",
+    "id": "357E9A5959110BAFB58A875A4F96E4BF",
+    "title": "Service Worker chrome-extension://npclhjbddhklpbnacpjloidibaggcgon/background.js",
+    "type": "service_worker",
+    "url": "chrome-extension://npclhjbddhklpbnacpjloidibaggcgon/background.js",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/357E9A5959110BAFB58A875A4F96E4BF"
+  }
+]

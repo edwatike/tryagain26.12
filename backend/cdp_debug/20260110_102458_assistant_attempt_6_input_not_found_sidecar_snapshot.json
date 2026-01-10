@@ -1,0 +1,46 @@
+{
+  "url": "https://www.perplexity.ai/sidecar",
+  "inputs": [],
+  "blocks": [
+    {
+      "tag": "div",
+      "role": "",
+      "cls": "bottom-md pointer-events-auto absolute w-full",
+      "y": -89.5999984741211,
+      "x": 16,
+      "w": 388,
+      "h": 129.60000610351562,
+      "text": "Купить товары бренда «Valtec» по выгодной цене в интернет-магазине «Краникофф»\n\n\n\n\nЗадайте любой вопрос…"
+    },
+    {
+      "tag": "div",
+      "role": "",
+      "cls": "p-sm ml-one gap-sm relative flex flex-1 flex-col border-subtlest ring-subtlest divide-subtlest bg-transparent",
+      "y": -89.5999984741211,
+      "x": 17,
+      "w": 387,
+      "h": 36,
+      "text": "Купить товары бренда «Valtec» по выгодной цене в интернет-магазине «Краникофф»"
+    },
+    {
+      "tag": "div",
+      "role": "",
+      "cls": "gap-2xs flex flex-col items-center",
+      "y": -63,
+      "x": -17.950000762939453,
+      "w": 99.9124984741211,
+      "h": 206,
+      "text": "Ассистент\nПомощник Comet использует текущую страницу и соответствующую историю браузера, чтобы отвечать на ваши вопросы. Подробнее"
+    },
+    {
+      "tag": "div",
+      "role": "",
+      "cls": "text-balance text-center font-sans text-xs font-normal text-quiet  selection:bg-super/50 selection:text-foreground dark:selection:bg-super/10 dark:selection:text-super",
+      "y": -33,
+      "x": -17.950000762939453,
+      "w": 99.9124984741211,
+      "h": 176,
+      "text": "Помощник Comet использует текущую страницу и соответствующую историю браузера, чтобы отвечать на ваши вопросы. Подробнее"
+    }
+  ]
+}

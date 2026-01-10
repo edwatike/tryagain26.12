@@ -180,3 +180,9 @@ CREATE TABLE moderator_suppliers_archive (
 - После оптимизации: 800 MB
 - **Экономия**: 3 GB (79%)
 
+
+
+
+
+
+

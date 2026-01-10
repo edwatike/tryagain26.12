@@ -200,36 +200,15 @@ async def remove_from_blacklist_endpoint(
     logger.info(f"Removing domain from blacklist: {domain}")
     
     try:
-        # Получаем данные перед удалением для audit_log
-        from app.adapters.db.repositories import BlacklistRepository
-        repo = BlacklistRepository(db)
-        existing_entry = await repo.get_by_domain(domain)
-        
         success = await remove_from_blacklist.execute(db=db, domain=domain)
         if not success:
             logger.warning(f"Domain not found in blacklist: {domain}")
             raise HTTPException(status_code=404, detail="Domain not found in blacklist")
         
-        # Логируем в audit_log
-        if existing_entry:
-            from app.adapters.audit import log_audit
-            await log_audit(
-                db=db,
-                table_name="blacklist",
-                operation="DELETE",
-                record_id=domain,
-                old_data={
-                    "domain": existing_entry.domain,
-                    "reason": existing_entry.reason,
-                    "added_by": existing_entry.added_by,
-                    "parsing_run_id": existing_entry.parsing_run_id
-                },
-                changed_by="system"
-            )
-        
         await db.commit()
         logger.info(f"Successfully removed domain from blacklist: {domain}")
     except HTTPException:
+        await db.rollback()
         raise
     except Exception as e:
         logger.error(f"Error removing domain {domain} from blacklist: {e}", exc_info=True)

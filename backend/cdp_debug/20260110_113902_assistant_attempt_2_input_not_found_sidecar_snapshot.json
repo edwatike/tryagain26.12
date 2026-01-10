@@ -1,0 +1,26 @@
+{
+  "url": "https://www.perplexity.ai/sidecar",
+  "inputs": [],
+  "blocks": [
+    {
+      "tag": "div",
+      "role": "",
+      "cls": "bottom-md pointer-events-auto absolute w-full",
+      "y": -89.5999984741211,
+      "x": 16,
+      "w": 388,
+      "h": 129.60000610351562,
+      "text": "Комплектующие для ограждений перил из нержавейки — купить в Москве\n\n\n\n\nЗадайте любой вопрос…"
+    },
+    {
+      "tag": "div",
+      "role": "",
+      "cls": "p-sm ml-one gap-sm relative flex flex-1 flex-col border-subtlest ring-subtlest divide-subtlest bg-transparent",
+      "y": -89.5999984741211,
+      "x": 17,
+      "w": 387,
+      "h": 36,
+      "text": "Комплектующие для ограждений перил из нержавейки — купить в Москве"
+    }
+  ]
+}

@@ -25,3 +25,9 @@ GRANT ALL PRIVILEGES ON TABLE parsing_runs TO postgres;
 
 
 
+
+
+
+
+
+

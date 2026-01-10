@@ -1,4 +1,15 @@
 """FastAPI application entry point."""
+import sys
+import os
+
+# CRITICAL: Ensure backend directory is in Python path for uvicorn reload mode
+# When uvicorn runs with reload=True and import string, it spawns a new process
+# that needs to have the correct Python path to import modules
+# This is a safety measure in case PYTHONPATH is not set correctly
+_backend_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if _backend_dir not in sys.path:
+    sys.path.insert(0, _backend_dir)
+
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
@@ -17,6 +28,8 @@ from app.transport.routers import (
     domains_queue,
     attachments,
     checko,
+    inn_extraction,
+    comet,
 )
 
 
@@ -56,6 +69,15 @@ app = FastAPI(
     description="API for B2B Platform - supplier moderation and parsing system",
     lifespan=lifespan,
 )
+
+# CRITICAL: Verify app is created correctly
+import logging
+_app_verify_logger = logging.getLogger(__name__)
+try:
+    _app_verify_logger.info("=== FastAPI app instance created ===")
+    _app_verify_logger.info(f"=== App instance ID: {id(app)} ===")
+except Exception:
+    pass  # Safe logging
 
 # Добавляем логирование при старте
 import logging
@@ -128,6 +150,11 @@ class CORSExceptionMiddleware(BaseHTTPMiddleware):
             logger.info(f"[DEBUG MIDDLEWARE] Request to: {request.method} {request.url.path}")
             logger.info(f"[DEBUG MIDDLEWARE] Request scope path: {request.scope.get('path', 'N/A')}")
             logger.info(f"[DEBUG MIDDLEWARE] Request scope method: {request.scope.get('method', 'N/A')}")
+        
+        # DEBUG: Log INN extraction requests
+        if "/inn-extraction" in str(request.url.path):
+            logger.info(f"[DEBUG MIDDLEWARE] INN extraction request: {request.method} {request.url.path}")
+            logger.info(f"[DEBUG MIDDLEWARE] Available routes: {[r.path for r in app.routes if hasattr(r, 'path')][:10]}")
         
         try:
             response = await call_next(request)
@@ -266,17 +293,70 @@ async def debug_routes():
                 })
     return {"logs_routes": routes_info, "total_routes": len(app.routes)}
 
+@app.get("/debug/all-routes")
+async def debug_all_routes():
+    """Debug endpoint to check all registered routes."""
+    from fastapi.routing import APIRoute
+    routes_info = []
+    for route in app.routes:
+        if isinstance(route, APIRoute):
+            routes_info.append({
+                "path": route.path,
+                "methods": list(route.methods),
+                "name": getattr(route, 'name', None),
+                "endpoint": route.endpoint.__name__ if hasattr(route, 'endpoint') else None
+            })
+    # Filter INN extraction routes
+    inn_routes = [r for r in routes_info if 'inn' in r['path'].lower()]
+    return {
+        "total_routes": len(routes_info),
+        "inn_routes": inn_routes,
+        "all_routes": routes_info
+    }
+
 
 # Include routers
-app.include_router(health.router, tags=["Health"])
-app.include_router(moderator_suppliers.router, prefix="/moderator", tags=["Suppliers"])
-app.include_router(keywords.router, prefix="/keywords", tags=["Keywords"])
-app.include_router(blacklist.router, prefix="/moderator", tags=["Blacklist"])
-app.include_router(parsing_runs.router, prefix="/parsing", tags=["Parsing Runs"])
-app.include_router(parsing.router, prefix="/parsing", tags=["Parsing"])
-app.include_router(domains_queue.router, prefix="/domains", tags=["Domains Queue"])
-app.include_router(attachments.router, prefix="/attachments", tags=["Attachments"])
-app.include_router(checko.router, prefix="/moderator", tags=["Checko"])
+import logging
+_router_logger = logging.getLogger(__name__)
+
+try:
+    _router_logger.info("=== Registering routers ===")
+    app.include_router(health.router, tags=["Health"])
+    app.include_router(moderator_suppliers.router, prefix="/moderator", tags=["Suppliers"])
+    app.include_router(keywords.router, prefix="/keywords", tags=["Keywords"])
+    app.include_router(blacklist.router, prefix="/moderator", tags=["Blacklist"])
+    app.include_router(parsing_runs.router, prefix="/parsing", tags=["Parsing Runs"])
+    app.include_router(parsing.router, prefix="/parsing", tags=["Parsing"])
+    app.include_router(domains_queue.router, prefix="/domains", tags=["Domains Queue"])
+    app.include_router(attachments.router, prefix="/attachments", tags=["Attachments"])
+    app.include_router(checko.router, prefix="/moderator", tags=["Checko"])
+    _router_logger.info("=== Registering inn_extraction router ===")
+    app.include_router(inn_extraction.router, prefix="/inn-extraction", tags=["INN Extraction"])
+    _router_logger.info("=== Registering comet router ===")
+    app.include_router(comet.router, prefix="/comet", tags=["Comet Extraction"])
+    _router_logger.info("=== All routers registered successfully ===")
+    # Log registered routes for debugging
+    from fastapi.routing import APIRoute
+    inn_routes = [r for r in app.routes if isinstance(r, APIRoute) and '/inn-extraction' in r.path]
+    _router_logger.info(f"=== INN Extraction routes: {[r.path for r in inn_routes]} ===")
+    _router_logger.info(f"=== Total routes after registration: {len([r for r in app.routes if isinstance(r, APIRoute)])} ===")
+    _router_logger.info(f"=== App instance ID after router registration: {id(app)} ===")
+except Exception as e:
+    _router_logger.error(f"=== ERROR registering routers: {e} ===", exc_info=True)
+    raise
+
+# CRITICAL: Final verification after all routers are registered
+try:
+    from fastapi.routing import APIRoute
+    final_routes = [r for r in app.routes if isinstance(r, APIRoute)]
+    final_inn_routes = [r for r in final_routes if '/inn-extraction' in r.path]
+    _router_logger.info(f"=== FINAL VERIFICATION: Total routes: {len(final_routes)}, INN routes: {len(final_inn_routes)} ===")
+    if not final_inn_routes:
+        _router_logger.error("=== CRITICAL: INN extraction routes NOT found after registration! ===")
+    else:
+        _router_logger.info(f"=== SUCCESS: INN extraction routes found: {[r.path for r in final_inn_routes]} ===")
+except Exception as e:
+    _router_logger.error(f"=== ERROR in final verification: {e} ===", exc_info=True)
 
 
 if __name__ == "__main__":

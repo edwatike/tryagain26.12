@@ -1,0 +1,206 @@
+[
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/inspector.html?ws=127.0.0.1:9222/devtools/page/E3B9F0DA5D87D01962CEC3F42CAEE64C",
+    "faviconUrl": "https://www.perplexity.ai/favicon.ico",
+    "id": "E3B9F0DA5D87D01962CEC3F42CAEE64C",
+    "title": "Perplexity",
+    "type": "page",
+    "url": "https://www.perplexity.ai/sidecar",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/E3B9F0DA5D87D01962CEC3F42CAEE64C"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/inspector.html?ws=127.0.0.1:9222/devtools/page/A0C50A5975568E89D46607F5AC5BE103",
+    "faviconUrl": "https://russteels.ru/favicon.ico",
+    "id": "A0C50A5975568E89D46607F5AC5BE103",
+    "title": "Комплектующие для ограждений перил из нержавейки — купить в Москве",
+    "type": "page",
+    "url": "https://russteels.ru/catalog/komplektuyushchie_dlya_ograzhdeniy/",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/A0C50A5975568E89D46607F5AC5BE103"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/inspector.html?ws=127.0.0.1:9222/devtools/page/0573400B266B3BCA27050BCB8A1DD5B0",
+    "faviconUrl": "https://russteels.ru/favicon.ico",
+    "id": "0573400B266B3BCA27050BCB8A1DD5B0",
+    "parentId": "A0C50A5975568E89D46607F5AC5BE103",
+    "title": "https://captcha-api.yandex.ru/backend.636bb879d1085041bc19.html?sitekey=ysc1_X2pbfcUpeuruga6Y9pKZW1I74ukmOhoZVQxZKftPb3094522&amp;theme=light&amp;hl=ru&amp;host=russteels.ru&amp;href=https%3A%2F%2Frussteels.ru%2Fcatalog%2Fkomplektuyushchie_dlya_ograzhdeniy%2F&amp;test=false&amp;webview=false&amp;hideChallengeContainer=false",
+    "type": "iframe",
+    "url": "https://captcha-api.yandex.ru/backend.636bb879d1085041bc19.html?sitekey=ysc1_X2pbfcUpeuruga6Y9pKZW1I74ukmOhoZVQxZKftPb3094522&theme=light&hl=ru&host=russteels.ru&href=https%3A%2F%2Frussteels.ru%2Fcatalog%2Fkomplektuyushchie_dlya_ograzhdeniy%2F&test=false&webview=false&hideChallengeContainer=false",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/0573400B266B3BCA27050BCB8A1DD5B0"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/inspector.html?ws=127.0.0.1:9222/devtools/page/7E77C64BA9A20C45348E565F8FF4797F",
+    "faviconUrl": "https://russteels.ru/favicon.ico",
+    "id": "7E77C64BA9A20C45348E565F8FF4797F",
+    "parentId": "A0C50A5975568E89D46607F5AC5BE103",
+    "title": "https://captcha-api.yandex.ru/checkbox.ru.4fdec4f0c66230612adf.html?sitekey=ysc1_X2pbfcUpeuruga6Y9pKZW1I74ukmOhoZVQxZKftPb3094522&amp;theme=light&amp;hl=ru&amp;host=russteels.ru&amp;href=https%3A%2F%2Frussteels.ru%2Fcatalog%2Fkomplektuyushchie_dlya_ograzhdeniy%2F&amp;test=false&amp;webview=false&amp;hideChallengeContainer=false",
+    "type": "iframe",
+    "url": "https://captcha-api.yandex.ru/checkbox.ru.4fdec4f0c66230612adf.html?sitekey=ysc1_X2pbfcUpeuruga6Y9pKZW1I74ukmOhoZVQxZKftPb3094522&theme=light&hl=ru&host=russteels.ru&href=https%3A%2F%2Frussteels.ru%2Fcatalog%2Fkomplektuyushchie_dlya_ograzhdeniy%2F&test=false&webview=false&hideChallengeContainer=false",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/7E77C64BA9A20C45348E565F8FF4797F"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/inspector.html?ws=127.0.0.1:9222/devtools/page/AEC666AD5843093FE388C770383049E2",
+    "faviconUrl": "https://russteels.ru/favicon.ico",
+    "id": "AEC666AD5843093FE388C770383049E2",
+    "parentId": "A0C50A5975568E89D46607F5AC5BE103",
+    "title": "https://yandex.ru/sprav/widget/rating-badge/1057272128",
+    "type": "iframe",
+    "url": "https://yandex.ru/sprav/widget/rating-badge/1057272128",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/AEC666AD5843093FE388C770383049E2"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/inspector.html?ws=127.0.0.1:9222/devtools/page/0D9697D54DDE31879F1C76753D206047",
+    "id": "0D9697D54DDE31879F1C76753D206047",
+    "title": "chrome://sidebar/?window_id=443769839",
+    "type": "page",
+    "url": "chrome://sidebar/?window_id=443769839",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/0D9697D54DDE31879F1C76753D206047"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/inspector.html?ws=127.0.0.1:9222/devtools/page/FC89A57870A8553FDEA7BD632FCA78FE",
+    "id": "FC89A57870A8553FDEA7BD632FCA78FE",
+    "title": "B2B Platform - Moderator Dashboard",
+    "type": "page",
+    "url": "http://localhost:3000/parsing-runs/c3e59c47-010e-4325-b131-3a8e86853d06",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/FC89A57870A8553FDEA7BD632FCA78FE"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/inspector.html?ws=127.0.0.1:9222/devtools/page/01717E7E3329C646FEFA1037C68318D2",
+    "faviconUrl": "https://russteels.ru/favicon.ico",
+    "id": "01717E7E3329C646FEFA1037C68318D2",
+    "title": "О компании – «Специальные Стали и Сплавы»",
+    "type": "page",
+    "url": "https://russteels.ru/company/",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/01717E7E3329C646FEFA1037C68318D2"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/inspector.html?ws=127.0.0.1:9222/devtools/page/2FE26E5585866A65D40CF027A7A75234",
+    "faviconUrl": "https://russteels.ru/favicon.ico",
+    "id": "2FE26E5585866A65D40CF027A7A75234",
+    "parentId": "E4CCC6849C8EBE7D2DB9E049B54B0BBE",
+    "title": "https://captcha-api.yandex.ru/backend.636bb879d1085041bc19.html?sitekey=ysc1_X2pbfcUpeuruga6Y9pKZW1I74ukmOhoZVQxZKftPb3094522&amp;theme=light&amp;hl=ru&amp;host=russteels.ru&amp;href=https%3A%2F%2Frussteels.ru%2F&amp;test=false&amp;webview=false&amp;hideChallengeContainer=false",
+    "type": "iframe",
+    "url": "https://captcha-api.yandex.ru/backend.636bb879d1085041bc19.html?sitekey=ysc1_X2pbfcUpeuruga6Y9pKZW1I74ukmOhoZVQxZKftPb3094522&theme=light&hl=ru&host=russteels.ru&href=https%3A%2F%2Frussteels.ru%2F&test=false&webview=false&hideChallengeContainer=false",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/2FE26E5585866A65D40CF027A7A75234"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/inspector.html?ws=127.0.0.1:9222/devtools/page/E96456F6FCB08BCA9D76C0B4D027C3A5",
+    "faviconUrl": "https://russteels.ru/favicon.ico",
+    "id": "E96456F6FCB08BCA9D76C0B4D027C3A5",
+    "parentId": "E4CCC6849C8EBE7D2DB9E049B54B0BBE",
+    "title": "https://captcha-api.yandex.ru/checkbox.ru.4fdec4f0c66230612adf.html?sitekey=ysc1_X2pbfcUpeuruga6Y9pKZW1I74ukmOhoZVQxZKftPb3094522&amp;theme=light&amp;hl=ru&amp;host=russteels.ru&amp;href=https%3A%2F%2Frussteels.ru%2F&amp;test=false&amp;webview=false&amp;hideChallengeContainer=false",
+    "type": "iframe",
+    "url": "https://captcha-api.yandex.ru/checkbox.ru.4fdec4f0c66230612adf.html?sitekey=ysc1_X2pbfcUpeuruga6Y9pKZW1I74ukmOhoZVQxZKftPb3094522&theme=light&hl=ru&host=russteels.ru&href=https%3A%2F%2Frussteels.ru%2F&test=false&webview=false&hideChallengeContainer=false",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/E96456F6FCB08BCA9D76C0B4D027C3A5"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/inspector.html?ws=127.0.0.1:9222/devtools/page/E4CCC6849C8EBE7D2DB9E049B54B0BBE",
+    "faviconUrl": "https://russteels.ru/favicon.ico",
+    "id": "E4CCC6849C8EBE7D2DB9E049B54B0BBE",
+    "title": "Купить нержавеющий металлопрокат в Москве оптом и в розницу – интернет магазин «Специальные Стали и Сплавы»",
+    "type": "page",
+    "url": "https://russteels.ru/",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/E4CCC6849C8EBE7D2DB9E049B54B0BBE"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/inspector.html?ws=127.0.0.1:9222/devtools/page/08DC4CC1972C19BCB9B51782668D972F",
+    "faviconUrl": "https://www.perplexity.ai/favicon.ico",
+    "id": "08DC4CC1972C19BCB9B51782668D972F",
+    "title": "New Tab",
+    "type": "page",
+    "url": "chrome://newtab/",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/08DC4CC1972C19BCB9B51782668D972F"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/inspector.html?ws=127.0.0.1:9222/devtools/page/CA2CCEAF56783C3E75E15E751AA2C8E7",
+    "id": "CA2CCEAF56783C3E75E15E751AA2C8E7",
+    "title": "chrome-extension://npclhjbddhklpbnacpjloidibaggcgon/offscreen.html",
+    "type": "background_page",
+    "url": "chrome-extension://npclhjbddhklpbnacpjloidibaggcgon/offscreen.html",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/CA2CCEAF56783C3E75E15E751AA2C8E7"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/inspector.html?ws=127.0.0.1:9222/devtools/page/109E50F8D1AE06C4E1332985ABF73355",
+    "id": "109E50F8D1AE06C4E1332985ABF73355",
+    "title": "Tab Search",
+    "type": "other",
+    "url": "chrome://tab-search.top-chrome/",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/109E50F8D1AE06C4E1332985ABF73355"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/inspector.html?ws=127.0.0.1:9222/devtools/page/0D0D0F06C2F005A24CAB4A13ED7C6AD4",
+    "id": "0D0D0F06C2F005A24CAB4A13ED7C6AD4",
+    "title": "chrome-extension://mcjlamohcooanphmebaiigheeeoplihb/src/pages/offscreen/index.html",
+    "type": "background_page",
+    "url": "chrome-extension://mcjlamohcooanphmebaiigheeeoplihb/src/pages/offscreen/index.html",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/0D0D0F06C2F005A24CAB4A13ED7C6AD4"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/inspector.html?ws=127.0.0.1:9222/devtools/page/18E43D54800625C884E4E4443D164B33",
+    "id": "18E43D54800625C884E4E4443D164B33",
+    "title": "blob:https://www.perplexity.ai/ef1ffd5c-cb40-4d72-82a2-fcc538b388fa",
+    "type": "worker",
+    "url": "blob:https://www.perplexity.ai/ef1ffd5c-cb40-4d72-82a2-fcc538b388fa",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/18E43D54800625C884E4E4443D164B33"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/inspector.html?ws=127.0.0.1:9222/devtools/page/D6FF6D2A136CC1E4D9F61755D9FEF915",
+    "id": "D6FF6D2A136CC1E4D9F61755D9FEF915",
+    "title": "blob:https://www.perplexity.ai/57a4708b-5ddf-42c2-9ff9-379ea8e59ba3",
+    "type": "worker",
+    "url": "blob:https://www.perplexity.ai/57a4708b-5ddf-42c2-9ff9-379ea8e59ba3",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/D6FF6D2A136CC1E4D9F61755D9FEF915"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/worker_app.html?ws=127.0.0.1:9222/devtools/page/1A1DF8BC8D5C7828306BCE5E9097AFB6",
+    "id": "1A1DF8BC8D5C7828306BCE5E9097AFB6",
+    "title": "Service Worker chrome-extension://dogiinkejekngjnphjklkdohanocpnfj/background.js",
+    "type": "service_worker",
+    "url": "chrome-extension://dogiinkejekngjnphjklkdohanocpnfj/background.js",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/1A1DF8BC8D5C7828306BCE5E9097AFB6"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/worker_app.html?ws=127.0.0.1:9222/devtools/page/DD44A409C4645319A16F9B5608E95165",
+    "id": "DD44A409C4645319A16F9B5608E95165",
+    "title": "Service Worker chrome-extension://ahfpelljbenimhohmgdbgpcgmmahcbkn/background/index.js",
+    "type": "service_worker",
+    "url": "chrome-extension://ahfpelljbenimhohmgdbgpcgmmahcbkn/background/index.js",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/DD44A409C4645319A16F9B5608E95165"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/worker_app.html?ws=127.0.0.1:9222/devtools/page/F42D5C1E289B8A5C3867512342C2C700",
+    "id": "F42D5C1E289B8A5C3867512342C2C700",
+    "title": "Service Worker chrome-extension://npclhjbddhklpbnacpjloidibaggcgon/background.js",
+    "type": "service_worker",
+    "url": "chrome-extension://npclhjbddhklpbnacpjloidibaggcgon/background.js",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/F42D5C1E289B8A5C3867512342C2C700"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/worker_app.html?ws=127.0.0.1:9222/devtools/page/345C05B02C68F612311EF082A985F7A4",
+    "id": "345C05B02C68F612311EF082A985F7A4",
+    "title": "Service Worker chrome-extension://mcjlamohcooanphmebaiigheeeoplihb/service-worker-loader.js",
+    "type": "service_worker",
+    "url": "chrome-extension://mcjlamohcooanphmebaiigheeeoplihb/service-worker-loader.js",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/345C05B02C68F612311EF082A985F7A4"
+  }
+]

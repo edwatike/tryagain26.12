@@ -1,0 +1,291 @@
+[
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/inspector.html?ws=127.0.0.1:9222/devtools/page/D5EF133571AC60D66910F1571120064B",
+    "faviconUrl": "https://www.metallsnab-nn.ru/favicon.ico",
+    "id": "D5EF133571AC60D66910F1571120064B",
+    "parentId": "25DCA23952DA7FF6F49F5092B3686967",
+    "title": "https://www.pulscen.ru/istorage",
+    "type": "iframe",
+    "url": "https://www.pulscen.ru/istorage",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/D5EF133571AC60D66910F1571120064B"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/inspector.html?ws=127.0.0.1:9222/devtools/page/25DCA23952DA7FF6F49F5092B3686967",
+    "faviconUrl": "https://www.metallsnab-nn.ru/favicon.ico",
+    "id": "25DCA23952DA7FF6F49F5092B3686967",
+    "title": "Металлопрокат в Нижнем Новгороде в наличии - прайс-лист МеталлСнаб",
+    "type": "page",
+    "url": "https://www.metallsnab-nn.ru/",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/25DCA23952DA7FF6F49F5092B3686967"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/inspector.html?ws=127.0.0.1:9222/devtools/page/D9904F7C442620A9A4C105219265497B",
+    "id": "D9904F7C442620A9A4C105219265497B",
+    "title": "chrome://sidebar/?window_id=1808858707",
+    "type": "page",
+    "url": "chrome://sidebar/?window_id=1808858707",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/D9904F7C442620A9A4C105219265497B"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/inspector.html?ws=127.0.0.1:9222/devtools/page/261D8EA9BE18824CBD75BE02BDDB9F58",
+    "faviconUrl": "https://www.metallsnab-nn.ru/favicon.ico",
+    "id": "261D8EA9BE18824CBD75BE02BDDB9F58",
+    "parentId": "4E3613BE06E4AACEE8F1E8FD4522CE11",
+    "title": "https://www.pulscen.ru/istorage",
+    "type": "iframe",
+    "url": "https://www.pulscen.ru/istorage",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/261D8EA9BE18824CBD75BE02BDDB9F58"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/inspector.html?ws=127.0.0.1:9222/devtools/page/4E3613BE06E4AACEE8F1E8FD4522CE11",
+    "faviconUrl": "https://www.metallsnab-nn.ru/favicon.ico",
+    "id": "4E3613BE06E4AACEE8F1E8FD4522CE11",
+    "title": "Металлопрокат в Нижнем Новгороде в наличии - прайс-лист МеталлСнаб",
+    "type": "page",
+    "url": "https://www.metallsnab-nn.ru/",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/4E3613BE06E4AACEE8F1E8FD4522CE11"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/inspector.html?ws=127.0.0.1:9222/devtools/page/C338EB0A904B006DCB6724A7A5F338CA",
+    "faviconUrl": "https://www.metallsnab-nn.ru/favicon.ico",
+    "id": "C338EB0A904B006DCB6724A7A5F338CA",
+    "parentId": "D3D9667DC945B928E3F4D3D6074FC18C",
+    "title": "https://www.pulscen.ru/istorage",
+    "type": "iframe",
+    "url": "https://www.pulscen.ru/istorage",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/C338EB0A904B006DCB6724A7A5F338CA"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/inspector.html?ws=127.0.0.1:9222/devtools/page/D3D9667DC945B928E3F4D3D6074FC18C",
+    "faviconUrl": "https://www.metallsnab-nn.ru/favicon.ico",
+    "id": "D3D9667DC945B928E3F4D3D6074FC18C",
+    "title": "Металлопрокат в Нижнем Новгороде в наличии - прайс-лист МеталлСнаб",
+    "type": "page",
+    "url": "https://www.metallsnab-nn.ru/",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/D3D9667DC945B928E3F4D3D6074FC18C"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/inspector.html?ws=127.0.0.1:9222/devtools/page/6850F2EAB8C159A152179A444C2477DE",
+    "faviconUrl": "https://www.metallsnab-nn.ru/favicon.ico",
+    "id": "6850F2EAB8C159A152179A444C2477DE",
+    "parentId": "749CB4D1B755AF220D55C5D3B6D20B4A",
+    "title": "https://www.pulscen.ru/istorage",
+    "type": "iframe",
+    "url": "https://www.pulscen.ru/istorage",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/6850F2EAB8C159A152179A444C2477DE"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/inspector.html?ws=127.0.0.1:9222/devtools/page/749CB4D1B755AF220D55C5D3B6D20B4A",
+    "faviconUrl": "https://www.metallsnab-nn.ru/favicon.ico",
+    "id": "749CB4D1B755AF220D55C5D3B6D20B4A",
+    "title": "Металлопрокат в Нижнем Новгороде в наличии - прайс-лист МеталлСнаб",
+    "type": "page",
+    "url": "https://www.metallsnab-nn.ru/",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/749CB4D1B755AF220D55C5D3B6D20B4A"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/inspector.html?ws=127.0.0.1:9222/devtools/page/291F415FBAE7C4AD57FB879FF65564E5",
+    "id": "291F415FBAE7C4AD57FB879FF65564E5",
+    "title": "DevTools - www.perplexity.ai/sidecar/search/naidi-inn-etoi-kompaniti-na-ik-Xr7fBPTdQ3O_t4.84DBl3A",
+    "type": "page",
+    "url": "devtools://devtools/bundled/devtools_app.html?remoteBase=https://chrome-devtools-frontend.appspot.com/serve_file/@6ebf0fd701444ed09c2db78802bdb3874ab53df/&targetType=tab&panel=elements",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/291F415FBAE7C4AD57FB879FF65564E5"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/inspector.html?ws=127.0.0.1:9222/devtools/page/43D413322EA86714043A9E773D459CA7",
+    "id": "43D413322EA86714043A9E773D459CA7",
+    "title": "DevTools - www.metallsnab-nn.ru/",
+    "type": "page",
+    "url": "devtools://devtools/bundled/devtools_app.html?remoteBase=https://chrome-devtools-frontend.appspot.com/serve_file/@6ebf0fd701444ed09c2db78802bdb3874ab53df/&targetType=tab&can_dock=true",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/43D413322EA86714043A9E773D459CA7"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/inspector.html?ws=127.0.0.1:9222/devtools/page/08E8CFBE34C307D9956073C61E5059EF",
+    "faviconUrl": "https://www.metallsnab-nn.ru/favicon.ico",
+    "id": "08E8CFBE34C307D9956073C61E5059EF",
+    "title": "Металлопрокат в Нижнем Новгороде в наличии - прайс-лист МеталлСнаб",
+    "type": "page",
+    "url": "https://www.metallsnab-nn.ru/",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/08E8CFBE34C307D9956073C61E5059EF"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/inspector.html?ws=127.0.0.1:9222/devtools/page/68782BFC0541DEFDD056A78C26064BB0",
+    "faviconUrl": "https://www.metallsnab-nn.ru/favicon.ico",
+    "id": "68782BFC0541DEFDD056A78C26064BB0",
+    "parentId": "08E8CFBE34C307D9956073C61E5059EF",
+    "title": "https://www.pulscen.ru/istorage",
+    "type": "iframe",
+    "url": "https://www.pulscen.ru/istorage",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/68782BFC0541DEFDD056A78C26064BB0"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/inspector.html?ws=127.0.0.1:9222/devtools/page/D86940F89F1862A65E26A15325BF30D9",
+    "faviconUrl": "https://www.perplexity.ai/favicon.ico",
+    "id": "D86940F89F1862A65E26A15325BF30D9",
+    "title": "Perplexity",
+    "type": "page",
+    "url": "https://www.perplexity.ai/sidecar",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/D86940F89F1862A65E26A15325BF30D9"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/inspector.html?ws=127.0.0.1:9222/devtools/page/D4ECEB2CE91E98AE5747025714E6C0EB",
+    "faviconUrl": "https://www.perplexity.ai/favicon.ico",
+    "id": "D4ECEB2CE91E98AE5747025714E6C0EB",
+    "title": "New Tab",
+    "type": "page",
+    "url": "chrome://newtab/",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/D4ECEB2CE91E98AE5747025714E6C0EB"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/inspector.html?ws=127.0.0.1:9222/devtools/page/7514F0296B748B8EE5D6A93E880D7095",
+    "faviconUrl": "https://www.perplexity.ai/favicon.ico",
+    "id": "7514F0296B748B8EE5D6A93E880D7095",
+    "title": "New Tab",
+    "type": "page",
+    "url": "chrome://newtab/",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/7514F0296B748B8EE5D6A93E880D7095"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/inspector.html?ws=127.0.0.1:9222/devtools/page/7FC84A91B0FC4099CC55C075AEA3B983",
+    "id": "7FC84A91B0FC4099CC55C075AEA3B983",
+    "title": "chrome-extension://npclhjbddhklpbnacpjloidibaggcgon/offscreen.html",
+    "type": "background_page",
+    "url": "chrome-extension://npclhjbddhklpbnacpjloidibaggcgon/offscreen.html",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/7FC84A91B0FC4099CC55C075AEA3B983"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/inspector.html?ws=127.0.0.1:9222/devtools/page/D59D243648A15EFB5D9714A58FE4D6C0",
+    "faviconUrl": "https://www.perplexity.ai/favicon.ico",
+    "id": "D59D243648A15EFB5D9714A58FE4D6C0",
+    "title": "New Tab",
+    "type": "page",
+    "url": "chrome://newtab/",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/D59D243648A15EFB5D9714A58FE4D6C0"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/inspector.html?ws=127.0.0.1:9222/devtools/page/2A3D0E9E67472099D037DCDD149738E7",
+    "id": "2A3D0E9E67472099D037DCDD149738E7",
+    "title": "chrome-extension://mcjlamohcooanphmebaiigheeeoplihb/src/pages/offscreen/index.html",
+    "type": "background_page",
+    "url": "chrome-extension://mcjlamohcooanphmebaiigheeeoplihb/src/pages/offscreen/index.html",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/2A3D0E9E67472099D037DCDD149738E7"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/worker_app.html?ws=127.0.0.1:9222/devtools/page/6E55CFB0FC5403696CA2C2864120CAE0",
+    "id": "6E55CFB0FC5403696CA2C2864120CAE0",
+    "title": "Service Worker chrome-extension://kpiecbcckbofpmkkkdibbllpinceiihk/js/worker.js",
+    "type": "service_worker",
+    "url": "chrome-extension://kpiecbcckbofpmkkkdibbllpinceiihk/js/worker.js",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/6E55CFB0FC5403696CA2C2864120CAE0"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/worker_app.html?ws=127.0.0.1:9222/devtools/page/18CE6B1DF43632576E3189BADC9CFEA7",
+    "id": "18CE6B1DF43632576E3189BADC9CFEA7",
+    "title": "Service Worker chrome-extension://majdfhpaihoncoakbjgbdhglocklcgno/service-worker-loader.js",
+    "type": "service_worker",
+    "url": "chrome-extension://majdfhpaihoncoakbjgbdhglocklcgno/service-worker-loader.js",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/18CE6B1DF43632576E3189BADC9CFEA7"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/worker_app.html?ws=127.0.0.1:9222/devtools/page/7B478DBAF34E15FBBD8CB1FCC7E49FE2",
+    "id": "7B478DBAF34E15FBBD8CB1FCC7E49FE2",
+    "title": "Service Worker https://www.perplexity.ai/service-worker.js?v=7743e68",
+    "type": "service_worker",
+    "url": "https://www.perplexity.ai/service-worker.js?v=7743e68",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/7B478DBAF34E15FBBD8CB1FCC7E49FE2"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/worker_app.html?ws=127.0.0.1:9222/devtools/page/D39506523E8B8418C960810D87E719EA",
+    "id": "D39506523E8B8418C960810D87E719EA",
+    "title": "Service Worker chrome-extension://omghfjlpggmjjaagoclmmobgdodcjboh/background.js",
+    "type": "service_worker",
+    "url": "chrome-extension://omghfjlpggmjjaagoclmmobgdodcjboh/background.js",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/D39506523E8B8418C960810D87E719EA"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/worker_app.html?ws=127.0.0.1:9222/devtools/page/4364AD778E9D1A75989F4264676A0172",
+    "id": "4364AD778E9D1A75989F4264676A0172",
+    "title": "Service Worker chrome-extension://akcocjjpkmlniicdeemdceeajlmoabhg/background.bundle.js",
+    "type": "service_worker",
+    "url": "chrome-extension://akcocjjpkmlniicdeemdceeajlmoabhg/background.bundle.js",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/4364AD778E9D1A75989F4264676A0172"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/inspector.html?ws=127.0.0.1:9222/devtools/page/2B55C55520B4B84B1FD82EC6E7B48507",
+    "id": "2B55C55520B4B84B1FD82EC6E7B48507",
+    "title": "blob:https://www.perplexity.ai/e212dd3b-4a0d-4f55-a64d-e925721f38b8",
+    "type": "worker",
+    "url": "blob:https://www.perplexity.ai/e212dd3b-4a0d-4f55-a64d-e925721f38b8",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/2B55C55520B4B84B1FD82EC6E7B48507"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/inspector.html?ws=127.0.0.1:9222/devtools/page/C1D217F541559989647A34CB50C9E065",
+    "id": "C1D217F541559989647A34CB50C9E065",
+    "title": "blob:https://www.perplexity.ai/53f309ae-9700-4e70-8105-c8157f5f03a3",
+    "type": "worker",
+    "url": "blob:https://www.perplexity.ai/53f309ae-9700-4e70-8105-c8157f5f03a3",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/C1D217F541559989647A34CB50C9E065"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/inspector.html?ws=127.0.0.1:9222/devtools/page/C7D4CC69AF8A0F5029BCA0AFB51050D8",
+    "id": "C7D4CC69AF8A0F5029BCA0AFB51050D8",
+    "title": "blob:https://www.perplexity.ai/3ef0b001-560d-415c-bde6-3e8245a36a19",
+    "type": "worker",
+    "url": "blob:https://www.perplexity.ai/3ef0b001-560d-415c-bde6-3e8245a36a19",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/C7D4CC69AF8A0F5029BCA0AFB51050D8"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/worker_app.html?ws=127.0.0.1:9222/devtools/page/09E74F03AE2421E952AB0B0757DD462A",
+    "id": "09E74F03AE2421E952AB0B0757DD462A",
+    "title": "Service Worker chrome-extension://mcjlamohcooanphmebaiigheeeoplihb/service-worker-loader.js",
+    "type": "service_worker",
+    "url": "chrome-extension://mcjlamohcooanphmebaiigheeeoplihb/service-worker-loader.js",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/09E74F03AE2421E952AB0B0757DD462A"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/inspector.html?ws=127.0.0.1:9222/devtools/page/F7EF3523BEC16BAEE3A65598D78BD85C",
+    "id": "F7EF3523BEC16BAEE3A65598D78BD85C",
+    "title": "blob:https://www.perplexity.ai/e6b494d3-d17b-4c0f-b460-8f427640a74b",
+    "type": "worker",
+    "url": "blob:https://www.perplexity.ai/e6b494d3-d17b-4c0f-b460-8f427640a74b",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/F7EF3523BEC16BAEE3A65598D78BD85C"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/worker_app.html?ws=127.0.0.1:9222/devtools/page/357E9A5959110BAFB58A875A4F96E4BF",
+    "id": "357E9A5959110BAFB58A875A4F96E4BF",
+    "title": "Service Worker chrome-extension://npclhjbddhklpbnacpjloidibaggcgon/background.js",
+    "type": "service_worker",
+    "url": "chrome-extension://npclhjbddhklpbnacpjloidibaggcgon/background.js",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/357E9A5959110BAFB58A875A4F96E4BF"
+  }
+]
