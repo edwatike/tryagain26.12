@@ -119,6 +119,20 @@ class DomainInfoParser:
                         logger.info(f"Found INN with pattern in HTML: {clean_match}")
                         return clean_match
             
+            # Поиск в JavaScript-контенте (переменные, объекты, JSON)
+            js_patterns = [
+                r'["\']inn["\']\s*:\s*["\']?(\d{10}|\d{12})["\']?',  # "inn": "7820067929"
+                r'inn\s*=\s*["\']?(\d{10}|\d{12})["\']?',  # inn = "7820067929"
+                r'companyInn["\']?\s*:\s*["\']?(\d{10}|\d{12})["\']?',  # companyInn: "7820067929"
+                r'data\.inn\s*=\s*["\']?(\d{10}|\d{12})["\']?',  # data.inn = "7820067929"
+            ]
+            
+            for pattern in js_patterns:
+                matches = re.findall(pattern, html, re.IGNORECASE)
+                if matches:
+                    logger.info(f"Found INN in JavaScript content: {matches[0]}")
+                    return matches[0]
+            
             # АГРЕССИВНЫЙ ПОИСК: ищем любые 10/12-значные числа в HTML рядом со словами ИНН/INN
             aggressive_patterns = [
                 r'(?:ИНН|INN|инн)[^\d]{0,50}(\d{10}|\d{12})',  # ИНН в пределах 50 символов от числа
@@ -204,7 +218,7 @@ class DomainInfoParser:
         # Ключевые слова в URL
         url_keywords = [
             'contact', 'about', 'requisites', 'requisite', 'politics', 
-            'company', 'legal', 'details'
+            'company', 'legal', 'details', 'o-kompanii', 'kompanii'
         ]
         contact_urls = []
         
@@ -302,7 +316,9 @@ class DomainInfoParser:
                         '/pages/requisites/', '/requisites/', '/requisites', 
                         '/company/', '/company', '/about/', '/about',
                         '/contacts/', '/contacts', '/politics/', '/politics',
-                        '/legal/', '/legal', '/details/', '/details'
+                        '/legal/', '/legal', '/details/', '/details',
+                        '/o-kompanii.html', '/o-kompanii/', '/about/contacts/',
+                        '/service/legal/', '/kontakty.html', '/kontakty/'
                     ]
                     for path in common_paths:
                         test_url = urljoin(base_url, path)

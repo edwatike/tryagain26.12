@@ -1,26 +1,125 @@
 """HTTP client for Checko API."""
 import httpx
 import logging
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
 from app.config import settings
 
 logger = logging.getLogger(__name__)
 
 
 class CheckoClient:
-    """Client for Checko API v2."""
+    """Client for Checko API v2 with automatic API key rotation."""
     
     BASE_URL = "https://api.checko.ru/v2"
+    
+    # Список API ключей для ротации
+    _api_keys: List[str] = []
+    _current_key_index: int = 0
     
     def __init__(self, api_key: Optional[str] = None):
         """Initialize Checko client.
         
         Args:
-            api_key: Checko API key. If not provided, uses settings.CHECKO_API_KEY.
+            api_key: Checko API key. If not provided, uses settings.CHECKO_API_KEYS.
         """
-        self.api_key = api_key or settings.CHECKO_API_KEY
-        if not self.api_key:
-            raise ValueError("Checko API key is required")
+        if api_key:
+            self.api_key = api_key
+            self._api_keys = [api_key]
+        else:
+            # Загружаем список ключей из настроек
+            self._load_api_keys()
+            if not self._api_keys:
+                raise ValueError("Checko API key is required")
+            self.api_key = self._api_keys[self._current_key_index]
+    
+    def _load_api_keys(self):
+        """Load API keys from settings."""
+        # Поддерживаем как одиночный ключ, так и список через запятую
+        keys_str = settings.CHECKO_API_KEY
+        if not keys_str:
+            return
+        
+        # Разделяем по запятой и очищаем пробелы
+        keys = [k.strip() for k in keys_str.split(',') if k.strip()]
+        self._api_keys = keys
+        logger.info(f"Loaded {len(self._api_keys)} Checko API key(s) for rotation")
+    
+    def _rotate_api_key(self):
+        """Rotate to the next API key."""
+        if len(self._api_keys) <= 1:
+            logger.warning("Cannot rotate API key: only one key available")
+            return False
+        
+        self._current_key_index = (self._current_key_index + 1) % len(self._api_keys)
+        self.api_key = self._api_keys[self._current_key_index]
+        logger.info(f"Rotated to API key #{self._current_key_index + 1}/{len(self._api_keys)}")
+        return True
+    
+    async def _make_request(self, url: str, params: Dict[str, Any], max_retries: int = None) -> Dict[str, Any]:
+        """Make HTTP request with automatic API key rotation on rate limit.
+        
+        Args:
+            url: API endpoint URL
+            params: Request parameters
+            max_retries: Maximum number of retries with different keys (default: number of keys)
+            
+        Returns:
+            API response data
+            
+        Raises:
+            httpx.HTTPStatusError: If all API keys are exhausted or other error occurs
+        """
+        if max_retries is None:
+            max_retries = len(self._api_keys)
+        
+        last_error = None
+        
+        for attempt in range(max_retries):
+            params["key"] = self.api_key
+            
+            try:
+                async with httpx.AsyncClient(timeout=30.0) as client:
+                    response = await client.get(url, params=params)
+                    
+                    # Проверяем на ошибку лимита (429 или специфичные коды Checko)
+                    if response.status_code == 429:
+                        logger.warning(f"Rate limit exceeded for API key #{self._current_key_index + 1}")
+                        if self._rotate_api_key():
+                            continue  # Пробуем следующий ключ
+                        else:
+                            response.raise_for_status()
+                    
+                    # Проверяем ответ на наличие ошибки лимита в JSON
+                    try:
+                        data = response.json()
+                        if isinstance(data, dict):
+                            error_msg = data.get('error', '').lower()
+                            if 'limit' in error_msg or 'quota' in error_msg or 'превышен' in error_msg:
+                                logger.warning(f"API limit error in response for key #{self._current_key_index + 1}: {error_msg}")
+                                if self._rotate_api_key():
+                                    continue  # Пробуем следующий ключ
+                    except:
+                        pass
+                    
+                    response.raise_for_status()
+                    return response.json()
+                    
+            except httpx.HTTPStatusError as e:
+                last_error = e
+                if e.response.status_code == 429:
+                    logger.warning(f"Rate limit (429) for API key #{self._current_key_index + 1}")
+                    if attempt < max_retries - 1 and self._rotate_api_key():
+                        continue
+                raise
+            except Exception as e:
+                last_error = e
+                logger.error(f"Request failed with API key #{self._current_key_index + 1}: {e}")
+                raise
+        
+        # Все ключи исчерпаны
+        if last_error:
+            raise last_error
+        raise RuntimeError("All Checko API keys exhausted")
     
     async def get_company(self, inn: str) -> Dict[str, Any]:
         """Get company information by INN.
@@ -35,12 +134,8 @@ class CheckoClient:
             httpx.HTTPStatusError: If API request fails
         """
         url = f"{self.BASE_URL}/company"
-        params = {"key": self.api_key, "inn": inn}
-        
-        async with httpx.AsyncClient(timeout=30.0) as client:
-            response = await client.get(url, params=params)
-            response.raise_for_status()
-            return response.json()
+        params = {"inn": inn}
+        return await self._make_request(url, params)
     
     async def get_finances(self, inn: str) -> Dict[str, Any]:
         """Get company financial data by INN.
@@ -55,12 +150,8 @@ class CheckoClient:
             httpx.HTTPStatusError: If API request fails
         """
         url = f"{self.BASE_URL}/finances"
-        params = {"key": self.api_key, "inn": inn}
-        
-        async with httpx.AsyncClient(timeout=30.0) as client:
-            response = await client.get(url, params=params)
-            response.raise_for_status()
-            return response.json()
+        params = {"inn": inn}
+        return await self._make_request(url, params)
     
     async def get_legal_cases(self, inn: str) -> Dict[str, Any]:
         """Get company legal cases by INN.
@@ -75,12 +166,8 @@ class CheckoClient:
             httpx.HTTPStatusError: If API request fails
         """
         url = f"{self.BASE_URL}/legal-cases"
-        params = {"key": self.api_key, "inn": inn}
-        
-        async with httpx.AsyncClient(timeout=30.0) as client:
-            response = await client.get(url, params=params)
-            response.raise_for_status()
-            return response.json()
+        params = {"inn": inn}
+        return await self._make_request(url, params)
     
     async def get_inspections(self, inn: str) -> Dict[str, Any]:
         """Get company inspections by INN.
@@ -95,12 +182,8 @@ class CheckoClient:
             httpx.HTTPStatusError: If API request fails
         """
         url = f"{self.BASE_URL}/inspections"
-        params = {"key": self.api_key, "inn": inn}
-        
-        async with httpx.AsyncClient(timeout=30.0) as client:
-            response = await client.get(url, params=params)
-            response.raise_for_status()
-            return response.json()
+        params = {"inn": inn}
+        return await self._make_request(url, params)
     
     async def get_enforcements(self, inn: str) -> Dict[str, Any]:
         """Get company enforcements by INN.
@@ -115,12 +198,8 @@ class CheckoClient:
             httpx.HTTPStatusError: If API request fails
         """
         url = f"{self.BASE_URL}/enforcements"
-        params = {"key": self.api_key, "inn": inn}
-        
-        async with httpx.AsyncClient(timeout=30.0) as client:
-            response = await client.get(url, params=params)
-            response.raise_for_status()
-            return response.json()
+        params = {"inn": inn}
+        return await self._make_request(url, params)
     
     async def get_all_data(self, inn: str) -> Dict[str, Any]:
         """Get all company data from Checko API (5 endpoints in parallel).
