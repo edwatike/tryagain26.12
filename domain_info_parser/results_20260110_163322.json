@@ -1,0 +1,571 @@
+[
+  {
+    "domain": "kranikoff.ru",
+    "inn": "7810953727",
+    "emails": [
+      "info@kranikoff.ru"
+    ],
+    "source_urls": [
+      "https://kranikoff.ru/",
+      "https://kranikoff.ru/o-kompanii",
+      "https://kranikoff.ru/kontakty"
+    ],
+    "error": null
+  },
+  {
+    "domain": "santech.ru",
+    "inn": null,
+    "emails": [
+      "zakaz@santech.ru"
+    ],
+    "source_urls": [
+      "https://www.santech.ru/"
+    ],
+    "error": null
+  },
+  {
+    "domain": "ozon.ru",
+    "inn": null,
+    "emails": [],
+    "source_urls": [
+      "https://ozon.ru/?__rr=1"
+    ],
+    "error": null
+  },
+  {
+    "domain": "onyxspb.ru",
+    "inn": "7801405107",
+    "emails": [
+      "info@onyxspb.ru"
+    ],
+    "source_urls": [
+      "https://onyxspb.ru/"
+    ],
+    "error": null
+  },
+  {
+    "domain": "gremir.ru",
+    "inn": "7729445917",
+    "emails": [
+      "ZAKAZ@GREMIR.RU",
+      "zakaz@gremir.ru"
+    ],
+    "source_urls": [
+      "https://gremir.ru/",
+      "https://gremir.ru/contacts/"
+    ],
+    "error": null
+  },
+  {
+    "domain": "metallsnab-nn.ru",
+    "inn": null,
+    "emails": [
+      "nn@metsnab.pro"
+    ],
+    "source_urls": [
+      "https://www.metallsnab-nn.ru/"
+    ],
+    "error": null
+  },
+  {
+    "domain": "spb.lemanapro.ru",
+    "inn": null,
+    "emails": [],
+    "source_urls": [
+      "https://spb.lemanapro.ru/"
+    ],
+    "error": null
+  },
+  {
+    "domain": "lunda.ru",
+    "inn": null,
+    "emails": [],
+    "source_urls": [
+      "https://lunda.ru/"
+    ],
+    "error": null
+  },
+  {
+    "domain": "wodoprovod.ru",
+    "inn": null,
+    "emails": [
+      "info@wodoprovod.ru"
+    ],
+    "source_urls": [
+      "https://wodoprovod.ru/",
+      "https://wodoprovod.ru/kontakty.html"
+    ],
+    "error": null
+  },
+  {
+    "domain": "tehprommarket.ru",
+    "inn": "7708186669",
+    "emails": [
+      "dimj@bk.ru",
+      "zakaz@tehprommarket.ru"
+    ],
+    "source_urls": [
+      "https://tehprommarket.ru/"
+    ],
+    "error": null
+  },
+  {
+    "domain": "magamax.ru",
+    "inn": "7719181091",
+    "emails": [
+      "metall@magamax.ru",
+      "opt@magamax.ru",
+      "hr@magamax.ru"
+    ],
+    "source_urls": [
+      "https://magamax.ru/",
+      "https://magamax.ru/about/",
+      "https://magamax.ru/about/contacts/"
+    ],
+    "error": null
+  },
+  {
+    "domain": "gtv-meridian.ru",
+    "inn": "7816695215",
+    "emails": [
+      "info@gtv-meridian.ru"
+    ],
+    "source_urls": [
+      "https://gtv-meridian.ru/",
+      "https://gtv-meridian.ru/about/"
+    ],
+    "error": null
+  },
+  {
+    "domain": "rt-metall.ru",
+    "inn": null,
+    "emails": [
+      "gen@rt-metall.ru"
+    ],
+    "source_urls": [
+      "https://rt-metall.ru/",
+      "https://rt-metall.ru/%D0%BA%D0%BE%D0%BD%D1%82%D0%B0%D0%BA%D1%82%D1%8B/",
+      "https://rt-metall.ru/%D0%BE-%D0%BA%D0%BE%D0%BC%D0%BF%D0%B0%D0%BD%D0%B8%D0%B8/"
+    ],
+    "error": null
+  },
+  {
+    "domain": "aspmarket.ru",
+    "inn": "5074068958",
+    "emails": [
+      "info@aspmarket.ru"
+    ],
+    "source_urls": [
+      "https://aspmarket.ru/",
+      "https://aspmarket.ru/contacts/"
+    ],
+    "error": null
+  },
+  {
+    "domain": "kazan.pulscen.ru",
+    "inn": null,
+    "emails": [],
+    "source_urls": [
+      "https://kazan.pulscen.ru/"
+    ],
+    "error": null
+  },
+  {
+    "domain": "awstroy.ru",
+    "inn": "7816657139",
+    "emails": [
+      "zakaz@awstroy.ru"
+    ],
+    "source_urls": [
+      "https://awstroy.ru/",
+      "https://awstroy.ru/contacts/",
+      "https://awstroy.ru/company/",
+      "https://awstroy.ru/company/rekvizity/"
+    ],
+    "error": null
+  },
+  {
+    "domain": "trubamax.ru",
+    "inn": null,
+    "emails": [],
+    "source_urls": [
+      "https://www.trubamax.ru/"
+    ],
+    "error": null
+  },
+  {
+    "domain": "vseinstrumenti.ru",
+    "inn": null,
+    "emails": [],
+    "source_urls": [
+      "https://vseinstrumenti.ru/"
+    ],
+    "error": null
+  },
+  {
+    "domain": "armstroy-nn.ru",
+    "inn": null,
+    "emails": [
+      "info@armstroy-nn.ru"
+    ],
+    "source_urls": [
+      "https://armstroy-nn.ru/",
+      "https://armstroy-nn.ru/company/about/",
+      "https://armstroy-nn.ru/contacts/"
+    ],
+    "error": null
+  },
+  {
+    "domain": "pndtech.ru",
+    "inn": null,
+    "emails": [
+      "zakaz@pndtech.ru"
+    ],
+    "source_urls": [
+      "https://www.pndtech.ru/"
+    ],
+    "error": null
+  },
+  {
+    "domain": "vorder.ru",
+    "inn": null,
+    "emails": [
+      "info@vorder.ru"
+    ],
+    "source_urls": [
+      "https://www.vorder.ru/"
+    ],
+    "error": null
+  },
+  {
+    "domain": "spb-stal.ru",
+    "inn": "7811575683",
+    "emails": [
+      "3349151@mail.ru"
+    ],
+    "source_urls": [
+      "https://spb-stal.ru/",
+      "https://spb-stal.ru/konatkty/",
+      "https://spb-stal.ru/o_kompanii/requisites/"
+    ],
+    "error": null
+  },
+  {
+    "domain": "ecomont.ru",
+    "inn": null,
+    "emails": [],
+    "source_urls": [],
+    "error": "Таймаут загрузки страницы"
+  },
+  {
+    "domain": "dn.ru",
+    "inn": "7724452117",
+    "emails": [
+      "sklad@dn.ru",
+      "info@dn.ru"
+    ],
+    "source_urls": [
+      "https://dn.ru/",
+      "https://dn.ru/about",
+      "https://dn.ru/contacts"
+    ],
+    "error": null
+  },
+  {
+    "domain": "tda-spb.ru",
+    "inn": null,
+    "emails": [
+      "info@tda-spb.ru"
+    ],
+    "source_urls": [
+      "https://tda-spb.ru/",
+      "https://tda-spb.ru/o-kompanii/",
+      "https://tda-spb.ru/kontakty/"
+    ],
+    "error": null
+  },
+  {
+    "domain": "sm2000.ru",
+    "inn": null,
+    "emails": [
+      "office@sm2000.ru"
+    ],
+    "source_urls": [
+      "https://www.sm2000.ru/"
+    ],
+    "error": null
+  },
+  {
+    "domain": "spb.pulscen.ru",
+    "inn": null,
+    "emails": [],
+    "source_urls": [
+      "https://spb.pulscen.ru/"
+    ],
+    "error": null
+  },
+  {
+    "domain": "teharmatura.ru",
+    "inn": "7722352607",
+    "emails": [
+      "sales@teharmatura.ru"
+    ],
+    "source_urls": [
+      "https://teharmatura.ru/",
+      "https://teharmatura.ru/company/rekvizity/"
+    ],
+    "error": null
+  },
+  {
+    "domain": "yaroslavl.bigam.ru",
+    "inn": null,
+    "emails": [],
+    "source_urls": [
+      "https://yaroslavl.bigam.ru/"
+    ],
+    "error": null
+  },
+  {
+    "domain": "ingenerseti.ru",
+    "inn": null,
+    "emails": [
+      "sale@ingenerseti.ru"
+    ],
+    "source_urls": [
+      "https://ingenerseti.ru/",
+      "https://ingenerseti.ru/about/",
+      "https://ingenerseti.ru/contacts/"
+    ],
+    "error": null
+  },
+  {
+    "domain": "market.yandex.ru",
+    "inn": null,
+    "emails": [],
+    "source_urls": [
+      "https://market.yandex.ru/"
+    ],
+    "error": null
+  },
+  {
+    "domain": "inoxpoint.ru",
+    "inn": null,
+    "emails": [
+      "info@inoxpoint.ru"
+    ],
+    "source_urls": [
+      "https://www.inoxpoint.ru/"
+    ],
+    "error": null
+  },
+  {
+    "domain": "stks-perm.ru",
+    "inn": null,
+    "emails": [
+      "info@perm.stks.ru"
+    ],
+    "source_urls": [
+      "https://stks-perm.ru/",
+      "https://stks-perm.ru/site/kontakty/"
+    ],
+    "error": null
+  },
+  {
+    "domain": "mkuralsteel-chlb.ru",
+    "inn": null,
+    "emails": [],
+    "source_urls": [
+      "https://www.mkuralsteel-chlb.ru/"
+    ],
+    "error": null
+  },
+  {
+    "domain": "vl.cs27.ru",
+    "inn": null,
+    "emails": [
+      "612233@cs27.ru",
+      "772233@cs27.ru",
+      "3372233@cs27.ru",
+      "372233@cs27.ru",
+      "992233@cs27.ru",
+      "2372233@cs27.ru"
+    ],
+    "source_urls": [
+      "https://vl.cs27.ru/",
+      "https://vl.cs27.ru/contacts/"
+    ],
+    "error": null
+  },
+  {
+    "domain": "severarm.ru",
+    "inn": "7802836674",
+    "emails": [
+      "severarm@bk.ru"
+    ],
+    "source_urls": [
+      "https://severarm.ru/"
+    ],
+    "error": null
+  },
+  {
+    "domain": "nn.met-trans.ru",
+    "inn": "5257186476",
+    "emails": [
+      "nn@met-trans.ru"
+    ],
+    "source_urls": [
+      "https://nn.met-trans.ru/",
+      "https://nn.met-trans.ru/about",
+      "https://nn.met-trans.ru/contacts"
+    ],
+    "error": null
+  },
+  {
+    "domain": "armafit.ru",
+    "inn": null,
+    "emails": [
+      "sales@armafit.ru"
+    ],
+    "source_urls": [
+      "https://armafit.ru/",
+      "https://armafit.ru/kontakty"
+    ],
+    "error": null
+  },
+  {
+    "domain": "mc.ru",
+    "inn": null,
+    "emails": [
+      "contact@mc.ru"
+    ],
+    "source_urls": [
+      "https://mc.ru/",
+      "https://mc.ru/company/contacts",
+      "https://mc.ru/company/history"
+    ],
+    "error": null
+  },
+  {
+    "domain": "mkuralsteel-irkutsk.ru",
+    "inn": null,
+    "emails": [],
+    "source_urls": [
+      "https://www.mkuralsteel-irkutsk.ru/"
+    ],
+    "error": null
+  },
+  {
+    "domain": "mpstal.ru",
+    "inn": "7840505793",
+    "emails": [
+      "info@mpstal.ru"
+    ],
+    "source_urls": [
+      "https://mpstal.ru/",
+      "https://mpstal.ru/contacts"
+    ],
+    "error": null
+  },
+  {
+    "domain": "rts-ufa.ru",
+    "inn": null,
+    "emails": [],
+    "source_urls": [
+      "https://www.rts-ufa.ru/"
+    ],
+    "error": null
+  },
+  {
+    "domain": "zavod-rekom.ru",
+    "inn": null,
+    "emails": [
+      "zakaz@zavod-rekom.ru",
+      "REKOM@ZAVOD-REKOM.RU",
+      "ZAKAZ@ZAVOD-REKOM.RU"
+    ],
+    "source_urls": [
+      "https://zavod-rekom.ru/",
+      "https://zavod-rekom.ru/about/",
+      "https://zavod-rekom.ru/contacts/"
+    ],
+    "error": null
+  },
+  {
+    "domain": "armaseti-russia.ru",
+    "inn": "7725363283",
+    "emails": [
+      "spb@armaseti-russia.ru"
+    ],
+    "source_urls": [
+      "https://armaseti-russia.ru/",
+      "https://armaseti-russia.ru/contacts/"
+    ],
+    "error": null
+  },
+  {
+    "domain": "waterman-t.ru",
+    "inn": null,
+    "emails": [
+      "company@waterman-t.com"
+    ],
+    "source_urls": [
+      "https://waterman-t.ru/",
+      "https://waterman-t.ru/addr",
+      "https://waterman-t.ru/about"
+    ],
+    "error": null
+  },
+  {
+    "domain": "23met.ru",
+    "inn": null,
+    "emails": [
+      "23met@23met.ru"
+    ],
+    "source_urls": [
+      "https://23met.ru/"
+    ],
+    "error": null
+  },
+  {
+    "domain": "metallsnab-sam.ru",
+    "inn": null,
+    "emails": [],
+    "source_urls": [
+      "https://www.metallsnab-sam.ru/"
+    ],
+    "error": null
+  },
+  {
+    "domain": "metallsnab-vrn.ru",
+    "inn": null,
+    "emails": [],
+    "source_urls": [
+      "https://www.metallsnab-vrn.ru/"
+    ],
+    "error": null
+  },
+  {
+    "domain": "interarm-ekb.ru",
+    "inn": "6678103452",
+    "emails": [
+      "info@interarm-ekb.ru"
+    ],
+    "source_urls": [
+      "https://interarm-ekb.ru/",
+      "https://interarm-ekb.ru/kontakty/"
+    ],
+    "error": null
+  },
+  {
+    "domain": "metall-ural.ru",
+    "inn": null,
+    "emails": [
+      "metall-ural@bk.ru"
+    ],
+    "source_urls": [
+      "https://metall-ural.ru/",
+      "https://metall-ural.ru/feedback/"
+    ],
+    "error": null
+  }
+]

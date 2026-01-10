@@ -40,45 +40,97 @@ class DomainInfoParser:
             await self.playwright.stop()
         logger.info("✅ Браузер закрыт")
     
-    def extract_inn(self, text: str) -> Optional[str]:
-        """Извлечь ИНН из текста с улучшенными паттернами."""
+    def extract_inn(self, text: str, html: str = "") -> Optional[str]:
+        """Извлечь ИНН из текста и HTML с улучшенными паттернами."""
         # Расширенные паттерны для поиска ИНН с контекстом
         inn_patterns = [
-            # Прямое упоминание ИНН
-            r'ИНН[:\s]+(\d{10}|\d{12})',
-            r'INN[:\s]+(\d{10}|\d{12})',
-            r'инн[:\s]+(\d{10}|\d{12})',
+            # Прямое упоминание ИНН (с учетом пробелов и переносов)
+            r'ИНН[:\s\n]+(\d{10}|\d{12})',
+            r'INN[:\s\n]+(\d{10}|\d{12})',
+            r'инн[:\s\n]+(\d{10}|\d{12})',
             # С разделителями
-            r'ИНН[:\s]+(\d{4}[\s\-]?\d{6})',  # ИНН: 1234 567890
-            r'ИНН[:\s]+(\d{4}[\s\-]?\d{4}[\s\-]?\d{4})',  # ИНН: 1234 5678 9012
+            r'ИНН[:\s\n]+(\d{4}[\s\-\n]?\d{6})',  # ИНН: 1234 567890
+            r'ИНН[:\s\n]+(\d{4}[\s\-\n]?\d{4}[\s\-\n]?\d{4})',  # ИНН: 1234 5678 9012
             # В таблицах/реквизитах
-            r'(?:реквизит|requisite|details).*?ИНН[:\s]*(\d{10}|\d{12})',
-            r'(?:реквизит|requisite|details).*?INN[:\s]*(\d{10}|\d{12})',
+            r'(?:реквизит|requisite|details|юридическ).*?ИНН[:\s\n]*(\d{10}|\d{12})',
+            r'(?:реквизит|requisite|details|legal).*?INN[:\s\n]*(\d{10}|\d{12})',
             # Рядом с ОГРН/КПП
-            r'(?:ОГРН|OGRN).*?ИНН[:\s]*(\d{10}|\d{12})',
-            r'(?:КПП|KPP).*?ИНН[:\s]*(\d{10}|\d{12})',
+            r'(?:ОГРН|OGRN)[:\s\n]+\d+.*?ИНН[:\s\n]*(\d{10}|\d{12})',
+            r'(?:КПП|KPP)[:\s\n]+\d+.*?ИНН[:\s\n]*(\d{10}|\d{12})',
             # В контактах/о компании
-            r'(?:о компании|about|контакт|contact).*?ИНН[:\s]*(\d{10}|\d{12})',
+            r'(?:о компании|about|контакт|contact|company).*?ИНН[:\s\n]*(\d{10}|\d{12})',
+            # В футере
+            r'(?:footer|подвал).*?ИНН[:\s\n]*(\d{10}|\d{12})',
         ]
         
-        # Ищем с явным упоминанием ИНН
+        # Ищем с явным упоминанием ИНН в тексте
         for pattern in inn_patterns:
             matches = re.findall(pattern, text, re.IGNORECASE | re.DOTALL)
             for match in matches:
-                # Убираем пробелы и дефисы
-                clean_match = re.sub(r'[\s\-]', '', match)
+                # Убираем пробелы, дефисы и переносы
+                clean_match = re.sub(r'[\s\-\n]', '', match)
                 if len(clean_match) in [10, 12]:
-                    logger.info(f"Found INN with pattern: {clean_match}")
+                    logger.info(f"Found INN with pattern in text: {clean_match}")
                     return clean_match
         
-        # Поиск в контексте "реквизиты" или "о компании"
+        # Ищем в HTML (если предоставлен)
+        if html:
+            # Поиск в meta-тегах
+            meta_patterns = [
+                r'<meta[^>]*name=["\']inn["\'][^>]*content=["\'](\d{10}|\d{12})["\']',
+                r'<meta[^>]*property=["\']inn["\'][^>]*content=["\'](\d{10}|\d{12})["\']',
+                r'<meta[^>]*content=["\'](\d{10}|\d{12})["\'][^>]*name=["\']inn["\']',
+            ]
+            
+            for pattern in meta_patterns:
+                matches = re.findall(pattern, html, re.IGNORECASE)
+                if matches:
+                    logger.info(f"Found INN in meta tag: {matches[0]}")
+                    return matches[0]
+            
+            # Поиск в data-атрибутах
+            data_patterns = [
+                r'data-inn=["\'](\d{10}|\d{12})["\']',
+                r'data-company-inn=["\'](\d{10}|\d{12})["\']',
+            ]
+            
+            for pattern in data_patterns:
+                matches = re.findall(pattern, html, re.IGNORECASE)
+                if matches:
+                    logger.info(f"Found INN in data attribute: {matches[0]}")
+                    return matches[0]
+            
+            # Поиск в HTML с явным упоминанием ИНН
+            for pattern in inn_patterns:
+                matches = re.findall(pattern, html, re.IGNORECASE | re.DOTALL)
+                for match in matches:
+                    clean_match = re.sub(r'[\s\-\n]', '', match)
+                    if len(clean_match) in [10, 12]:
+                        logger.info(f"Found INN with pattern in HTML: {clean_match}")
+                        return clean_match
+            
+            # АГРЕССИВНЫЙ ПОИСК: ищем любые 10/12-значные числа в HTML рядом со словами ИНН/INN
+            aggressive_patterns = [
+                r'(?:ИНН|INN|инн)[^\d]{0,50}(\d{10}|\d{12})',  # ИНН в пределах 50 символов от числа
+                r'(\d{10}|\d{12})[^\d]{0,50}(?:ИНН|INN|инн)',  # Число в пределах 50 символов от ИНН
+            ]
+            
+            for pattern in aggressive_patterns:
+                matches = re.findall(pattern, html, re.IGNORECASE | re.DOTALL)
+                for match in matches:
+                    clean_match = re.sub(r'[\s\-\n]', '', match)
+                    if len(clean_match) in [10, 12] and not clean_match.startswith(('7', '8', '9')):
+                        logger.info(f"Found INN with aggressive pattern in HTML: {clean_match}")
+                        return clean_match
+        
+        # Поиск в контексте "реквизиты" или "о компании" с большим окном
         context_patterns = [
-            r'(?:реквизит|requisite|о компании|about|details|company info).*?(\d{10}|\d{12})',
+            r'(?:реквизит|requisite|о компании|about|details|company info|юридическ|legal).{0,500}?(\d{10}|\d{12})',
         ]
         
         for pattern in context_patterns:
             matches = re.findall(pattern, text, re.IGNORECASE | re.DOTALL)
-            for match in matches[:3]:  # Проверяем первые 3 совпадения
+            for match in matches[:5]:  # Проверяем первые 5 совпадений
                 if len(match) in [10, 12] and not match.startswith(('7', '8', '9')):
                     logger.info(f"Found INN in context: {match}")
                     return match
@@ -197,11 +249,12 @@ class DomainInfoParser:
             await page.goto(url, wait_until='domcontentloaded', timeout=self.timeout)
             result['source_urls'].append(page.url)
             
-            # Получаем текст главной страницы
+            # Получаем текст и HTML главной страницы
             main_text = await self.get_page_text(page)
+            main_html = await page.content()
             
             # Ищем ИНН и email на главной странице
-            inn = self.extract_inn(main_text)
+            inn = self.extract_inn(main_text, main_html)
             emails = self.extract_emails(main_text)
             
             if inn:
@@ -227,9 +280,10 @@ class DomainInfoParser:
                         result['source_urls'].append(page.url)
                         
                         contact_text = await self.get_page_text(page)
+                        contact_html = await page.content()
                         
                         if not inn:
-                            inn = self.extract_inn(contact_text)
+                            inn = self.extract_inn(contact_text, contact_html)
                             if inn:
                                 result['inn'] = inn
                                 logger.info(f"  ✅ ИНН найден на контактной странице: {inn}")

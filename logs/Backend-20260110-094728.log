@@ -1,0 +1,592 @@
+[Backend] Starting...
+[Backend] Installing dependencies...
+
+[notice] A new release of pip is available: 25.0.1 -> 25.3
+[notice] To update, run: python.exe -m pip install --upgrade pip
+[Backend] Starting API on port 8000...
+2026-01-10 09:47:30,760 - app.usecases.extract_inn_batch - WARNING - ollama_inn_extractor directory not found at: d:\tryagain\ollama_inn_extractor
+2026-01-10 09:47:30,767 - app.main - INFO - === FastAPI app instance created ===
+2026-01-10 09:47:30,767 - app.main - INFO - === App instance ID: 2018870071072 ===
+2026-01-10 09:47:30,767 - app.main - INFO - === FastAPI app created ===
+2026-01-10 09:47:30,767 - app.main - INFO - === CORS origins: ['http://localhost:3000', 'http://127.0.0.1:3000'] ===
+2026-01-10 09:47:30,771 - app.main - INFO - === Registering routers ===
+2026-01-10 09:47:30,791 - app.main - INFO - === Registering inn_extraction router ===
+2026-01-10 09:47:30,792 - app.main - INFO - === Registering comet router ===
+2026-01-10 09:47:30,793 - app.main - INFO - === All routers registered successfully ===
+2026-01-10 09:47:30,793 - app.main - INFO - === INN Extraction routes: ['/inn-extraction/extract-batch'] ===
+2026-01-10 09:47:30,793 - app.main - INFO - === Total routes after registration: 40 ===
+2026-01-10 09:47:30,793 - app.main - INFO - === App instance ID after router registration: 2018870071072 ===
+2026-01-10 09:47:30,793 - app.main - INFO - === FINAL VERIFICATION: Total routes: 40, INN routes: 1 ===
+2026-01-10 09:47:30,793 - app.main - INFO - === SUCCESS: INN extraction routes found: ['/inn-extraction/extract-batch'] ===
+2026-01-10 09:47:30,793 - __main__ - INFO - === Starting uvicorn with 40 routes ===
+2026-01-10 09:47:30,793 - __main__ - INFO - === INN routes: ['/moderator/checko/{inn}', '/inn-extraction/extract-batch'] ===
+2026-01-10 09:47:30,793 - __main__ - INFO - === App instance ID: 2018870071072 ===
+2026-01-10 09:47:30,793 - __main__ - INFO - === PYTHONPATH set to: d:\tryagain\backend; ===
+INFO:     Started server process [22344]
+INFO:     Waiting for application startup.
+2026-01-10 09:47:30,827 - app.main - INFO - === Logging configured ===
+2026-01-10 09:47:30,827 - app.main - INFO - === APPLICATION STARTUP COMPLETE ===
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+INFO:     127.0.0.1:60155 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54998 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55035 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53388 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53405 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53413 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61110 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61119 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60797 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65190 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52031 - "OPTIONS /moderator/suppliers?limit=1000 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51201 - "OPTIONS /parsing/runs?limit=1&status=running HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56696 - "OPTIONS /moderator/blacklist?limit=1000 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52031 - "GET /moderator/suppliers?limit=1000 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51201 - "GET /parsing/runs?limit=1&status=running HTTP/1.1" 200 OK
+2026-01-10 09:49:41,033 - app.transport.routers.blacklist - INFO - Blacklist query: found 11 total entries, returning 11 entries
+2026-01-10 09:49:41,033 - app.transport.routers.blacklist - INFO - Returning 11 DTOs
+INFO:     127.0.0.1:56696 - "GET /moderator/blacklist?limit=1000 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52031 - "OPTIONS /parsing/runs?limit=10&sort=created_at&order=desc HTTP/1.1" 200 OK
+2026-01-10 09:49:41,061 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: filtering by parsing_run_id=a0097613-61ab-4831-8d48-ef9c8cbfac8b
+2026-01-10 09:49:41,061 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: applied filters: parsing_run_id=a0097613-61ab-4831-8d48-ef9c8cbfac8b
+2026-01-10 09:49:41,066 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: returning 1 entries (total=50) with filters: ['parsing_run_id=a0097613-61ab-4831-8d48-ef9c8cbfac8b']
+2026-01-10 09:49:41,067 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: filtering by parsing_run_id=8e58c4f2-a61c-4975-a19c-f838f58890fa
+2026-01-10 09:49:41,067 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: applied filters: parsing_run_id=8e58c4f2-a61c-4975-a19c-f838f58890fa
+2026-01-10 09:49:41,069 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: returning 1 entries (total=57) with filters: ['parsing_run_id=8e58c4f2-a61c-4975-a19c-f838f58890fa']
+2026-01-10 09:49:41,069 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: filtering by parsing_run_id=37f2a7d4-0018-4328-ae77-c5c62be6ad11
+2026-01-10 09:49:41,069 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: applied filters: parsing_run_id=37f2a7d4-0018-4328-ae77-c5c62be6ad11
+2026-01-10 09:49:41,070 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: returning 0 entries (total=0) with filters: ['parsing_run_id=37f2a7d4-0018-4328-ae77-c5c62be6ad11']
+2026-01-10 09:49:41,071 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: filtering by parsing_run_id=016daaab-9cd9-405a-ac90-bbc80ffcc2a5
+2026-01-10 09:49:41,071 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: applied filters: parsing_run_id=016daaab-9cd9-405a-ac90-bbc80ffcc2a5
+2026-01-10 09:49:41,071 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: returning 0 entries (total=0) with filters: ['parsing_run_id=016daaab-9cd9-405a-ac90-bbc80ffcc2a5']
+2026-01-10 09:49:41,071 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: filtering by parsing_run_id=e94fd388-c23c-4d7a-b174-c02221448f08
+2026-01-10 09:49:41,071 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: applied filters: parsing_run_id=e94fd388-c23c-4d7a-b174-c02221448f08
+2026-01-10 09:49:41,071 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: returning 1 entries (total=17) with filters: ['parsing_run_id=e94fd388-c23c-4d7a-b174-c02221448f08']
+2026-01-10 09:49:41,071 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: filtering by parsing_run_id=aa19272a-7371-41ae-898d-bb99f5a1228d
+2026-01-10 09:49:41,071 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: applied filters: parsing_run_id=aa19272a-7371-41ae-898d-bb99f5a1228d
+2026-01-10 09:49:41,071 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: returning 1 entries (total=17) with filters: ['parsing_run_id=aa19272a-7371-41ae-898d-bb99f5a1228d']
+2026-01-10 09:49:41,071 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: filtering by parsing_run_id=0475ae12-de36-4e36-8c10-89db784aba08
+2026-01-10 09:49:41,071 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: applied filters: parsing_run_id=0475ae12-de36-4e36-8c10-89db784aba08
+2026-01-10 09:49:41,076 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: returning 1 entries (total=17) with filters: ['parsing_run_id=0475ae12-de36-4e36-8c10-89db784aba08']
+2026-01-10 09:49:41,076 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: filtering by parsing_run_id=7421cc44-5f3f-480a-a888-b3ab2c4e194d
+2026-01-10 09:49:41,076 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: applied filters: parsing_run_id=7421cc44-5f3f-480a-a888-b3ab2c4e194d
+2026-01-10 09:49:41,076 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: returning 0 entries (total=0) with filters: ['parsing_run_id=7421cc44-5f3f-480a-a888-b3ab2c4e194d']
+2026-01-10 09:49:41,076 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: filtering by parsing_run_id=35e40edd-7182-4d45-a39f-55333c0d152b
+2026-01-10 09:49:41,076 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: applied filters: parsing_run_id=35e40edd-7182-4d45-a39f-55333c0d152b
+2026-01-10 09:49:41,076 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: returning 1 entries (total=87) with filters: ['parsing_run_id=35e40edd-7182-4d45-a39f-55333c0d152b']
+INFO:     127.0.0.1:52031 - "GET /parsing/runs?limit=10&sort=created_at&order=desc HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52031 - "OPTIONS /parsing/runs?limit=50&status=completed&sort=created_at&order=desc HTTP/1.1" 200 OK
+2026-01-10 09:49:41,087 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: filtering by parsing_run_id=a0097613-61ab-4831-8d48-ef9c8cbfac8b
+2026-01-10 09:49:41,087 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: applied filters: parsing_run_id=a0097613-61ab-4831-8d48-ef9c8cbfac8b
+2026-01-10 09:49:41,091 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: returning 1 entries (total=50) with filters: ['parsing_run_id=a0097613-61ab-4831-8d48-ef9c8cbfac8b']
+2026-01-10 09:49:41,091 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: filtering by parsing_run_id=8e58c4f2-a61c-4975-a19c-f838f58890fa
+2026-01-10 09:49:41,091 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: applied filters: parsing_run_id=8e58c4f2-a61c-4975-a19c-f838f58890fa
+2026-01-10 09:49:41,093 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: returning 1 entries (total=57) with filters: ['parsing_run_id=8e58c4f2-a61c-4975-a19c-f838f58890fa']
+2026-01-10 09:49:41,093 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: filtering by parsing_run_id=e94fd388-c23c-4d7a-b174-c02221448f08
+2026-01-10 09:49:41,093 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: applied filters: parsing_run_id=e94fd388-c23c-4d7a-b174-c02221448f08
+2026-01-10 09:49:41,094 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: returning 1 entries (total=17) with filters: ['parsing_run_id=e94fd388-c23c-4d7a-b174-c02221448f08']
+2026-01-10 09:49:41,094 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: filtering by parsing_run_id=aa19272a-7371-41ae-898d-bb99f5a1228d
+2026-01-10 09:49:41,094 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: applied filters: parsing_run_id=aa19272a-7371-41ae-898d-bb99f5a1228d
+2026-01-10 09:49:41,095 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: returning 1 entries (total=17) with filters: ['parsing_run_id=aa19272a-7371-41ae-898d-bb99f5a1228d']
+2026-01-10 09:49:41,095 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: filtering by parsing_run_id=0475ae12-de36-4e36-8c10-89db784aba08
+2026-01-10 09:49:41,095 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: applied filters: parsing_run_id=0475ae12-de36-4e36-8c10-89db784aba08
+2026-01-10 09:49:41,095 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: returning 1 entries (total=17) with filters: ['parsing_run_id=0475ae12-de36-4e36-8c10-89db784aba08']
+2026-01-10 09:49:41,096 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: filtering by parsing_run_id=35e40edd-7182-4d45-a39f-55333c0d152b
+2026-01-10 09:49:41,096 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: applied filters: parsing_run_id=35e40edd-7182-4d45-a39f-55333c0d152b
+2026-01-10 09:49:41,098 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: returning 1 entries (total=87) with filters: ['parsing_run_id=35e40edd-7182-4d45-a39f-55333c0d152b']
+INFO:     127.0.0.1:52031 - "GET /parsing/runs?limit=50&status=completed&sort=created_at&order=desc HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52031 - "OPTIONS /domains/queue?limit=1000&parsingRunId=a0097613-61ab-4831-8d48-ef9c8cbfac8b HTTP/1.1" 200 OK
+2026-01-10 09:49:41,102 - app.transport.routers.domains_queue - INFO - list_domains_queue_endpoint called with parsingRunId=a0097613-61ab-4831-8d48-ef9c8cbfac8b, keyword=None, status=None
+2026-01-10 09:49:41,102 - app.transport.routers.domains_queue - INFO - DEBUG: parsingRunId value: 'a0097613-61ab-4831-8d48-ef9c8cbfac8b' (type: <class 'str'>, len: 36)
+2026-01-10 09:49:41,102 - app.usecases.list_domains_queue - INFO - list_domains_queue.execute called with parsing_run_id=a0097613-61ab-4831-8d48-ef9c8cbfac8b, keyword=None
+2026-01-10 09:49:41,102 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: filtering by parsing_run_id=a0097613-61ab-4831-8d48-ef9c8cbfac8b
+2026-01-10 09:49:41,102 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: applied filters: parsing_run_id=a0097613-61ab-4831-8d48-ef9c8cbfac8b
+2026-01-10 09:49:41,108 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: returning 50 entries (total=50) with filters: ['parsing_run_id=a0097613-61ab-4831-8d48-ef9c8cbfac8b']
+2026-01-10 09:49:41,108 - app.usecases.list_domains_queue - INFO - list_domains_queue.execute returning 50 entries, total=50
+2026-01-10 09:49:41,108 - app.transport.routers.domains_queue - INFO - list_domains_queue_endpoint returning 50 entries, total=50
+INFO:     127.0.0.1:52031 - "GET /domains/queue?limit=1000&parsingRunId=a0097613-61ab-4831-8d48-ef9c8cbfac8b HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52031 - "OPTIONS /domains/queue?limit=1000&parsingRunId=8e58c4f2-a61c-4975-a19c-f838f58890fa HTTP/1.1" 200 OK
+2026-01-10 09:49:41,112 - app.transport.routers.domains_queue - INFO - list_domains_queue_endpoint called with parsingRunId=8e58c4f2-a61c-4975-a19c-f838f58890fa, keyword=None, status=None
+2026-01-10 09:49:41,112 - app.transport.routers.domains_queue - INFO - DEBUG: parsingRunId value: '8e58c4f2-a61c-4975-a19c-f838f58890fa' (type: <class 'str'>, len: 36)
+2026-01-10 09:49:41,112 - app.usecases.list_domains_queue - INFO - list_domains_queue.execute called with parsing_run_id=8e58c4f2-a61c-4975-a19c-f838f58890fa, keyword=None
+2026-01-10 09:49:41,112 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: filtering by parsing_run_id=8e58c4f2-a61c-4975-a19c-f838f58890fa
+2026-01-10 09:49:41,112 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: applied filters: parsing_run_id=8e58c4f2-a61c-4975-a19c-f838f58890fa
+2026-01-10 09:49:41,116 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: returning 57 entries (total=57) with filters: ['parsing_run_id=8e58c4f2-a61c-4975-a19c-f838f58890fa']
+2026-01-10 09:49:41,116 - app.usecases.list_domains_queue - INFO - list_domains_queue.execute returning 57 entries, total=57
+2026-01-10 09:49:41,116 - app.transport.routers.domains_queue - INFO - list_domains_queue_endpoint returning 57 entries, total=57
+INFO:     127.0.0.1:52031 - "GET /domains/queue?limit=1000&parsingRunId=8e58c4f2-a61c-4975-a19c-f838f58890fa HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52031 - "OPTIONS /domains/queue?limit=1000&parsingRunId=e94fd388-c23c-4d7a-b174-c02221448f08 HTTP/1.1" 200 OK
+2026-01-10 09:49:41,116 - app.transport.routers.domains_queue - INFO - list_domains_queue_endpoint called with parsingRunId=e94fd388-c23c-4d7a-b174-c02221448f08, keyword=None, status=None
+2026-01-10 09:49:41,116 - app.transport.routers.domains_queue - INFO - DEBUG: parsingRunId value: 'e94fd388-c23c-4d7a-b174-c02221448f08' (type: <class 'str'>, len: 36)
+2026-01-10 09:49:41,116 - app.usecases.list_domains_queue - INFO - list_domains_queue.execute called with parsing_run_id=e94fd388-c23c-4d7a-b174-c02221448f08, keyword=None
+2026-01-10 09:49:41,116 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: filtering by parsing_run_id=e94fd388-c23c-4d7a-b174-c02221448f08
+2026-01-10 09:49:41,116 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: applied filters: parsing_run_id=e94fd388-c23c-4d7a-b174-c02221448f08
+2026-01-10 09:49:41,123 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: returning 17 entries (total=17) with filters: ['parsing_run_id=e94fd388-c23c-4d7a-b174-c02221448f08']
+2026-01-10 09:49:41,123 - app.usecases.list_domains_queue - INFO - list_domains_queue.execute returning 17 entries, total=17
+2026-01-10 09:49:41,123 - app.transport.routers.domains_queue - INFO - list_domains_queue_endpoint returning 17 entries, total=17
+INFO:     127.0.0.1:52031 - "GET /domains/queue?limit=1000&parsingRunId=e94fd388-c23c-4d7a-b174-c02221448f08 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52031 - "OPTIONS /domains/queue?limit=1000&parsingRunId=aa19272a-7371-41ae-898d-bb99f5a1228d HTTP/1.1" 200 OK
+2026-01-10 09:49:41,126 - app.transport.routers.domains_queue - INFO - list_domains_queue_endpoint called with parsingRunId=aa19272a-7371-41ae-898d-bb99f5a1228d, keyword=None, status=None
+2026-01-10 09:49:41,126 - app.transport.routers.domains_queue - INFO - DEBUG: parsingRunId value: 'aa19272a-7371-41ae-898d-bb99f5a1228d' (type: <class 'str'>, len: 36)
+2026-01-10 09:49:41,126 - app.usecases.list_domains_queue - INFO - list_domains_queue.execute called with parsing_run_id=aa19272a-7371-41ae-898d-bb99f5a1228d, keyword=None
+2026-01-10 09:49:41,126 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: filtering by parsing_run_id=aa19272a-7371-41ae-898d-bb99f5a1228d
+2026-01-10 09:49:41,126 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: applied filters: parsing_run_id=aa19272a-7371-41ae-898d-bb99f5a1228d
+2026-01-10 09:49:41,126 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: returning 17 entries (total=17) with filters: ['parsing_run_id=aa19272a-7371-41ae-898d-bb99f5a1228d']
+2026-01-10 09:49:41,126 - app.usecases.list_domains_queue - INFO - list_domains_queue.execute returning 17 entries, total=17
+2026-01-10 09:49:41,126 - app.transport.routers.domains_queue - INFO - list_domains_queue_endpoint returning 17 entries, total=17
+INFO:     127.0.0.1:52031 - "GET /domains/queue?limit=1000&parsingRunId=aa19272a-7371-41ae-898d-bb99f5a1228d HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52031 - "OPTIONS /domains/queue?limit=1000&parsingRunId=0475ae12-de36-4e36-8c10-89db784aba08 HTTP/1.1" 200 OK
+2026-01-10 09:49:41,133 - app.transport.routers.domains_queue - INFO - list_domains_queue_endpoint called with parsingRunId=0475ae12-de36-4e36-8c10-89db784aba08, keyword=None, status=None
+2026-01-10 09:49:41,133 - app.transport.routers.domains_queue - INFO - DEBUG: parsingRunId value: '0475ae12-de36-4e36-8c10-89db784aba08' (type: <class 'str'>, len: 36)
+2026-01-10 09:49:41,133 - app.usecases.list_domains_queue - INFO - list_domains_queue.execute called with parsing_run_id=0475ae12-de36-4e36-8c10-89db784aba08, keyword=None
+2026-01-10 09:49:41,133 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: filtering by parsing_run_id=0475ae12-de36-4e36-8c10-89db784aba08
+2026-01-10 09:49:41,133 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: applied filters: parsing_run_id=0475ae12-de36-4e36-8c10-89db784aba08
+2026-01-10 09:49:41,136 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: returning 17 entries (total=17) with filters: ['parsing_run_id=0475ae12-de36-4e36-8c10-89db784aba08']
+2026-01-10 09:49:41,136 - app.usecases.list_domains_queue - INFO - list_domains_queue.execute returning 17 entries, total=17
+2026-01-10 09:49:41,136 - app.transport.routers.domains_queue - INFO - list_domains_queue_endpoint returning 17 entries, total=17
+INFO:     127.0.0.1:52031 - "GET /domains/queue?limit=1000&parsingRunId=0475ae12-de36-4e36-8c10-89db784aba08 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52031 - "OPTIONS /domains/queue?limit=1000&parsingRunId=35e40edd-7182-4d45-a39f-55333c0d152b HTTP/1.1" 200 OK
+2026-01-10 09:49:41,136 - app.transport.routers.domains_queue - INFO - list_domains_queue_endpoint called with parsingRunId=35e40edd-7182-4d45-a39f-55333c0d152b, keyword=None, status=None
+2026-01-10 09:49:41,136 - app.transport.routers.domains_queue - INFO - DEBUG: parsingRunId value: '35e40edd-7182-4d45-a39f-55333c0d152b' (type: <class 'str'>, len: 36)
+2026-01-10 09:49:41,136 - app.usecases.list_domains_queue - INFO - list_domains_queue.execute called with parsing_run_id=35e40edd-7182-4d45-a39f-55333c0d152b, keyword=None
+2026-01-10 09:49:41,136 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: filtering by parsing_run_id=35e40edd-7182-4d45-a39f-55333c0d152b
+2026-01-10 09:49:41,136 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: applied filters: parsing_run_id=35e40edd-7182-4d45-a39f-55333c0d152b
+2026-01-10 09:49:41,143 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: returning 87 entries (total=87) with filters: ['parsing_run_id=35e40edd-7182-4d45-a39f-55333c0d152b']
+2026-01-10 09:49:41,143 - app.usecases.list_domains_queue - INFO - list_domains_queue.execute returning 87 entries, total=87
+2026-01-10 09:49:41,143 - app.transport.routers.domains_queue - INFO - list_domains_queue_endpoint returning 87 entries, total=87
+INFO:     127.0.0.1:52031 - "GET /domains/queue?limit=1000&parsingRunId=35e40edd-7182-4d45-a39f-55333c0d152b HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61409 - "GET /moderator/suppliers?limit=1000 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58682 - "GET /moderator/suppliers?limit=1000 HTTP/1.1" 200 OK
+2026-01-10 09:50:22,729 - app.transport.routers.blacklist - INFO - Blacklist query: found 11 total entries, returning 11 entries
+2026-01-10 09:50:22,729 - app.transport.routers.blacklist - INFO - Returning 11 DTOs
+INFO:     127.0.0.1:61409 - "GET /moderator/blacklist?limit=1000 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58682 - "OPTIONS /parsing/runs/a0097613-61ab-4831-8d48-ef9c8cbfac8b HTTP/1.1" 200 OK
+2026-01-10 09:50:22,747 - app.main - INFO - [DEBUG MIDDLEWARE] Request to: OPTIONS /parsing/runs/a0097613-61ab-4831-8d48-ef9c8cbfac8b/logs
+2026-01-10 09:50:22,747 - app.main - INFO - [DEBUG MIDDLEWARE] Request scope path: /parsing/runs/a0097613-61ab-4831-8d48-ef9c8cbfac8b/logs
+2026-01-10 09:50:22,747 - app.main - INFO - [DEBUG MIDDLEWARE] Request scope method: OPTIONS
+2026-01-10 09:50:22,748 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: filtering by parsing_run_id=a0097613-61ab-4831-8d48-ef9c8cbfac8b
+2026-01-10 09:50:22,748 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: applied filters: parsing_run_id=a0097613-61ab-4831-8d48-ef9c8cbfac8b
+2026-01-10 09:50:22,749 - app.transport.routers.domains_queue - INFO - list_domains_queue_endpoint called with parsingRunId=a0097613-61ab-4831-8d48-ef9c8cbfac8b, keyword=None, status=None
+2026-01-10 09:50:22,749 - app.transport.routers.domains_queue - INFO - DEBUG: parsingRunId value: 'a0097613-61ab-4831-8d48-ef9c8cbfac8b' (type: <class 'str'>, len: 36)
+2026-01-10 09:50:22,749 - app.usecases.list_domains_queue - INFO - list_domains_queue.execute called with parsing_run_id=a0097613-61ab-4831-8d48-ef9c8cbfac8b, keyword=None
+2026-01-10 09:50:22,749 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: filtering by parsing_run_id=a0097613-61ab-4831-8d48-ef9c8cbfac8b
+2026-01-10 09:50:22,749 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: applied filters: parsing_run_id=a0097613-61ab-4831-8d48-ef9c8cbfac8b
+2026-01-10 09:50:22,750 - app.main - INFO - [DEBUG MIDDLEWARE] Response status: 200
+2026-01-10 09:50:22,750 - app.main - INFO - [DEBUG MIDDLEWARE] Response headers: {'vary': 'Origin', 'access-control-allow-methods': 'DELETE, GET, HEAD, OPTIONS, PATCH, POST, PUT', 'access-control-max-age': '600', 'access-control-allow-credentials': 'true', 'access-control-allow-origin': 'http://localhost:3000', 'access-control-allow-headers': 'content-type', 'content-length': '2', 'content-type': 'text/plain; charset=utf-8'}
+INFO:     127.0.0.1:56410 - "OPTIONS /parsing/runs/a0097613-61ab-4831-8d48-ef9c8cbfac8b/logs HTTP/1.1" 200 OK
+2026-01-10 09:50:22,750 - app.transport.routers.blacklist - INFO - Blacklist query: found 11 total entries, returning 11 entries
+2026-01-10 09:50:22,750 - app.transport.routers.blacklist - INFO - Returning 11 DTOs
+2026-01-10 09:50:22,752 - app.main - INFO - [DEBUG MIDDLEWARE] Request to: GET /parsing/runs/a0097613-61ab-4831-8d48-ef9c8cbfac8b/logs
+2026-01-10 09:50:22,752 - app.main - INFO - [DEBUG MIDDLEWARE] Request scope path: /parsing/runs/a0097613-61ab-4831-8d48-ef9c8cbfac8b/logs
+2026-01-10 09:50:22,752 - app.main - INFO - [DEBUG MIDDLEWARE] Request scope method: GET
+2026-01-10 09:50:22,752 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: returning 1 entries (total=50) with filters: ['parsing_run_id=a0097613-61ab-4831-8d48-ef9c8cbfac8b']
+2026-01-10 09:50:22,752 - app.transport.routers.parsing_runs - INFO - [LOGS ENDPOINT] get_parsing_logs_endpoint called with run_id=a0097613-61ab-4831-8d48-ef9c8cbfac8b
+2026-01-10 09:50:22,752 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: filtering by parsing_run_id=a0097613-61ab-4831-8d48-ef9c8cbfac8b
+2026-01-10 09:50:22,752 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: applied filters: parsing_run_id=a0097613-61ab-4831-8d48-ef9c8cbfac8b
+2026-01-10 09:50:22,752 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: returning 50 entries (total=50) with filters: ['parsing_run_id=a0097613-61ab-4831-8d48-ef9c8cbfac8b']
+2026-01-10 09:50:22,752 - app.usecases.list_domains_queue - INFO - list_domains_queue.execute returning 50 entries, total=50
+2026-01-10 09:50:22,752 - app.transport.routers.domains_queue - INFO - list_domains_queue_endpoint returning 50 entries, total=50
+INFO:     127.0.0.1:61409 - "GET /moderator/blacklist?limit=1000 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62262 - "GET /domains/queue?limit=1000&parsingRunId=a0097613-61ab-4831-8d48-ef9c8cbfac8b HTTP/1.1" 200 OK
+2026-01-10 09:50:22,752 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: returning 1 entries (total=50) with filters: ['parsing_run_id=a0097613-61ab-4831-8d48-ef9c8cbfac8b']
+2026-01-10 09:50:22,752 - app.transport.routers.domains_queue - INFO - list_domains_queue_endpoint called with parsingRunId=a0097613-61ab-4831-8d48-ef9c8cbfac8b, keyword=None, status=None
+2026-01-10 09:50:22,752 - app.transport.routers.domains_queue - INFO - DEBUG: parsingRunId value: 'a0097613-61ab-4831-8d48-ef9c8cbfac8b' (type: <class 'str'>, len: 36)
+2026-01-10 09:50:22,752 - app.usecases.list_domains_queue - INFO - list_domains_queue.execute called with parsing_run_id=a0097613-61ab-4831-8d48-ef9c8cbfac8b, keyword=None
+2026-01-10 09:50:22,752 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: filtering by parsing_run_id=a0097613-61ab-4831-8d48-ef9c8cbfac8b
+2026-01-10 09:50:22,752 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: applied filters: parsing_run_id=a0097613-61ab-4831-8d48-ef9c8cbfac8b
+2026-01-10 09:50:22,752 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: returning 50 entries (total=50) with filters: ['parsing_run_id=a0097613-61ab-4831-8d48-ef9c8cbfac8b']
+2026-01-10 09:50:22,752 - app.usecases.list_domains_queue - INFO - list_domains_queue.execute returning 50 entries, total=50
+2026-01-10 09:50:22,752 - app.transport.routers.domains_queue - INFO - list_domains_queue_endpoint returning 50 entries, total=50
+2026-01-10 09:50:22,752 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: filtering by parsing_run_id=a0097613-61ab-4831-8d48-ef9c8cbfac8b
+2026-01-10 09:50:22,752 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: applied filters: parsing_run_id=a0097613-61ab-4831-8d48-ef9c8cbfac8b
+INFO:     127.0.0.1:62262 - "GET /domains/queue?limit=1000&parsingRunId=a0097613-61ab-4831-8d48-ef9c8cbfac8b HTTP/1.1" 200 OK
+2026-01-10 09:50:22,767 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: returning 1 entries (total=50) with filters: ['parsing_run_id=a0097613-61ab-4831-8d48-ef9c8cbfac8b']
+INFO:     127.0.0.1:58682 - "GET /parsing/runs/a0097613-61ab-4831-8d48-ef9c8cbfac8b HTTP/1.1" 200 OK
+2026-01-10 09:50:22,767 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: filtering by parsing_run_id=a0097613-61ab-4831-8d48-ef9c8cbfac8b
+2026-01-10 09:50:22,767 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: applied filters: parsing_run_id=a0097613-61ab-4831-8d48-ef9c8cbfac8b
+2026-01-10 09:50:22,771 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: returning 1 entries (total=50) with filters: ['parsing_run_id=a0097613-61ab-4831-8d48-ef9c8cbfac8b']
+2026-01-10 09:50:22,771 - app.main - INFO - [DEBUG MIDDLEWARE] Response status: 200
+2026-01-10 09:50:22,771 - app.main - INFO - [DEBUG MIDDLEWARE] Response headers: {'content-length': '1300', 'content-type': 'application/json', 'access-control-allow-credentials': 'true', 'access-control-expose-headers': '*', 'access-control-allow-origin': 'http://localhost:3000', 'vary': 'Origin'}
+INFO:     127.0.0.1:56410 - "GET /parsing/runs/a0097613-61ab-4831-8d48-ef9c8cbfac8b/logs HTTP/1.1" 200 OK
+2026-01-10 09:50:22,771 - app.main - INFO - [DEBUG MIDDLEWARE] Request to: GET /parsing/runs/a0097613-61ab-4831-8d48-ef9c8cbfac8b/logs
+2026-01-10 09:50:22,771 - app.main - INFO - [DEBUG MIDDLEWARE] Request scope path: /parsing/runs/a0097613-61ab-4831-8d48-ef9c8cbfac8b/logs
+2026-01-10 09:50:22,774 - app.main - INFO - [DEBUG MIDDLEWARE] Request scope method: GET
+2026-01-10 09:50:22,774 - app.transport.routers.parsing_runs - INFO - [LOGS ENDPOINT] get_parsing_logs_endpoint called with run_id=a0097613-61ab-4831-8d48-ef9c8cbfac8b
+2026-01-10 09:50:22,774 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: filtering by parsing_run_id=a0097613-61ab-4831-8d48-ef9c8cbfac8b
+2026-01-10 09:50:22,774 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: applied filters: parsing_run_id=a0097613-61ab-4831-8d48-ef9c8cbfac8b
+2026-01-10 09:50:22,776 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: returning 1 entries (total=50) with filters: ['parsing_run_id=a0097613-61ab-4831-8d48-ef9c8cbfac8b']
+2026-01-10 09:50:22,776 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: filtering by parsing_run_id=a0097613-61ab-4831-8d48-ef9c8cbfac8b
+2026-01-10 09:50:22,776 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: applied filters: parsing_run_id=a0097613-61ab-4831-8d48-ef9c8cbfac8b
+2026-01-10 09:50:22,778 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: returning 1 entries (total=50) with filters: ['parsing_run_id=a0097613-61ab-4831-8d48-ef9c8cbfac8b']
+INFO:     127.0.0.1:58682 - "GET /parsing/runs/a0097613-61ab-4831-8d48-ef9c8cbfac8b HTTP/1.1" 200 OK
+2026-01-10 09:50:22,784 - app.main - INFO - [DEBUG MIDDLEWARE] Response status: 200
+2026-01-10 09:50:22,784 - app.main - INFO - [DEBUG MIDDLEWARE] Response headers: {'content-length': '1300', 'content-type': 'application/json', 'access-control-allow-credentials': 'true', 'access-control-expose-headers': '*', 'access-control-allow-origin': 'http://localhost:3000', 'vary': 'Origin'}
+INFO:     127.0.0.1:56410 - "GET /parsing/runs/a0097613-61ab-4831-8d48-ef9c8cbfac8b/logs HTTP/1.1" 200 OK
+2026-01-10 09:50:22,911 - app.main - INFO - [DEBUG MIDDLEWARE] Request to: GET /parsing/runs/a0097613-61ab-4831-8d48-ef9c8cbfac8b/logs
+2026-01-10 09:50:22,911 - app.main - INFO - [DEBUG MIDDLEWARE] Request scope path: /parsing/runs/a0097613-61ab-4831-8d48-ef9c8cbfac8b/logs
+2026-01-10 09:50:22,911 - app.main - INFO - [DEBUG MIDDLEWARE] Request scope method: GET
+INFO:     127.0.0.1:56410 - "OPTIONS /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+2026-01-10 09:50:22,912 - app.transport.routers.parsing_runs - INFO - [LOGS ENDPOINT] get_parsing_logs_endpoint called with run_id=a0097613-61ab-4831-8d48-ef9c8cbfac8b
+2026-01-10 09:50:22,912 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: filtering by parsing_run_id=a0097613-61ab-4831-8d48-ef9c8cbfac8b
+2026-01-10 09:50:22,912 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: applied filters: parsing_run_id=a0097613-61ab-4831-8d48-ef9c8cbfac8b
+2026-01-10 09:50:22,915 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: returning 1 entries (total=50) with filters: ['parsing_run_id=a0097613-61ab-4831-8d48-ef9c8cbfac8b']
+INFO:     127.0.0.1:62262 - "GET /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+2026-01-10 09:50:22,920 - app.main - INFO - [DEBUG MIDDLEWARE] Response status: 200
+2026-01-10 09:50:22,920 - app.main - INFO - [DEBUG MIDDLEWARE] Response headers: {'content-length': '1300', 'content-type': 'application/json', 'access-control-allow-credentials': 'true', 'access-control-expose-headers': '*', 'access-control-allow-origin': 'http://localhost:3000', 'vary': 'Origin'}
+INFO:     127.0.0.1:58682 - "GET /parsing/runs/a0097613-61ab-4831-8d48-ef9c8cbfac8b/logs HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58682 - "GET /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58682 - "GET /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58682 - "GET /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58682 - "GET /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58682 - "GET /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52088 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58682 - "GET /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+2026-01-10 09:50:35,845 - app.main - INFO - [DEBUG MIDDLEWARE] INN extraction request: OPTIONS /inn-extraction/extract-batch
+2026-01-10 09:50:35,846 - app.main - INFO - [DEBUG MIDDLEWARE] Available routes: ['/openapi.json', '/docs', '/docs/oauth2-redirect', '/redoc', '/', '/debug/routes', '/debug/all-routes', '/health', '/moderator/suppliers-empty', '/moderator/suppliers-debug']
+2026-01-10 09:50:35,846 - app.main - INFO - [DEBUG MIDDLEWARE] INN extraction request: OPTIONS /inn-extraction/extract-batch
+2026-01-10 09:50:35,846 - app.main - INFO - [DEBUG MIDDLEWARE] Available routes: ['/openapi.json', '/docs', '/docs/oauth2-redirect', '/redoc', '/', '/debug/routes', '/debug/all-routes', '/health', '/moderator/suppliers-empty', '/moderator/suppliers-debug']
+INFO:     127.0.0.1:58682 - "OPTIONS /inn-extraction/extract-batch HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53290 - "OPTIONS /inn-extraction/extract-batch HTTP/1.1" 200 OK
+2026-01-10 09:50:35,848 - app.main - INFO - [DEBUG MIDDLEWARE] INN extraction request: POST /inn-extraction/extract-batch
+2026-01-10 09:50:35,848 - app.main - INFO - [DEBUG MIDDLEWARE] Available routes: ['/openapi.json', '/docs', '/docs/oauth2-redirect', '/redoc', '/', '/debug/routes', '/debug/all-routes', '/health', '/moderator/suppliers-empty', '/moderator/suppliers-debug']
+2026-01-10 09:50:35,848 - app.main - INFO - [DEBUG MIDDLEWARE] INN extraction request: POST /inn-extraction/extract-batch
+2026-01-10 09:50:35,848 - app.main - INFO - [DEBUG MIDDLEWARE] Available routes: ['/openapi.json', '/docs', '/docs/oauth2-redirect', '/redoc', '/', '/debug/routes', '/debug/all-routes', '/health', '/moderator/suppliers-empty', '/moderator/suppliers-debug']
+2026-01-10 09:50:35,849 - app.transport.routers.inn_extraction - INFO - Received INN extraction request for 1 domains: ['kranikoff.ru']
+2026-01-10 09:50:35,849 - app.usecases.extract_inn_batch - INFO - === Starting batch INN extraction for 1 domains ===
+2026-01-10 09:50:35,849 - app.usecases.extract_inn_batch - INFO - Domains: ['kranikoff.ru']
+2026-01-10 09:50:36,676 - app.transport.routers.inn_extraction - INFO - Received INN extraction request for 1 domains: ['kranikoff.ru']
+2026-01-10 09:50:36,676 - app.usecases.extract_inn_batch - INFO - === Starting batch INN extraction for 1 domains ===
+2026-01-10 09:50:36,676 - app.usecases.extract_inn_batch - INFO - Domains: ['kranikoff.ru']
+2026-01-10 09:50:37,502 - app.usecases.extract_inn_batch - INFO - Starting interactive INN search for domain kranikoff.ru from URL https://kranikoff.ru/store/1-truby-i-fitingi-dlya-vodosnabzheniya-i-otopleniya/flancy-i-prokladki-k-nim
+2026-01-10 09:50:37,503 - app.usecases.extract_inn_batch - ERROR - Failed to import InteractiveINNFinder: No module named 'app.agents', No module named 'ollama_inn_extractor'. Make sure ollama_inn_extractor is in path: d:\tryagain\ollama_inn_extractor
+2026-01-10 09:50:37,503 - app.usecases.extract_inn_batch - ERROR - Current sys.path: ['d:\\tryagain\\backend', 'C:\\Users\\admin\\AppData\\Local\\Programs\\Python\\Python312\\python312.zip', 'C:\\Users\\admin\\AppData\\Local\\Programs\\Python\\Python312\\DLLs', 'C:\\Users\\admin\\AppData\\Local\\Programs\\Python\\Python312\\Lib', 'C:\\Users\\admin\\AppData\\Local\\Programs\\Python\\Python312']
+2026-01-10 09:50:37,503 - app.usecases.extract_inn_batch - ERROR - Error in interactive INN search for kranikoff.ru: No module named 'ollama_inn_extractor'
+Traceback (most recent call last):
+  File "d:\tryagain\backend\app\usecases\extract_inn_batch.py", line 89, in extract_inn_for_domain
+    from app.agents.interactive_inn_finder import InteractiveINNFinder
+ModuleNotFoundError: No module named 'app.agents'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "d:\tryagain\backend\app\usecases\extract_inn_batch.py", line 95, in extract_inn_for_domain
+    from ollama_inn_extractor.app.agents.interactive_inn_finder import InteractiveINNFinder
+ModuleNotFoundError: No module named 'ollama_inn_extractor'
+2026-01-10 09:50:37,504 - app.usecases.extract_inn_batch - INFO - === Batch INN extraction completed ===
+2026-01-10 09:50:37,504 - app.usecases.extract_inn_batch - INFO - Statistics: total=1, successful=0, failed=1, not_found=0
+2026-01-10 09:50:37,504 - app.usecases.extract_inn_batch - WARNING - \u2717 kranikoff.ru: Error - Failed to extract INN interactively: No module named 'ollama_inn_extractor'
+2026-01-10 09:50:37,508 - app.transport.routers.inn_extraction - INFO - INN extraction completed: processed=1, successful=0, failed=1
+2026-01-10 09:50:37,508 - app.usecases.extract_inn_batch - INFO - Starting interactive INN search for domain kranikoff.ru from URL https://kranikoff.ru/store/1-truby-i-fitingi-dlya-vodosnabzheniya-i-otopleniya/flancy-i-prokladki-k-nim
+2026-01-10 09:50:37,509 - app.usecases.extract_inn_batch - ERROR - Failed to import InteractiveINNFinder: No module named 'app.agents', No module named 'ollama_inn_extractor'. Make sure ollama_inn_extractor is in path: d:\tryagain\ollama_inn_extractor
+2026-01-10 09:50:37,509 - app.usecases.extract_inn_batch - ERROR - Current sys.path: ['d:\\tryagain\\backend', 'C:\\Users\\admin\\AppData\\Local\\Programs\\Python\\Python312\\python312.zip', 'C:\\Users\\admin\\AppData\\Local\\Programs\\Python\\Python312\\DLLs', 'C:\\Users\\admin\\AppData\\Local\\Programs\\Python\\Python312\\Lib', 'C:\\Users\\admin\\AppData\\Local\\Programs\\Python\\Python312']
+2026-01-10 09:50:37,509 - app.usecases.extract_inn_batch - ERROR - Error in interactive INN search for kranikoff.ru: No module named 'ollama_inn_extractor'
+Traceback (most recent call last):
+  File "d:\tryagain\backend\app\usecases\extract_inn_batch.py", line 89, in extract_inn_for_domain
+    from app.agents.interactive_inn_finder import InteractiveINNFinder
+ModuleNotFoundError: No module named 'app.agents'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "d:\tryagain\backend\app\usecases\extract_inn_batch.py", line 95, in extract_inn_for_domain
+    from ollama_inn_extractor.app.agents.interactive_inn_finder import InteractiveINNFinder
+ModuleNotFoundError: No module named 'ollama_inn_extractor'
+2026-01-10 09:50:37,510 - app.usecases.extract_inn_batch - INFO - === Batch INN extraction completed ===
+2026-01-10 09:50:37,510 - app.usecases.extract_inn_batch - INFO - Statistics: total=1, successful=0, failed=1, not_found=0
+2026-01-10 09:50:37,510 - app.usecases.extract_inn_batch - WARNING - \u2717 kranikoff.ru: Error - Failed to extract INN interactively: No module named 'ollama_inn_extractor'
+2026-01-10 09:50:37,513 - app.transport.routers.inn_extraction - INFO - INN extraction completed: processed=1, successful=0, failed=1
+INFO:     127.0.0.1:58682 - "POST /inn-extraction/extract-batch HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53290 - "GET /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61142 - "POST /inn-extraction/extract-batch HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53290 - "GET /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61148 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53290 - "GET /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53290 - "GET /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53290 - "GET /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53290 - "GET /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+2026-01-10 09:50:47,593 - app.main - INFO - [DEBUG MIDDLEWARE] INN extraction request: POST /inn-extraction/extract-batch
+2026-01-10 09:50:47,593 - app.main - INFO - [DEBUG MIDDLEWARE] Available routes: ['/openapi.json', '/docs', '/docs/oauth2-redirect', '/redoc', '/', '/debug/routes', '/debug/all-routes', '/health', '/moderator/suppliers-empty', '/moderator/suppliers-debug']
+2026-01-10 09:50:47,594 - app.transport.routers.inn_extraction - INFO - Received INN extraction request for 1 domains: ['kranikoff.ru']
+2026-01-10 09:50:47,594 - app.usecases.extract_inn_batch - INFO - === Starting batch INN extraction for 1 domains ===
+2026-01-10 09:50:47,594 - app.usecases.extract_inn_batch - INFO - Domains: ['kranikoff.ru']
+2026-01-10 09:50:48,338 - app.usecases.extract_inn_batch - INFO - Starting interactive INN search for domain kranikoff.ru from URL https://kranikoff.ru/store/1-truby-i-fitingi-dlya-vodosnabzheniya-i-otopleniya/flancy-i-prokladki-k-nim
+2026-01-10 09:50:48,338 - app.usecases.extract_inn_batch - ERROR - Failed to import InteractiveINNFinder: No module named 'app.agents', No module named 'ollama_inn_extractor'. Make sure ollama_inn_extractor is in path: d:\tryagain\ollama_inn_extractor
+2026-01-10 09:50:48,338 - app.usecases.extract_inn_batch - ERROR - Current sys.path: ['d:\\tryagain\\backend', 'C:\\Users\\admin\\AppData\\Local\\Programs\\Python\\Python312\\python312.zip', 'C:\\Users\\admin\\AppData\\Local\\Programs\\Python\\Python312\\DLLs', 'C:\\Users\\admin\\AppData\\Local\\Programs\\Python\\Python312\\Lib', 'C:\\Users\\admin\\AppData\\Local\\Programs\\Python\\Python312']
+2026-01-10 09:50:48,343 - app.usecases.extract_inn_batch - ERROR - Error in interactive INN search for kranikoff.ru: No module named 'ollama_inn_extractor'
+Traceback (most recent call last):
+  File "d:\tryagain\backend\app\usecases\extract_inn_batch.py", line 89, in extract_inn_for_domain
+    from app.agents.interactive_inn_finder import InteractiveINNFinder
+ModuleNotFoundError: No module named 'app.agents'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "d:\tryagain\backend\app\usecases\extract_inn_batch.py", line 95, in extract_inn_for_domain
+    from ollama_inn_extractor.app.agents.interactive_inn_finder import InteractiveINNFinder
+ModuleNotFoundError: No module named 'ollama_inn_extractor'
+2026-01-10 09:50:48,343 - app.usecases.extract_inn_batch - INFO - === Batch INN extraction completed ===
+2026-01-10 09:50:48,343 - app.usecases.extract_inn_batch - INFO - Statistics: total=1, successful=0, failed=1, not_found=0
+2026-01-10 09:50:48,343 - app.usecases.extract_inn_batch - WARNING - \u2717 kranikoff.ru: Error - Failed to extract INN interactively: No module named 'ollama_inn_extractor'
+2026-01-10 09:50:48,345 - app.transport.routers.inn_extraction - INFO - INN extraction completed: processed=1, successful=0, failed=1
+INFO:     127.0.0.1:53290 - "POST /inn-extraction/extract-batch HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53290 - "GET /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53290 - "GET /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53290 - "GET /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53290 - "GET /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53290 - "GET /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53290 - "GET /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53290 - "GET /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53290 - "GET /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53290 - "GET /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53290 - "GET /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53290 - "GET /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53290 - "GET /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53290 - "GET /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53290 - "GET /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53290 - "GET /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53290 - "GET /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53290 - "GET /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53290 - "GET /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53290 - "GET /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53290 - "GET /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53290 - "GET /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53290 - "GET /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53290 - "GET /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53290 - "GET /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60258 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53290 - "GET /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53290 - "GET /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60265 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53290 - "GET /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53290 - "GET /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53290 - "GET /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53290 - "GET /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53290 - "GET /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53290 - "GET /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53290 - "GET /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53290 - "GET /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53290 - "GET /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53290 - "GET /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53290 - "GET /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53290 - "GET /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53290 - "GET /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53290 - "GET /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53290 - "GET /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53290 - "GET /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53290 - "GET /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53290 - "GET /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53290 - "GET /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53290 - "GET /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53290 - "GET /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53290 - "GET /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53290 - "GET /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53290 - "GET /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53290 - "GET /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53290 - "GET /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53290 - "GET /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53290 - "GET /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50217 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53290 - "GET /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53290 - "GET /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50225 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53290 - "GET /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53290 - "GET /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53290 - "GET /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53290 - "GET /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53290 - "GET /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53290 - "GET /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53290 - "GET /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53290 - "GET /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53290 - "GET /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53290 - "GET /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53290 - "GET /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53290 - "GET /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53290 - "GET /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53290 - "GET /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53290 - "GET /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53290 - "GET /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53290 - "GET /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53290 - "GET /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53290 - "GET /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53290 - "GET /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53290 - "GET /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53290 - "GET /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53290 - "GET /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60668 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51517 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49310 - "GET /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58640 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58651 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51660 - "GET /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49522 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49530 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49757 - "GET /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65216 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65222 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65229 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62640 - "GET /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56440 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58155 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51309 - "GET /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56844 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56868 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56878 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56900 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50089 - "GET /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61637 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61652 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55775 - "OPTIONS /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55775 - "GET /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56560 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56569 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55948 - "GET /comet/status/a0097613-61ab-4831-8d48-ef9c8cbfac8b?cometRunId=comet_20260109_191102_f331b5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59396 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59427 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59496 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56999 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57071 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59392 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59416 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59455 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60448 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60475 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60513 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62792 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62860 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60842 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51352 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51365 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51421 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56519 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56563 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56574 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56598 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56621 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49332 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62307 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51801 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50984 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60301 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57020 - "OPTIONS /moderator/suppliers?limit=1000 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56487 - "OPTIONS /parsing/runs?limit=1&status=running HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61211 - "OPTIONS /moderator/blacklist?limit=1000 HTTP/1.1" 200 OK
+2026-01-10 10:09:47,992 - app.transport.routers.blacklist - INFO - Blacklist query: found 11 total entries, returning 11 entries
+2026-01-10 10:09:47,992 - app.transport.routers.blacklist - INFO - Returning 11 DTOs
+INFO:     127.0.0.1:56487 - "GET /moderator/blacklist?limit=1000 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61211 - "GET /parsing/runs?limit=1&status=running HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57020 - "GET /moderator/suppliers?limit=1000 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57020 - "OPTIONS /parsing/runs?limit=10&sort=created_at&order=desc HTTP/1.1" 200 OK
+2026-01-10 10:09:48,056 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: filtering by parsing_run_id=a0097613-61ab-4831-8d48-ef9c8cbfac8b
+2026-01-10 10:09:48,056 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: applied filters: parsing_run_id=a0097613-61ab-4831-8d48-ef9c8cbfac8b
+2026-01-10 10:09:48,057 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: returning 1 entries (total=50) with filters: ['parsing_run_id=a0097613-61ab-4831-8d48-ef9c8cbfac8b']
+2026-01-10 10:09:48,058 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: filtering by parsing_run_id=8e58c4f2-a61c-4975-a19c-f838f58890fa
+2026-01-10 10:09:48,058 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: applied filters: parsing_run_id=8e58c4f2-a61c-4975-a19c-f838f58890fa
+2026-01-10 10:09:48,059 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: returning 1 entries (total=57) with filters: ['parsing_run_id=8e58c4f2-a61c-4975-a19c-f838f58890fa']
+2026-01-10 10:09:48,059 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: filtering by parsing_run_id=37f2a7d4-0018-4328-ae77-c5c62be6ad11
+2026-01-10 10:09:48,059 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: applied filters: parsing_run_id=37f2a7d4-0018-4328-ae77-c5c62be6ad11
+2026-01-10 10:09:48,060 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: returning 0 entries (total=0) with filters: ['parsing_run_id=37f2a7d4-0018-4328-ae77-c5c62be6ad11']
+2026-01-10 10:09:48,060 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: filtering by parsing_run_id=016daaab-9cd9-405a-ac90-bbc80ffcc2a5
+2026-01-10 10:09:48,060 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: applied filters: parsing_run_id=016daaab-9cd9-405a-ac90-bbc80ffcc2a5
+2026-01-10 10:09:48,061 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: returning 0 entries (total=0) with filters: ['parsing_run_id=016daaab-9cd9-405a-ac90-bbc80ffcc2a5']
+2026-01-10 10:09:48,061 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: filtering by parsing_run_id=e94fd388-c23c-4d7a-b174-c02221448f08
+2026-01-10 10:09:48,061 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: applied filters: parsing_run_id=e94fd388-c23c-4d7a-b174-c02221448f08
+2026-01-10 10:09:48,061 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: returning 1 entries (total=17) with filters: ['parsing_run_id=e94fd388-c23c-4d7a-b174-c02221448f08']
+2026-01-10 10:09:48,061 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: filtering by parsing_run_id=aa19272a-7371-41ae-898d-bb99f5a1228d
+2026-01-10 10:09:48,061 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: applied filters: parsing_run_id=aa19272a-7371-41ae-898d-bb99f5a1228d
+2026-01-10 10:09:48,062 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: returning 1 entries (total=17) with filters: ['parsing_run_id=aa19272a-7371-41ae-898d-bb99f5a1228d']
+2026-01-10 10:09:48,062 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: filtering by parsing_run_id=0475ae12-de36-4e36-8c10-89db784aba08
+2026-01-10 10:09:48,062 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: applied filters: parsing_run_id=0475ae12-de36-4e36-8c10-89db784aba08
+2026-01-10 10:09:48,063 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: returning 1 entries (total=17) with filters: ['parsing_run_id=0475ae12-de36-4e36-8c10-89db784aba08']
+2026-01-10 10:09:48,064 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: filtering by parsing_run_id=7421cc44-5f3f-480a-a888-b3ab2c4e194d
+2026-01-10 10:09:48,064 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: applied filters: parsing_run_id=7421cc44-5f3f-480a-a888-b3ab2c4e194d
+2026-01-10 10:09:48,065 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: returning 0 entries (total=0) with filters: ['parsing_run_id=7421cc44-5f3f-480a-a888-b3ab2c4e194d']
+2026-01-10 10:09:48,066 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: filtering by parsing_run_id=35e40edd-7182-4d45-a39f-55333c0d152b
+2026-01-10 10:09:48,066 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: applied filters: parsing_run_id=35e40edd-7182-4d45-a39f-55333c0d152b
+2026-01-10 10:09:48,067 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: returning 1 entries (total=87) with filters: ['parsing_run_id=35e40edd-7182-4d45-a39f-55333c0d152b']
+INFO:     127.0.0.1:57020 - "GET /parsing/runs?limit=10&sort=created_at&order=desc HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57020 - "OPTIONS /parsing/runs?limit=50&status=completed&sort=created_at&order=desc HTTP/1.1" 200 OK
+2026-01-10 10:09:48,077 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: filtering by parsing_run_id=a0097613-61ab-4831-8d48-ef9c8cbfac8b
+2026-01-10 10:09:48,077 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: applied filters: parsing_run_id=a0097613-61ab-4831-8d48-ef9c8cbfac8b
+2026-01-10 10:09:48,078 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: returning 1 entries (total=50) with filters: ['parsing_run_id=a0097613-61ab-4831-8d48-ef9c8cbfac8b']
+2026-01-10 10:09:48,078 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: filtering by parsing_run_id=8e58c4f2-a61c-4975-a19c-f838f58890fa
+2026-01-10 10:09:48,078 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: applied filters: parsing_run_id=8e58c4f2-a61c-4975-a19c-f838f58890fa
+2026-01-10 10:09:48,079 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: returning 1 entries (total=57) with filters: ['parsing_run_id=8e58c4f2-a61c-4975-a19c-f838f58890fa']
+2026-01-10 10:09:48,079 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: filtering by parsing_run_id=e94fd388-c23c-4d7a-b174-c02221448f08
+2026-01-10 10:09:48,079 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: applied filters: parsing_run_id=e94fd388-c23c-4d7a-b174-c02221448f08
+2026-01-10 10:09:48,081 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: returning 1 entries (total=17) with filters: ['parsing_run_id=e94fd388-c23c-4d7a-b174-c02221448f08']
+2026-01-10 10:09:48,081 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: filtering by parsing_run_id=aa19272a-7371-41ae-898d-bb99f5a1228d
+2026-01-10 10:09:48,081 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: applied filters: parsing_run_id=aa19272a-7371-41ae-898d-bb99f5a1228d
+2026-01-10 10:09:48,082 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: returning 1 entries (total=17) with filters: ['parsing_run_id=aa19272a-7371-41ae-898d-bb99f5a1228d']
+2026-01-10 10:09:48,082 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: filtering by parsing_run_id=0475ae12-de36-4e36-8c10-89db784aba08
+2026-01-10 10:09:48,082 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: applied filters: parsing_run_id=0475ae12-de36-4e36-8c10-89db784aba08
+2026-01-10 10:09:48,083 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: returning 1 entries (total=17) with filters: ['parsing_run_id=0475ae12-de36-4e36-8c10-89db784aba08']
+2026-01-10 10:09:48,083 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: filtering by parsing_run_id=35e40edd-7182-4d45-a39f-55333c0d152b
+2026-01-10 10:09:48,083 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: applied filters: parsing_run_id=35e40edd-7182-4d45-a39f-55333c0d152b
+2026-01-10 10:09:48,084 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: returning 1 entries (total=87) with filters: ['parsing_run_id=35e40edd-7182-4d45-a39f-55333c0d152b']
+INFO:     127.0.0.1:57020 - "GET /parsing/runs?limit=50&status=completed&sort=created_at&order=desc HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57020 - "OPTIONS /domains/queue?limit=1000&parsingRunId=a0097613-61ab-4831-8d48-ef9c8cbfac8b HTTP/1.1" 200 OK
+2026-01-10 10:09:48,089 - app.transport.routers.domains_queue - INFO - list_domains_queue_endpoint called with parsingRunId=a0097613-61ab-4831-8d48-ef9c8cbfac8b, keyword=None, status=None
+2026-01-10 10:09:48,089 - app.transport.routers.domains_queue - INFO - DEBUG: parsingRunId value: 'a0097613-61ab-4831-8d48-ef9c8cbfac8b' (type: <class 'str'>, len: 36)
+2026-01-10 10:09:48,089 - app.usecases.list_domains_queue - INFO - list_domains_queue.execute called with parsing_run_id=a0097613-61ab-4831-8d48-ef9c8cbfac8b, keyword=None
+2026-01-10 10:09:48,089 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: filtering by parsing_run_id=a0097613-61ab-4831-8d48-ef9c8cbfac8b
+2026-01-10 10:09:48,089 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: applied filters: parsing_run_id=a0097613-61ab-4831-8d48-ef9c8cbfac8b
+2026-01-10 10:09:48,091 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: returning 50 entries (total=50) with filters: ['parsing_run_id=a0097613-61ab-4831-8d48-ef9c8cbfac8b']
+2026-01-10 10:09:48,091 - app.usecases.list_domains_queue - INFO - list_domains_queue.execute returning 50 entries, total=50
+2026-01-10 10:09:48,091 - app.transport.routers.domains_queue - INFO - list_domains_queue_endpoint returning 50 entries, total=50
+INFO:     127.0.0.1:57020 - "GET /domains/queue?limit=1000&parsingRunId=a0097613-61ab-4831-8d48-ef9c8cbfac8b HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57020 - "OPTIONS /domains/queue?limit=1000&parsingRunId=8e58c4f2-a61c-4975-a19c-f838f58890fa HTTP/1.1" 200 OK
+2026-01-10 10:09:48,096 - app.transport.routers.domains_queue - INFO - list_domains_queue_endpoint called with parsingRunId=8e58c4f2-a61c-4975-a19c-f838f58890fa, keyword=None, status=None
+2026-01-10 10:09:48,096 - app.transport.routers.domains_queue - INFO - DEBUG: parsingRunId value: '8e58c4f2-a61c-4975-a19c-f838f58890fa' (type: <class 'str'>, len: 36)
+2026-01-10 10:09:48,096 - app.usecases.list_domains_queue - INFO - list_domains_queue.execute called with parsing_run_id=8e58c4f2-a61c-4975-a19c-f838f58890fa, keyword=None
+2026-01-10 10:09:48,097 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: filtering by parsing_run_id=8e58c4f2-a61c-4975-a19c-f838f58890fa
+2026-01-10 10:09:48,097 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: applied filters: parsing_run_id=8e58c4f2-a61c-4975-a19c-f838f58890fa
+2026-01-10 10:09:48,097 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: returning 57 entries (total=57) with filters: ['parsing_run_id=8e58c4f2-a61c-4975-a19c-f838f58890fa']
+2026-01-10 10:09:48,097 - app.usecases.list_domains_queue - INFO - list_domains_queue.execute returning 57 entries, total=57
+2026-01-10 10:09:48,097 - app.transport.routers.domains_queue - INFO - list_domains_queue_endpoint returning 57 entries, total=57
+INFO:     127.0.0.1:57020 - "GET /domains/queue?limit=1000&parsingRunId=8e58c4f2-a61c-4975-a19c-f838f58890fa HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57020 - "OPTIONS /domains/queue?limit=1000&parsingRunId=e94fd388-c23c-4d7a-b174-c02221448f08 HTTP/1.1" 200 OK
+2026-01-10 10:09:48,105 - app.transport.routers.domains_queue - INFO - list_domains_queue_endpoint called with parsingRunId=e94fd388-c23c-4d7a-b174-c02221448f08, keyword=None, status=None
+2026-01-10 10:09:48,105 - app.transport.routers.domains_queue - INFO - DEBUG: parsingRunId value: 'e94fd388-c23c-4d7a-b174-c02221448f08' (type: <class 'str'>, len: 36)
+2026-01-10 10:09:48,105 - app.usecases.list_domains_queue - INFO - list_domains_queue.execute called with parsing_run_id=e94fd388-c23c-4d7a-b174-c02221448f08, keyword=None
+2026-01-10 10:09:48,105 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: filtering by parsing_run_id=e94fd388-c23c-4d7a-b174-c02221448f08
+2026-01-10 10:09:48,105 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: applied filters: parsing_run_id=e94fd388-c23c-4d7a-b174-c02221448f08
+2026-01-10 10:09:48,107 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: returning 17 entries (total=17) with filters: ['parsing_run_id=e94fd388-c23c-4d7a-b174-c02221448f08']
+2026-01-10 10:09:48,107 - app.usecases.list_domains_queue - INFO - list_domains_queue.execute returning 17 entries, total=17
+2026-01-10 10:09:48,107 - app.transport.routers.domains_queue - INFO - list_domains_queue_endpoint returning 17 entries, total=17
+INFO:     127.0.0.1:57020 - "GET /domains/queue?limit=1000&parsingRunId=e94fd388-c23c-4d7a-b174-c02221448f08 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57020 - "OPTIONS /domains/queue?limit=1000&parsingRunId=aa19272a-7371-41ae-898d-bb99f5a1228d HTTP/1.1" 200 OK
+2026-01-10 10:09:48,112 - app.transport.routers.domains_queue - INFO - list_domains_queue_endpoint called with parsingRunId=aa19272a-7371-41ae-898d-bb99f5a1228d, keyword=None, status=None
+2026-01-10 10:09:48,112 - app.transport.routers.domains_queue - INFO - DEBUG: parsingRunId value: 'aa19272a-7371-41ae-898d-bb99f5a1228d' (type: <class 'str'>, len: 36)
+2026-01-10 10:09:48,112 - app.usecases.list_domains_queue - INFO - list_domains_queue.execute called with parsing_run_id=aa19272a-7371-41ae-898d-bb99f5a1228d, keyword=None
+2026-01-10 10:09:48,112 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: filtering by parsing_run_id=aa19272a-7371-41ae-898d-bb99f5a1228d
+2026-01-10 10:09:48,112 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: applied filters: parsing_run_id=aa19272a-7371-41ae-898d-bb99f5a1228d
+2026-01-10 10:09:48,114 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: returning 17 entries (total=17) with filters: ['parsing_run_id=aa19272a-7371-41ae-898d-bb99f5a1228d']
+2026-01-10 10:09:48,114 - app.usecases.list_domains_queue - INFO - list_domains_queue.execute returning 17 entries, total=17
+2026-01-10 10:09:48,114 - app.transport.routers.domains_queue - INFO - list_domains_queue_endpoint returning 17 entries, total=17
+INFO:     127.0.0.1:57020 - "GET /domains/queue?limit=1000&parsingRunId=aa19272a-7371-41ae-898d-bb99f5a1228d HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57020 - "OPTIONS /domains/queue?limit=1000&parsingRunId=0475ae12-de36-4e36-8c10-89db784aba08 HTTP/1.1" 200 OK
+2026-01-10 10:09:48,119 - app.transport.routers.domains_queue - INFO - list_domains_queue_endpoint called with parsingRunId=0475ae12-de36-4e36-8c10-89db784aba08, keyword=None, status=None
+2026-01-10 10:09:48,119 - app.transport.routers.domains_queue - INFO - DEBUG: parsingRunId value: '0475ae12-de36-4e36-8c10-89db784aba08' (type: <class 'str'>, len: 36)
+2026-01-10 10:09:48,119 - app.usecases.list_domains_queue - INFO - list_domains_queue.execute called with parsing_run_id=0475ae12-de36-4e36-8c10-89db784aba08, keyword=None
+2026-01-10 10:09:48,119 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: filtering by parsing_run_id=0475ae12-de36-4e36-8c10-89db784aba08
+2026-01-10 10:09:48,119 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: applied filters: parsing_run_id=0475ae12-de36-4e36-8c10-89db784aba08
+2026-01-10 10:09:48,121 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: returning 17 entries (total=17) with filters: ['parsing_run_id=0475ae12-de36-4e36-8c10-89db784aba08']
+2026-01-10 10:09:48,121 - app.usecases.list_domains_queue - INFO - list_domains_queue.execute returning 17 entries, total=17
+2026-01-10 10:09:48,121 - app.transport.routers.domains_queue - INFO - list_domains_queue_endpoint returning 17 entries, total=17
+INFO:     127.0.0.1:57020 - "GET /domains/queue?limit=1000&parsingRunId=0475ae12-de36-4e36-8c10-89db784aba08 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57020 - "OPTIONS /domains/queue?limit=1000&parsingRunId=35e40edd-7182-4d45-a39f-55333c0d152b HTTP/1.1" 200 OK
+2026-01-10 10:09:48,126 - app.transport.routers.domains_queue - INFO - list_domains_queue_endpoint called with parsingRunId=35e40edd-7182-4d45-a39f-55333c0d152b, keyword=None, status=None
+2026-01-10 10:09:48,126 - app.transport.routers.domains_queue - INFO - DEBUG: parsingRunId value: '35e40edd-7182-4d45-a39f-55333c0d152b' (type: <class 'str'>, len: 36)
+2026-01-10 10:09:48,126 - app.usecases.list_domains_queue - INFO - list_domains_queue.execute called with parsing_run_id=35e40edd-7182-4d45-a39f-55333c0d152b, keyword=None
+2026-01-10 10:09:48,126 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: filtering by parsing_run_id=35e40edd-7182-4d45-a39f-55333c0d152b
+2026-01-10 10:09:48,126 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: applied filters: parsing_run_id=35e40edd-7182-4d45-a39f-55333c0d152b
+2026-01-10 10:09:48,126 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: returning 87 entries (total=87) with filters: ['parsing_run_id=35e40edd-7182-4d45-a39f-55333c0d152b']
+2026-01-10 10:09:48,126 - app.usecases.list_domains_queue - INFO - list_domains_queue.execute returning 87 entries, total=87
+2026-01-10 10:09:48,126 - app.transport.routers.domains_queue - INFO - list_domains_queue_endpoint returning 87 entries, total=87
+INFO:     127.0.0.1:57020 - "GET /domains/queue?limit=1000&parsingRunId=35e40edd-7182-4d45-a39f-55333c0d152b HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57841 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51276 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53300 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60293 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56333 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51550 - "GET /health HTTP/1.1" 200 OK

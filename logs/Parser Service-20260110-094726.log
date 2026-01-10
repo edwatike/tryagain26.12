@@ -1,0 +1,110 @@
+========================================
+  Starting Parser Service API
+========================================
+
+[1/4] Checking virtual environment
+[OK] Virtual environment exists
+[2/4] Activating virtual environment
+[3/4] Installing dependencies
+
+[notice] A new release of pip is available: 25.0.1 -> 25.3
+[notice] To update, run: python.exe -m pip install --upgrade pip
+[4/4] Installing Playwright browsers
+
+========================================
+  Parser Service API Starting
+========================================
+API will be available at http://127.0.0.1:9003
+Health check: http://127.0.0.1:9003/health
+
+[2026-01-10 09:47:29 +0300] [26216] [INFO] Running on http://127.0.0.1:9003 (CTRL + C to quit)
+2026-01-10 09:47:29,458 - hypercorn.error - INFO - Running on http://127.0.0.1:9003 (CTRL + C to quit)
+2026-01-10 10:41:14,409 - api - INFO - [DUPLICATE CHECK] Marked request 'фланец_2_google' as running (total running: 1)
+2026-01-10 10:41:14,409 - api - INFO - === PARSE REQUEST === keyword: фланец, depth: 2, source: 'google'
+2026-01-10 10:41:14,410 - api - INFO - Platform: win32, is Windows: True
+2026-01-10 10:41:14,410 - api - INFO - Using Windows-specific parsing in separate thread with asyncio.run()
+2026-01-10 10:41:14,410 - api - INFO - Running parsing in separate thread with asyncio.run() (Windows)...
+2026-01-10 10:41:14,431 - api - INFO - Starting parse_async() in thread with asyncio.run()
+2026-01-10 10:41:14,431 - api - INFO - Getting Chrome CDP WebSocket URL...
+2026-01-10 10:41:14,713 - httpx - INFO - HTTP Request: GET http://127.0.0.1:9222/json/version "HTTP/1.1 200 OK"
+2026-01-10 10:41:14,715 - api - INFO - Got WebSocket URL: ws://127.0.0.1:9222/devtools/browser/0ee34e85-1606-45ca-90fe-a775ab7aeeee
+2026-01-10 10:41:14,715 - api - INFO - Starting Playwright...
+2026-01-10 10:41:15,077 - api - INFO - Playwright started, connecting to Chrome CDP...
+2026-01-10 10:41:15,286 - api - INFO - Connected to Chrome CDP successfully!
+2026-01-10 10:41:15,286 - api - INFO - Found 1 browser context(s)
+2026-01-10 10:41:15,286 - api - INFO - Using profile context at index 0 (profile #1)
+2026-01-10 10:41:15,305 - api - INFO - Using depth=2 for parsing (requested: 2)
+2026-01-10 10:41:15,305 - api - INFO - === CREATING PAGES === Query: фланец купить, source (original): 'google', source (normalized): 'google', depth: 2
+2026-01-10 10:41:15,305 - api - INFO - >>> Creating ONLY Google page (source=google)
+2026-01-10 10:41:15,356 - api - INFO - >>> Google page created
+2026-01-10 10:41:15,411 - api - INFO - >>> TOTAL: Created 1 task(s) for parsing
+2026-01-10 10:41:15,411 - api - INFO - >>> [LOGS] About to start periodic logs sending for run_id: c3e59c47-010e-4325-b131-3a8e86853d06
+2026-01-10 10:41:15,411 - api - INFO - Starting periodic logs sending for run_id: c3e59c47-010e-4325-b131-3a8e86853d06
+2026-01-10 10:41:15,411 - src.engines - INFO - GOOGLE: Начало парсинга 'фланец купить'
+2026-01-10 10:41:15,411 - src.engines - INFO - GOOGLE: Opening Google search for 'фланец купить'
+2026-01-10 10:41:16,091 - src.engines - INFO - GOOGLE: Page loaded: https://www.google.com/search?q=%D1%84%D0%BB%D0%B0%D0%BD%D0%B5%D1%86+%D0%BA%D1%83%D0%BF%D0%B8%D1%82%D1%8C&hl=ru&sei=mwJiae2jE4vEwPAPjbrHgQs
+2026-01-10 10:41:17,219 - src.engines - INFO - GOOGLE: Ready to parse search results
+2026-01-10 10:41:17,219 - src.engines - INFO - GOOGLE: Starting to parse 2 page(s)
+2026-01-10 10:41:17,219 - src.engines - INFO - GOOGLE: Processing page 1 of 2, current URL: https://www.google.com/search?q=%D1%84%D0%BB%D0%B0%D0%BD%D0%B5%D1%86+%D0%BA%D1%83%D0%BF%D0%B8%D1%82%D1%8C&hl=ru&sei=mwJiae2jE4vEwPAPjbrHgQs
+2026-01-10 10:41:17,927 - api - INFO - Attempting to send logs (attempt #1) for run_id: c3e59c47-010e-4325-b131-3a8e86853d06
+2026-01-10 10:41:17,927 - src.parser - INFO - Sending parsing logs to backend for run_id: c3e59c47-010e-4325-b131-3a8e86853d06, size: 91 bytes
+2026-01-10 10:41:18,179 - httpx - INFO - HTTP Request: PUT http://127.0.0.1:8000/parsing/runs/c3e59c47-010e-4325-b131-3a8e86853d06/logs "HTTP/1.1 200 OK"
+2026-01-10 10:41:18,180 - src.parser - INFO - Successfully sent parsing logs to backend for run_id: c3e59c47-010e-4325-b131-3a8e86853d06, size: 91 bytes
+2026-01-10 10:41:20,693 - api - INFO - Attempting to send logs (attempt #2) for run_id: c3e59c47-010e-4325-b131-3a8e86853d06
+2026-01-10 10:41:20,693 - src.parser - INFO - Sending parsing logs to backend for run_id: c3e59c47-010e-4325-b131-3a8e86853d06, size: 91 bytes
+2026-01-10 10:41:20,933 - httpx - INFO - HTTP Request: PUT http://127.0.0.1:8000/parsing/runs/c3e59c47-010e-4325-b131-3a8e86853d06/logs "HTTP/1.1 200 OK"
+2026-01-10 10:41:20,933 - src.parser - INFO - Successfully sent parsing logs to backend for run_id: c3e59c47-010e-4325-b131-3a8e86853d06, size: 91 bytes
+2026-01-10 10:41:21,530 - src.engines - INFO - GOOGLE: Found 81 total links on page
+2026-01-10 10:41:21,644 - src.engines - INFO - GOOGLE: Found link: https://kranikoff.ru/store/1-truby-i-fitingi-dlya-vodosnabzheniya-i-otopleniya/flancy-i-prokladki-k-nim (source: google)
+2026-01-10 10:41:21,644 - src.engines - INFO - GOOGLE: First link found and added to logs: https://kranikoff.ru/store/1-truby-i-fitingi-dlya-vodosnabzheniya-i-otopleniya/flancy-i-prokladki-k-nim, page: 1
+2026-01-10 10:41:21,647 - src.engines - INFO - GOOGLE: Found link: https://kranikoff.ru/store/1-truby-i-fitingi-dlya-vodosnabzheniya-i-otopleniya/flancy-i-prokladki-k-nim (source: google)
+2026-01-10 10:41:21,650 - src.engines - INFO - GOOGLE: Found link: https://www.santech.ru/spb/catalog/293/294/ (source: google)
+2026-01-10 10:41:21,655 - src.engines - INFO - GOOGLE: Found link: https://www.santech.ru/spb/catalog/293/294/ (source: google)
+2026-01-10 10:41:21,658 - src.engines - INFO - GOOGLE: Found link: https://td-artstal.ru/spb/catalog/detali_truboprovoda/flantsi (source: google)
+2026-01-10 10:41:21,662 - src.engines - INFO - GOOGLE: Found link: https://td-artstal.ru/spb/catalog/detali_truboprovoda/flantsi (source: google)
+2026-01-10 10:41:21,665 - src.engines - INFO - GOOGLE: Found link: https://spb.lemanapro.ru/catalogue/stalnye-truby-i-fitingi/flancy/ (source: google)
+2026-01-10 10:41:21,702 - src.engines - INFO - GOOGLE: Found link: https://spb.russteels.ru/catalog/flantsy/ (source: google)
+2026-01-10 10:41:21,706 - src.engines - INFO - GOOGLE: Found link: https://spb.russteels.ru/catalog/flantsy/ (source: google)
+2026-01-10 10:41:21,710 - src.engines - INFO - GOOGLE: Found link: https://m-investspb.ru/flantsy (source: google)
+2026-01-10 10:41:21,714 - src.engines - INFO - GOOGLE: Found link: https://m-investspb.ru/flantsy (source: google)
+2026-01-10 10:41:21,718 - src.engines - INFO - GOOGLE: Found link: https://awstroy.ru/category/flantsy/ (source: google)
+2026-01-10 10:41:21,722 - src.engines - INFO - GOOGLE: Found link: https://awstroy.ru/category/flantsy/ (source: google)
+2026-01-10 10:41:21,725 - src.engines - INFO - GOOGLE: Found link: https://mpstal.ru/truboprovodnaya-armatura/flanci-stalnie (source: google)
+2026-01-10 10:41:21,729 - src.engines - INFO - GOOGLE: Found link: https://mpstal.ru/truboprovodnaya-armatura/flanci-stalnie (source: google)
+2026-01-10 10:41:21,732 - src.engines - INFO - GOOGLE: Found link: https://spb-stal.ru/catalog/truboprovodnaya-armatura/flantsy/ (source: google)
+2026-01-10 10:41:21,736 - src.engines - INFO - GOOGLE: Found link: https://spb-stal.ru/catalog/truboprovodnaya-armatura/flantsy/ (source: google)
+2026-01-10 10:41:21,740 - src.engines - INFO - GOOGLE: Found link: https://gas-eng.ru/catalog/fitingi_flantsy/flantsy/ (source: google)
+2026-01-10 10:41:21,743 - src.engines - INFO - GOOGLE: Found link: https://gas-eng.ru/catalog/fitingi_flantsy/flantsy/ (source: google)
+2026-01-10 10:41:21,843 - src.engines - INFO - GOOGLE: Total links collected so far: 10
+2026-01-10 10:41:23,430 - api - INFO - Attempting to send logs (attempt #3) for run_id: c3e59c47-010e-4325-b131-3a8e86853d06
+2026-01-10 10:41:23,430 - src.parser - INFO - Sending parsing logs to backend for run_id: c3e59c47-010e-4325-b131-3a8e86853d06, size: 686 bytes
+2026-01-10 10:41:23,683 - httpx - INFO - HTTP Request: PUT http://127.0.0.1:8000/parsing/runs/c3e59c47-010e-4325-b131-3a8e86853d06/logs "HTTP/1.1 200 OK"
+2026-01-10 10:41:23,683 - src.parser - INFO - Successfully sent parsing logs to backend for run_id: c3e59c47-010e-4325-b131-3a8e86853d06, size: 686 bytes
+2026-01-10 10:41:24,929 - src.engines - INFO - GOOGLE: Processing page 2 of 2, current URL: https://www.google.com/search?q=%D1%84%D0%BB%D0%B0%D0%BD%D0%B5%D1%86+%D0%BA%D1%83%D0%BF%D0%B8%D1%82%D1%8C&sca_esv=ab9e555a22b604b3&hl=ru&ei=mwJiaafJHOnKwPAPreHCoAc&start=10&sa=N&sstk=Af77f_dRIjL1jEzyJ0rpFOVpm_T4nehBcwbie6rKoIShzePz_47pQEdHoWX4uvuyrLWmbw-zSAuQmERMNlo9diUSA3nHneqPh2mQeA&ved=2ahUKEwjngqOivICSAxVpJRAIHa2wEHQQ8NMDegQIMxAW&biw=1526&bih=687&dpr=1.25&aic=0
+2026-01-10 10:41:26,196 - api - INFO - Attempting to send logs (attempt #4) for run_id: c3e59c47-010e-4325-b131-3a8e86853d06
+2026-01-10 10:41:26,196 - src.parser - INFO - Sending parsing logs to backend for run_id: c3e59c47-010e-4325-b131-3a8e86853d06, size: 686 bytes
+2026-01-10 10:41:26,422 - httpx - INFO - HTTP Request: PUT http://127.0.0.1:8000/parsing/runs/c3e59c47-010e-4325-b131-3a8e86853d06/logs "HTTP/1.1 200 OK"
+2026-01-10 10:41:26,422 - src.parser - INFO - Successfully sent parsing logs to backend for run_id: c3e59c47-010e-4325-b131-3a8e86853d06, size: 686 bytes
+2026-01-10 10:41:27,714 - src.engines - INFO - GOOGLE: Found 70 total links on page
+2026-01-10 10:41:27,795 - src.engines - INFO - GOOGLE: Found link: https://www.vseinstrumenti.ru/category/flantsy-pod-svarku-173456/ (source: google)
+2026-01-10 10:41:27,798 - src.engines - INFO - GOOGLE: Found link: https://www.vseinstrumenti.ru/category/flantsy-pod-svarku-173456/ (source: google)
+2026-01-10 10:41:27,800 - src.engines - INFO - GOOGLE: Found link: https://tda-spb.ru/katalog/truboprovodnaya-armatura/flanczy/flanczy-stalnye-ploskie/ (source: google)
+2026-01-10 10:41:27,803 - src.engines - INFO - GOOGLE: Found link: https://grom.ru/catalog/truby_i_fitingi/detali_truboprovodov_flantsy/flantsy/ (source: google)
+2026-01-10 10:41:27,807 - src.engines - INFO - GOOGLE: Found link: https://grom.ru/catalog/truby_i_fitingi/detali_truboprovodov_flantsy/flantsy/ (source: google)
+2026-01-10 10:41:27,808 - src.engines - INFO - GOOGLE: Found link: https://onyxspb.ru/catalog/flantsy/ (source: google)
+2026-01-10 10:41:27,811 - src.engines - INFO - GOOGLE: Found link: https://onyxspb.ru/catalog/flantsy/ (source: google)
+2026-01-10 10:41:27,813 - src.engines - INFO - GOOGLE: Found link: https://www.ozon.ru/category/flanets-stalnoy/ (source: google)
+2026-01-10 10:41:27,817 - src.engines - INFO - GOOGLE: Found link: https://www.ozon.ru/category/flanets-stalnoy/ (source: google)
+2026-01-10 10:41:27,820 - src.engines - INFO - GOOGLE: Found link: https://gremir.ru/flantsy/ (source: google)
+2026-01-10 10:41:27,822 - src.engines - INFO - GOOGLE: Found link: https://gremir.ru/flantsy/ (source: google)
+2026-01-10 10:41:27,828 - src.engines - INFO - GOOGLE: Found link: https://severarm.ru/flantcy/ (source: google)
+2026-01-10 10:41:27,831 - src.engines - INFO - GOOGLE: Found link: https://severarm.ru/flantcy/ (source: google)
+2026-01-10 10:41:27,834 - src.engines - INFO - GOOGLE: Found link: https://lunda.ru/catalog/fitingi-i-flancy/flancy (source: google)
+2026-01-10 10:41:27,837 - src.engines - INFO - GOOGLE: Found link: https://lunda.ru/catalog/fitingi-i-flancy/flancy (source: google)
+2026-01-10 10:41:27,839 - src.engines - INFO - GOOGLE: Found link: https://www.vorder.ru/catalog/flantsy/komplekty/ (source: google)
+2026-01-10 10:41:27,842 - src.engines - INFO - GOOGLE: Found link: https://www.vorder.ru/catalog/flantsy/komplekty/ (source: google)
+2026-01-10 10:41:27,912 - src.engines - INFO - GOOGLE: Total links collected so far: 19
+2026-01-10 10:41:27,912 - src.engines - INFO - GOOGLE: Завершено за 12.5с, собрано 19 ссылок
+2026-01-10 10:41:27,912 - api - INFO - Periodic logs sending cancelled for run_id: c3e59c47-010e-4325-b131-3a8e86853d06, total attempts: 4
+2026-01-10 10:41:27,948 - api - INFO - Parse completed: found 19 suppliers
+2026-01-10 10:41:27,948 - api - INFO - [DUPLICATE CHECK] Removed request 'фланец_2_google' from running requests (remaining: 0)

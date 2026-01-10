@@ -1,0 +1,51 @@
+[Frontend] Starting...
+[Frontend] Starting Next.js on port 3000...
+
+> moderator-dashboard-ui@1.0.0 dev
+> next dev
+
+⚠ Warning: Next.js inferred your workspace root, but it may not be correct.
+ We detected multiple lockfiles and selected the directory of D:\tryagain\package-lock.json as the root directory.
+ To silence this warning, set `turbopack.root` in your Next.js config, or consider removing one of the lockfiles if it's not needed.
+   See https://nextjs.org/docs/app/api-reference/config/next-config-js/turbopack#root-directory for more information.
+ Detected additional lockfiles: 
+   * D:\tryagain\frontend\moderator-dashboard-ui\package-lock.json
+
+▲ Next.js 16.1.1 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.0.177:3000
+- Environments: .env.local
+
+✓ Starting...
+✓ Ready in 581ms
+ GET / 200 in 1190ms (compile: 992ms, render: 198ms)
+ GET / 200 in 45ms (compile: 4ms, render: 41ms)
+ GET / 200 in 37ms (compile: 2ms, render: 34ms)
+ GET / 200 in 36ms (compile: 2ms, render: 34ms)
+ GET / 200 in 34ms (compile: 3ms, render: 31ms)
+ GET /parsing-runs 200 in 487ms (compile: 389ms, render: 98ms)
+ GET /suppliers 200 in 133ms (compile: 109ms, render: 24ms)
+ GET / 200 in 36ms (compile: 3ms, render: 34ms)
+ GET /keywords 200 in 836ms (compile: 808ms, render: 29ms)
+ GET /blacklist 200 in 304ms (compile: 280ms, render: 24ms)
+ GET / 200 in 36ms (compile: 3ms, render: 33ms)
+ GET /blacklist 200 in 89ms (compile: 3ms, render: 86ms)
+ GET / 200 in 36ms (compile: 2ms, render: 34ms)
+ GET / 200 in 33ms (compile: 2ms, render: 31ms)
+ GET / 200 in 33ms (compile: 1802µs, render: 31ms)
+ GET / 200 in 33ms (compile: 1930µs, render: 31ms)
+ GET / 200 in 42ms (compile: 2ms, render: 40ms)
+ GET / 200 in 34ms (compile: 2ms, render: 32ms)
+ GET / 200 in 34ms (compile: 3ms, render: 32ms)
+ GET / 200 in 32ms (compile: 2ms, render: 30ms)
+ GET / 200 in 36ms (compile: 2ms, render: 33ms)
+ GET / 200 in 34ms (compile: 1879µs, render: 32ms)
+ GET / 200 in 33ms (compile: 1845µs, render: 32ms)
+ GET / 200 in 34ms (compile: 2ms, render: 32ms)
+ GET / 200 in 35ms (compile: 2ms, render: 33ms)
+ GET / 200 in 35ms (compile: 2ms, render: 33ms)
+ GET / 200 in 39ms (compile: 2ms, render: 37ms)
+ GET / 200 in 33ms (compile: 1924µs, render: 31ms)
+ GET / 200 in 33ms (compile: 1885µs, render: 31ms)
+ GET / 200 in 36ms (compile: 2ms, render: 34ms)
+[?25h

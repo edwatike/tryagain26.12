@@ -1,0 +1,16 @@
+[Frontend] Starting...
+[Frontend] Starting Next.js on port 3000...
+
+> moderator-dashboard-ui@1.0.0 dev
+> next dev --webpack
+
+⚠ Port 3000 is in use by process 20056, using available port 3001 instead.
+▲ Next.js 16.1.1 (webpack)
+- Local:         http://localhost:3001
+- Network:       http://192.168.1.108:3001
+- Environments: .env.local
+
+✓ Starting...
+✓ Ready in 1560ms
+ GET / 200 in 2.5s (compile: 2.3s, render: 205ms)
+[?25h

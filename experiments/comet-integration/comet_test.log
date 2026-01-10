@@ -1,0 +1,141 @@
+2026-01-06 17:26:22,096 - INFO - 🚀 CometCDPTester инициализирован
+2026-01-06 17:26:22,097 - INFO - 📍 Путь к Comet: C:\Users\admin\AppData\Local\Perplexity\Comet\Application\comet.exe
+2026-01-06 17:26:22,097 - INFO - 📍 CDP URL: http://127.0.0.1:9222
+2026-01-06 17:26:22,097 - INFO - 📍 Временный профиль: comet-temp-profile
+2026-01-06 17:26:22,097 - INFO - 🚀 ЗАПУСК ТЕСТА COMET CDP
+2026-01-06 17:26:22,097 - INFO - ============================================================
+2026-01-06 17:26:22,098 - INFO - ✅ Создан файл domains.txt с 8 доменами
+2026-01-06 17:26:22,104 - INFO - 📋 Прочитано доменов: 8
+2026-01-06 17:26:22,104 - INFO - 🔗 Подключение к Comet CDP...
+2026-01-06 17:26:24,156 - WARNING - ⚠️ CDP недоступен: HTTPConnectionPool(host='127.0.0.1', port=9222): Max retries exceeded with url: /json (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x000001C1ED7B59A0>: Failed to establish a new connection: [WinError 10061] Подключение не установлено, т.к. конечный компьютер отверг запрос на подключение'))
+2026-01-06 17:26:24,156 - INFO - 📍 CDP недоступен, запускаю Comet...
+2026-01-06 17:26:24,156 - INFO - 🚀 Запуск Comet с CDP...
+2026-01-06 17:26:24,156 - INFO - 📍 Команда: C:\Users\admin\AppData\Local\Perplexity\Comet\Application\comet.exe --remote-debugging-port=9222 --remote-debugging-address=127.0.0.1 --user-data-dir=D:\tryagain\experiments\comet-integration\comet-temp-profile --no-first-run --disable-web-security --disable-features=VizDisplayCompositor
+2026-01-06 17:26:24,159 - INFO - ⏳ Ожидаю запуска Comet...
+2026-01-06 17:26:25,172 - INFO - ✅ CDP доступен, найдено 2 целей
+2026-01-06 17:26:25,173 - INFO - ✅ Comet запущен с CDP через 1 секунд
+2026-01-06 17:26:25,173 - INFO - 📍 Подключаюсь через Playwright CDP...
+2026-01-06 17:26:31,670 - INFO - ✅ Подключено к Comet через CDP
+2026-01-06 17:26:31,670 - INFO - 
+📍 Домен 1/5: metallsnab-nn.ru
+2026-01-06 17:26:31,670 - INFO - 🌐 Обработка домена: metallsnab-nn.ru
+2026-01-06 17:26:32,038 - INFO - 📍 Открытие: https://metallsnab-nn.ru
+2026-01-06 17:27:17,556 - INFO - ✅ Найден ассистент: input[type="text"]
+2026-01-06 17:27:17,556 - INFO - 🤖 Ввод промпта: Найди ИНН и email компании на этой странице. Верни...
+2026-01-06 17:27:17,556 - ERROR - ❌ Ошибка обработки metallsnab-nn.ru: 'ElementHandle' object has no attribute 'clear'
+2026-01-06 17:27:17,556 - INFO - 📊 Результат для metallsnab-nn.ru: {'domain': 'metallsnab-nn.ru', 'inn': '', 'email': '', 'status': 'error', 'timestamp': '2026-01-06T17:26:31.670278', 'error': "'ElementHandle' object has no attribute 'clear'", 'execution_time': 45.88577389717102}
+2026-01-06 17:27:19,563 - INFO - 
+📍 Домен 2/5: sberbank.ru
+2026-01-06 17:27:19,563 - INFO - 🌐 Обработка домена: sberbank.ru
+2026-01-06 17:27:19,672 - INFO - 📍 Открытие: https://sberbank.ru
+2026-01-06 17:28:07,880 - INFO - 📍 Пробую Ctrl+J для открытия ассистента...
+2026-01-06 17:29:52,688 - INFO - 📊 Результат для sberbank.ru: {'domain': 'sberbank.ru', 'inn': '', 'email': '', 'status': 'error', 'timestamp': '2026-01-06T17:27:19.563316', 'error': '', 'execution_time': 153.1255042552948}
+2026-01-06 17:29:52,701 - INFO - 📍 Закрытие процесса Comet...
+2026-01-06 17:29:52,875 - INFO - 📍 Временный профиль удален
+2026-01-06 17:29:52,875 - INFO - 
+🎉 ТЕСТ ЗАВЕРШЕН!
+2026-01-06 17:29:52,876 - INFO - 
+⚠️ Тест прерван
+2026-01-06 17:29:52,918 - ERROR - Future exception was never retrieved
+future: <Future finished exception=TargetClosedError('Target page, context or browser has been closed')>
+playwright._impl._errors.TargetClosedError: Target page, context or browser has been closed
+2026-01-06 17:31:15,593 - INFO - 🚀 CometCDPTester инициализирован
+2026-01-06 17:31:15,593 - INFO - 📍 Путь к Comet: C:\Users\admin\AppData\Local\Perplexity\Comet\Application\comet.exe
+2026-01-06 17:31:15,593 - INFO - 📍 CDP URL: http://127.0.0.1:9222
+2026-01-06 17:31:15,593 - INFO - 📍 Временный профиль: comet-temp-profile
+2026-01-06 17:31:15,593 - INFO - 🚀 ЗАПУСК ТЕСТА COMET CDP
+2026-01-06 17:31:15,593 - INFO - ============================================================
+2026-01-06 17:31:15,594 - INFO - ✅ Создан файл domains.txt с 15 доменами
+2026-01-06 17:31:15,601 - INFO - 📋 Прочитано доменов: 15
+2026-01-06 17:31:15,601 - INFO - 🔗 Подключение к Comet CDP...
+2026-01-06 17:31:17,639 - WARNING - ⚠️ CDP недоступен: HTTPConnectionPool(host='127.0.0.1', port=9222): Max retries exceeded with url: /json (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x000001C947F181D0>: Failed to establish a new connection: [WinError 10061] Подключение не установлено, т.к. конечный компьютер отверг запрос на подключение'))
+2026-01-06 17:31:17,639 - INFO - 📍 CDP недоступен, запускаю Comet...
+2026-01-06 17:31:17,639 - INFO - 🚀 Запуск Comet с CDP...
+2026-01-06 17:31:17,641 - INFO - 📍 Команда: C:\Users\admin\AppData\Local\Perplexity\Comet\Application\comet.exe --remote-debugging-port=9222 --remote-debugging-address=127.0.0.1 --user-data-dir=D:\tryagain\experiments\comet-integration\comet-temp-profile --no-first-run --disable-web-security --disable-features=VizDisplayCompositor
+2026-01-06 17:31:17,644 - INFO - ⏳ Ожидаю запуска Comet...
+2026-01-06 17:31:18,646 - INFO - ✅ CDP доступен, найдено 2 целей
+2026-01-06 17:31:18,647 - INFO - ✅ Comet запущен с CDP через 1 секунд
+2026-01-06 17:31:18,647 - INFO - 📍 Подключаюсь через Playwright CDP...
+2026-01-06 17:31:19,093 - INFO - ✅ Подключено к Comet через CDP
+2026-01-06 17:31:19,093 - INFO - 
+📍 Домен 1/5: metallsnab-nn.ru
+2026-01-06 17:31:19,093 - INFO - 🌐 Обработка домена: metallsnab-nn.ru
+2026-01-06 17:31:19,218 - INFO - 📍 Открытие: https://metallsnab-nn.ru
+2026-01-06 17:32:10,034 - INFO - 📍 Пробую Ctrl+J для открытия ассистента...
+2026-01-06 17:33:47,552 - INFO - 📊 Результат для metallsnab-nn.ru: {'domain': 'metallsnab-nn.ru', 'inn': '', 'email': '', 'status': 'error', 'timestamp': '2026-01-06T17:31:19.093884', 'error': '', 'execution_time': 148.45871782302856}
+2026-01-06 17:33:47,560 - INFO - 📍 Закрытие процесса Comet...
+2026-01-06 17:33:47,719 - INFO - 📍 Временный профиль удален
+2026-01-06 17:33:47,719 - INFO - 
+🎉 ТЕСТ ЗАВЕРШЕН!
+2026-01-06 17:33:47,719 - INFO - 
+⚠️ Тест прерван
+2026-01-06 17:33:47,731 - ERROR - Future exception was never retrieved
+future: <Future finished exception=TargetClosedError('Target page, context or browser has been closed')>
+playwright._impl._errors.TargetClosedError: Target page, context or browser has been closed
+2026-01-06 17:37:15,522 - INFO - 🚀 CometCDPTester инициализирован
+2026-01-06 17:37:15,523 - INFO - 📍 Путь к Comet: C:\Users\admin\AppData\Local\Perplexity\Comet\Application\comet.exe
+2026-01-06 17:37:15,523 - INFO - 📍 CDP URL: http://127.0.0.1:9222
+2026-01-06 17:37:15,523 - INFO - 📍 Временный профиль: comet-temp-profile
+2026-01-06 17:37:15,523 - INFO - 🚀 ЗАПУСК ТЕСТА COMET CDP
+2026-01-06 17:37:15,523 - INFO - ============================================================
+2026-01-06 17:37:15,524 - INFO - ✅ Создан файл domains.txt с 15 доменами
+2026-01-06 17:37:15,525 - INFO - 📋 Прочитано доменов: 15
+2026-01-06 17:37:15,525 - INFO - 🔗 Подключение к Comet CDP...
+2026-01-06 17:37:15,528 - INFO - ✅ CDP доступен, найдено 17 целей
+2026-01-06 17:37:15,529 - INFO - 📍 Подключаюсь через Playwright CDP...
+2026-01-06 17:37:16,022 - INFO - ✅ Подключено к Comet через CDP
+2026-01-06 17:37:16,022 - INFO - 
+📍 Домен 1/5: metallsnab-nn.ru
+2026-01-06 17:37:16,022 - INFO - 🌐 Обработка домена: metallsnab-nn.ru
+2026-01-06 17:37:16,204 - INFO - 📍 Открытие: https://metallsnab-nn.ru
+2026-01-06 17:38:01,987 - INFO - ✅ Найден ассистент: input[type="text"]
+2026-01-06 17:38:01,988 - INFO - 🤖 Ввод промпта: Найди ИНН и email компании на этой странице. Верни...
+2026-01-06 17:38:01,988 - ERROR - ❌ Ошибка обработки metallsnab-nn.ru: 'ElementHandle' object has no attribute 'clear'
+2026-01-06 17:38:01,988 - INFO - 📊 Результат для metallsnab-nn.ru: {'domain': 'metallsnab-nn.ru', 'inn': '', 'email': '', 'status': 'error', 'timestamp': '2026-01-06T17:37:16.022714', 'error': "'ElementHandle' object has no attribute 'clear'", 'execution_time': 45.966060638427734}
+2026-01-06 17:38:03,997 - INFO - 
+📍 Домен 2/5: promsnab.ru
+2026-01-06 17:38:03,997 - INFO - 🌐 Обработка домена: promsnab.ru
+2026-01-06 17:38:04,126 - INFO - 📍 Открытие: https://promsnab.ru
+2026-01-06 17:38:53,523 - INFO - 📍 Пробую Ctrl+J для открытия ассистента...
+2026-01-06 17:39:41,605 - ERROR - ❌ Ошибка обработки promsnab.ru: Ассистент не найден
+2026-01-06 17:39:41,606 - INFO - 📊 Результат для promsnab.ru: {'domain': 'promsnab.ru', 'inn': '', 'email': '', 'status': 'error', 'timestamp': '2026-01-06T17:38:03.997292', 'error': 'Ассистент не найден', 'execution_time': 97.60871863365173}
+2026-01-06 17:39:43,620 - INFO - 
+📍 Домен 3/5: stroysnab.ru
+2026-01-06 17:39:43,621 - INFO - 🌐 Обработка домена: stroysnab.ru
+2026-01-06 17:39:43,743 - INFO - 📍 Открытие: https://stroysnab.ru
+2026-01-06 17:39:43,827 - ERROR - ❌ Ошибка обработки stroysnab.ru: Page.goto: net::ERR_NAME_NOT_RESOLVED at https://stroysnab.ru/
+Call log:
+  - navigating to "https://stroysnab.ru/", waiting until "domcontentloaded"
+
+2026-01-06 17:39:43,828 - INFO - 📊 Результат для stroysnab.ru: {'domain': 'stroysnab.ru', 'inn': '', 'email': '', 'status': 'error', 'timestamp': '2026-01-06T17:39:43.621595', 'error': 'Page.goto: net::ERR_NAME_NOT_RESOLVED at https://stroysnab.ru/\nCall log:\n  - navigating to "https://stroysnab.ru/", waiting until "domcontentloaded"\n', 'execution_time': 0.20685148239135742}
+2026-01-06 17:39:45,837 - INFO - 
+📍 Домен 4/5: electrosnab.ru
+2026-01-06 17:39:45,837 - INFO - 🌐 Обработка домена: electrosnab.ru
+2026-01-06 17:39:45,957 - INFO - 📍 Открытие: https://electrosnab.ru
+2026-01-06 17:40:34,157 - INFO - 📍 Пробую Ctrl+J для открытия ассистента...
+2026-01-06 17:41:22,242 - ERROR - ❌ Ошибка обработки electrosnab.ru: Ассистент не найден
+2026-01-06 17:41:22,243 - INFO - 📊 Результат для electrosnab.ru: {'domain': 'electrosnab.ru', 'inn': '', 'email': '', 'status': 'error', 'timestamp': '2026-01-06T17:39:45.837017', 'error': 'Ассистент не найден', 'execution_time': 96.40609312057495}
+2026-01-06 17:41:24,248 - INFO - 
+📍 Домен 5/5: medsnab.ru
+2026-01-06 17:41:24,248 - INFO - 🌐 Обработка домена: medsnab.ru
+2026-01-06 17:41:24,368 - INFO - 📍 Открытие: https://medsnab.ru
+2026-01-06 17:42:05,991 - INFO - ✅ Найден ассистент: textarea
+2026-01-06 17:42:05,991 - INFO - 🤖 Ввод промпта: Найди ИНН и email компании на этой странице. Верни...
+2026-01-06 17:42:05,991 - ERROR - ❌ Ошибка обработки medsnab.ru: 'ElementHandle' object has no attribute 'clear'
+2026-01-06 17:42:05,991 - INFO - 📊 Результат для medsnab.ru: {'domain': 'medsnab.ru', 'inn': '', 'email': '', 'status': 'error', 'timestamp': '2026-01-06T17:41:24.248464', 'error': "'ElementHandle' object has no attribute 'clear'", 'execution_time': 41.742804288864136}
+2026-01-06 17:42:05,991 - INFO - ✅ Результаты сохранены в results.csv
+2026-01-06 17:42:05,991 - INFO - 
+📊 ИТОГИ ТЕСТА:
+2026-01-06 17:42:05,991 - INFO - ========================================
+2026-01-06 17:42:05,991 - INFO - ✅ Успешно: 0
+2026-01-06 17:42:05,991 - INFO - ⚠️ Нет данных: 0
+2026-01-06 17:42:05,991 - INFO - ❌ Ошибки: 5
+2026-01-06 17:42:05,991 - INFO - 📁 Результаты: results.csv
+2026-01-06 17:42:05,991 - INFO - 📋 Логи: comet_test.log
+2026-01-06 17:42:05,991 - INFO -    ❌ metallsnab-nn.ru: ИНН=, Email=
+2026-01-06 17:42:05,991 - INFO -    ❌ promsnab.ru: ИНН=, Email=
+2026-01-06 17:42:05,991 - INFO -    ❌ stroysnab.ru: ИНН=, Email=
+2026-01-06 17:42:05,991 - INFO -    ❌ electrosnab.ru: ИНН=, Email=
+2026-01-06 17:42:05,991 - INFO -    ❌ medsnab.ru: ИНН=, Email=
+2026-01-06 17:42:06,009 - INFO - 
+🎉 ТЕСТ ЗАВЕРШЕН!

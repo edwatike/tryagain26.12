@@ -1,0 +1,1043 @@
+[Backend] Starting...
+[Backend] Installing dependencies...
+
+[notice] A new release of pip is available: 25.0.1 -> 25.3
+[notice] To update, run: python.exe -m pip install --upgrade pip
+[Backend] Starting API on port 8000...
+2026-01-04 17:03:04,963 - app.usecases.extract_inn_batch - WARNING - ollama_inn_extractor directory not found at: D:\tryagain\ollama_inn_extractor
+2026-01-04 17:03:04,963 - app.main - INFO - === FastAPI app instance created ===
+2026-01-04 17:03:04,963 - app.main - INFO - === App instance ID: 2557816956416 ===
+2026-01-04 17:03:04,967 - app.main - INFO - === FastAPI app created ===
+2026-01-04 17:03:04,967 - app.main - INFO - === CORS origins: ['http://localhost:3000', 'http://127.0.0.1:3000'] ===
+2026-01-04 17:03:04,967 - app.main - INFO - === Registering routers ===
+2026-01-04 17:03:04,988 - app.main - INFO - === Registering inn_extraction router ===
+2026-01-04 17:03:04,989 - app.main - INFO - === All routers registered successfully ===
+2026-01-04 17:03:04,989 - app.main - INFO - === INN Extraction routes: ['/inn-extraction/extract-batch'] ===
+2026-01-04 17:03:04,990 - app.main - INFO - === Total routes after registration: 38 ===
+2026-01-04 17:03:04,990 - app.main - INFO - === App instance ID after router registration: 2557816956416 ===
+2026-01-04 17:03:04,990 - app.main - INFO - === FINAL VERIFICATION: Total routes: 38, INN routes: 1 ===
+2026-01-04 17:03:04,990 - app.main - INFO - === SUCCESS: INN extraction routes found: ['/inn-extraction/extract-batch'] ===
+2026-01-04 17:03:04,990 - __main__ - INFO - === Starting uvicorn with 38 routes ===
+2026-01-04 17:03:04,990 - __main__ - INFO - === INN routes: ['/moderator/checko/{inn}', '/inn-extraction/extract-batch'] ===
+2026-01-04 17:03:04,990 - __main__ - INFO - === App instance ID: 2557816956416 ===
+2026-01-04 17:03:04,990 - __main__ - INFO - === PYTHONPATH set to: D:\tryagain\backend; ===
+INFO:     Started server process [11432]
+INFO:     Waiting for application startup.
+2026-01-04 17:03:05,020 - app.main - INFO - === Logging configured ===
+2026-01-04 17:03:05,020 - app.main - INFO - === APPLICATION STARTUP COMPLETE ===
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+INFO:     127.0.0.1:53256 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53267 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57626 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51021 - "GET /health HTTP/1.1" 200 OK
+2026-01-04 17:03:46,691 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: filtering by parsing_run_id=a0097613-61ab-4831-8d48-ef9c8cbfac8b
+2026-01-04 17:03:46,691 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: applied filters: parsing_run_id=a0097613-61ab-4831-8d48-ef9c8cbfac8b
+2026-01-04 17:03:46,703 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: returning 1 entries (total=50) with filters: ['parsing_run_id=a0097613-61ab-4831-8d48-ef9c8cbfac8b']
+2026-01-04 17:03:46,703 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: filtering by parsing_run_id=8e58c4f2-a61c-4975-a19c-f838f58890fa
+2026-01-04 17:03:46,703 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: applied filters: parsing_run_id=8e58c4f2-a61c-4975-a19c-f838f58890fa
+2026-01-04 17:03:46,703 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: returning 1 entries (total=57) with filters: ['parsing_run_id=8e58c4f2-a61c-4975-a19c-f838f58890fa']
+2026-01-04 17:03:46,703 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: filtering by parsing_run_id=37f2a7d4-0018-4328-ae77-c5c62be6ad11
+2026-01-04 17:03:46,703 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: applied filters: parsing_run_id=37f2a7d4-0018-4328-ae77-c5c62be6ad11
+2026-01-04 17:03:46,703 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: returning 0 entries (total=0) with filters: ['parsing_run_id=37f2a7d4-0018-4328-ae77-c5c62be6ad11']
+2026-01-04 17:03:46,703 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: filtering by parsing_run_id=016daaab-9cd9-405a-ac90-bbc80ffcc2a5
+2026-01-04 17:03:46,703 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: applied filters: parsing_run_id=016daaab-9cd9-405a-ac90-bbc80ffcc2a5
+2026-01-04 17:03:46,703 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: returning 0 entries (total=0) with filters: ['parsing_run_id=016daaab-9cd9-405a-ac90-bbc80ffcc2a5']
+2026-01-04 17:03:46,703 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: filtering by parsing_run_id=e94fd388-c23c-4d7a-b174-c02221448f08
+2026-01-04 17:03:46,703 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: applied filters: parsing_run_id=e94fd388-c23c-4d7a-b174-c02221448f08
+2026-01-04 17:03:46,703 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: returning 1 entries (total=17) with filters: ['parsing_run_id=e94fd388-c23c-4d7a-b174-c02221448f08']
+2026-01-04 17:03:46,703 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: filtering by parsing_run_id=aa19272a-7371-41ae-898d-bb99f5a1228d
+2026-01-04 17:03:46,703 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: applied filters: parsing_run_id=aa19272a-7371-41ae-898d-bb99f5a1228d
+2026-01-04 17:03:46,713 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: returning 1 entries (total=17) with filters: ['parsing_run_id=aa19272a-7371-41ae-898d-bb99f5a1228d']
+2026-01-04 17:03:46,713 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: filtering by parsing_run_id=0475ae12-de36-4e36-8c10-89db784aba08
+2026-01-04 17:03:46,713 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: applied filters: parsing_run_id=0475ae12-de36-4e36-8c10-89db784aba08
+2026-01-04 17:03:46,713 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: returning 1 entries (total=17) with filters: ['parsing_run_id=0475ae12-de36-4e36-8c10-89db784aba08']
+2026-01-04 17:03:46,713 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: filtering by parsing_run_id=7421cc44-5f3f-480a-a888-b3ab2c4e194d
+2026-01-04 17:03:46,713 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: applied filters: parsing_run_id=7421cc44-5f3f-480a-a888-b3ab2c4e194d
+2026-01-04 17:03:46,713 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: returning 0 entries (total=0) with filters: ['parsing_run_id=7421cc44-5f3f-480a-a888-b3ab2c4e194d']
+2026-01-04 17:03:46,713 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: filtering by parsing_run_id=35e40edd-7182-4d45-a39f-55333c0d152b
+2026-01-04 17:03:46,713 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: applied filters: parsing_run_id=35e40edd-7182-4d45-a39f-55333c0d152b
+2026-01-04 17:03:46,713 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: returning 1 entries (total=87) with filters: ['parsing_run_id=35e40edd-7182-4d45-a39f-55333c0d152b']
+INFO:     127.0.0.1:51554 - "GET /parsing/runs?limit=10 HTTP/1.1" 200 OK
+2026-01-04 17:03:48,720 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: filtering by parsing_run_id=a0097613-61ab-4831-8d48-ef9c8cbfac8b
+2026-01-04 17:03:48,720 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: applied filters: parsing_run_id=a0097613-61ab-4831-8d48-ef9c8cbfac8b
+2026-01-04 17:03:48,722 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: returning 1 entries (total=50) with filters: ['parsing_run_id=a0097613-61ab-4831-8d48-ef9c8cbfac8b']
+2026-01-04 17:03:48,729 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: filtering by parsing_run_id=a0097613-61ab-4831-8d48-ef9c8cbfac8b
+2026-01-04 17:03:48,729 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: applied filters: parsing_run_id=a0097613-61ab-4831-8d48-ef9c8cbfac8b
+2026-01-04 17:03:48,730 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: returning 1 entries (total=50) with filters: ['parsing_run_id=a0097613-61ab-4831-8d48-ef9c8cbfac8b']
+INFO:     127.0.0.1:51571 - "GET /parsing/runs/a0097613-61ab-4831-8d48-ef9c8cbfac8b HTTP/1.1" 200 OK
+2026-01-04 17:03:51,484 - app.transport.routers.domains_queue - INFO - list_domains_queue_endpoint called with parsingRunId=a0097613-61ab-4831-8d48-ef9c8cbfac8b, keyword=None, status=None
+2026-01-04 17:03:51,484 - app.transport.routers.domains_queue - INFO - DEBUG: parsingRunId value: 'a0097613-61ab-4831-8d48-ef9c8cbfac8b' (type: <class 'str'>, len: 36)
+2026-01-04 17:03:51,484 - app.usecases.list_domains_queue - INFO - list_domains_queue.execute called with parsing_run_id=a0097613-61ab-4831-8d48-ef9c8cbfac8b, keyword=None
+2026-01-04 17:03:51,485 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: filtering by parsing_run_id=a0097613-61ab-4831-8d48-ef9c8cbfac8b
+2026-01-04 17:03:51,485 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: applied filters: parsing_run_id=a0097613-61ab-4831-8d48-ef9c8cbfac8b
+2026-01-04 17:03:51,486 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: returning 10 entries (total=50) with filters: ['parsing_run_id=a0097613-61ab-4831-8d48-ef9c8cbfac8b']
+2026-01-04 17:03:51,486 - app.usecases.list_domains_queue - INFO - list_domains_queue.execute returning 10 entries, total=50
+2026-01-04 17:03:51,486 - app.transport.routers.domains_queue - INFO - list_domains_queue_endpoint returning 10 entries, total=50
+INFO:     127.0.0.1:57536 - "GET /domains/queue?limit=10&parsingRunId=a0097613-61ab-4831-8d48-ef9c8cbfac8b HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60349 - "GET /moderator/suppliers?limit=5 HTTP/1.1" 200 OK
+2026-01-04 17:03:54,308 - app.transport.routers.blacklist - INFO - Blacklist query: found 10 total entries, returning 5 entries
+2026-01-04 17:03:54,308 - app.transport.routers.blacklist - INFO - Returning 5 DTOs
+INFO:     127.0.0.1:60356 - "GET /moderator/blacklist?limit=5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60383 - "GET /keywords HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49972 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63006 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49412 - "OPTIONS /parsing/runs?limit=100&sort=created_at&order=desc HTTP/1.1" 200 OK
+2026-01-04 17:04:33,494 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: filtering by parsing_run_id=a0097613-61ab-4831-8d48-ef9c8cbfac8b
+2026-01-04 17:04:33,494 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: applied filters: parsing_run_id=a0097613-61ab-4831-8d48-ef9c8cbfac8b
+2026-01-04 17:04:33,495 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: returning 1 entries (total=50) with filters: ['parsing_run_id=a0097613-61ab-4831-8d48-ef9c8cbfac8b']
+2026-01-04 17:04:33,495 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: filtering by parsing_run_id=8e58c4f2-a61c-4975-a19c-f838f58890fa
+2026-01-04 17:04:33,495 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: applied filters: parsing_run_id=8e58c4f2-a61c-4975-a19c-f838f58890fa
+2026-01-04 17:04:33,496 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: returning 1 entries (total=57) with filters: ['parsing_run_id=8e58c4f2-a61c-4975-a19c-f838f58890fa']
+2026-01-04 17:04:33,497 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: filtering by parsing_run_id=37f2a7d4-0018-4328-ae77-c5c62be6ad11
+2026-01-04 17:04:33,497 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: applied filters: parsing_run_id=37f2a7d4-0018-4328-ae77-c5c62be6ad11
+2026-01-04 17:04:33,498 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: returning 0 entries (total=0) with filters: ['parsing_run_id=37f2a7d4-0018-4328-ae77-c5c62be6ad11']
+2026-01-04 17:04:33,498 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: filtering by parsing_run_id=016daaab-9cd9-405a-ac90-bbc80ffcc2a5
+2026-01-04 17:04:33,498 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: applied filters: parsing_run_id=016daaab-9cd9-405a-ac90-bbc80ffcc2a5
+2026-01-04 17:04:33,499 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: returning 0 entries (total=0) with filters: ['parsing_run_id=016daaab-9cd9-405a-ac90-bbc80ffcc2a5']
+2026-01-04 17:04:33,499 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: filtering by parsing_run_id=e94fd388-c23c-4d7a-b174-c02221448f08
+2026-01-04 17:04:33,499 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: applied filters: parsing_run_id=e94fd388-c23c-4d7a-b174-c02221448f08
+2026-01-04 17:04:33,500 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: returning 1 entries (total=17) with filters: ['parsing_run_id=e94fd388-c23c-4d7a-b174-c02221448f08']
+2026-01-04 17:04:33,500 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: filtering by parsing_run_id=aa19272a-7371-41ae-898d-bb99f5a1228d
+2026-01-04 17:04:33,500 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: applied filters: parsing_run_id=aa19272a-7371-41ae-898d-bb99f5a1228d
+2026-01-04 17:04:33,502 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: returning 1 entries (total=17) with filters: ['parsing_run_id=aa19272a-7371-41ae-898d-bb99f5a1228d']
+2026-01-04 17:04:33,502 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: filtering by parsing_run_id=0475ae12-de36-4e36-8c10-89db784aba08
+2026-01-04 17:04:33,502 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: applied filters: parsing_run_id=0475ae12-de36-4e36-8c10-89db784aba08
+2026-01-04 17:04:33,503 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: returning 1 entries (total=17) with filters: ['parsing_run_id=0475ae12-de36-4e36-8c10-89db784aba08']
+2026-01-04 17:04:33,503 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: filtering by parsing_run_id=7421cc44-5f3f-480a-a888-b3ab2c4e194d
+2026-01-04 17:04:33,504 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: applied filters: parsing_run_id=7421cc44-5f3f-480a-a888-b3ab2c4e194d
+2026-01-04 17:04:33,504 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: returning 0 entries (total=0) with filters: ['parsing_run_id=7421cc44-5f3f-480a-a888-b3ab2c4e194d']
+2026-01-04 17:04:33,505 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: filtering by parsing_run_id=35e40edd-7182-4d45-a39f-55333c0d152b
+2026-01-04 17:04:33,505 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: applied filters: parsing_run_id=35e40edd-7182-4d45-a39f-55333c0d152b
+2026-01-04 17:04:33,506 - app.adapters.db.repositories - INFO - DomainQueueRepository.list: returning 1 entries (total=87) with filters: ['parsing_run_id=35e40edd-7182-4d45-a39f-55333c0d152b']
+INFO:     127.0.0.1:49412 - "GET /parsing/runs?limit=100&sort=created_at&order=desc HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49412 - "OPTIONS /moderator/suppliers?limit=100 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63310 - "OPTIONS /moderator/suppliers?limit=100 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49412 - "GET /moderator/suppliers?limit=100 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63310 - "GET /moderator/suppliers?limit=100 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63312 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63310 - "OPTIONS /moderator/suppliers?limit=1000 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49412 - "OPTIONS /moderator/suppliers?limit=1000 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63310 - "GET /moderator/suppliers?limit=1000 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63310 - "OPTIONS /moderator/blacklist?limit=1000 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49412 - "GET /moderator/suppliers?limit=1000 HTTP/1.1" 200 OK
+2026-01-04 17:04:37,470 - app.transport.routers.blacklist - INFO - Blacklist query: found 10 total entries, returning 10 entries
+2026-01-04 17:04:37,470 - app.transport.routers.blacklist - INFO - Returning 10 DTOs
+INFO:     127.0.0.1:63310 - "GET /moderator/blacklist?limit=1000 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49412 - "OPTIONS /keywords HTTP/1.1" 200 OK
+2026-01-04 17:04:37,492 - app.transport.routers.blacklist - INFO - Blacklist query: found 10 total entries, returning 10 entries
+2026-01-04 17:04:37,492 - app.transport.routers.blacklist - INFO - Returning 10 DTOs
+INFO:     127.0.0.1:63310 - "GET /moderator/blacklist?limit=1000 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49412 - "GET /keywords HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49412 - "GET /keywords HTTP/1.1" 200 OK
+2026-01-04 17:04:39,880 - app.transport.routers.blacklist - INFO - Blacklist query: found 10 total entries, returning 10 entries
+2026-01-04 17:04:39,880 - app.transport.routers.blacklist - INFO - Returning 10 DTOs
+INFO:     127.0.0.1:49412 - "GET /moderator/blacklist?limit=1000 HTTP/1.1" 200 OK
+2026-01-04 17:04:39,884 - app.transport.routers.blacklist - INFO - Blacklist query: found 10 total entries, returning 10 entries
+2026-01-04 17:04:39,884 - app.transport.routers.blacklist - INFO - Returning 10 DTOs
+INFO:     127.0.0.1:49412 - "GET /moderator/blacklist?limit=1000 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51456 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51023 - "OPTIONS /moderator/blacklist/test-comment-20251230232429.com HTTP/1.1" 200 OK
+2026-01-04 17:04:45,228 - app.transport.routers.blacklist - INFO - Removing domain from blacklist: test-comment-20251230232429.com
+2026-01-04 17:04:45,261 - app.adapters.audit - ERROR - Failed to create audit log entry: (sqlalchemy.dialects.postgresql.asyncpg.ProgrammingError) <class 'asyncpg.exceptions.InsufficientPrivilegeError'>: нет доступа к таблице audit_log
+[SQL: 
+                INSERT INTO audit_log (table_name, operation, record_id, old_data, new_data, changed_by)
+                VALUES ($1, $2, $3, $4, $5, $6)
+            ]
+[parameters: ('blacklist', 'DELETE', 'test-comment-20251230232429.com', '{"domain": "test-comment-20251230232429.com", "reason": "\\u0422\\u0435\\u0441\\u0442\\u043e\\u0432\\u044b\\u0439 \\u043a\\u043e\\u043c\\u043c\\u0435 ... (129 characters truncated) ... \\u0443\\u043d\\u043a\\u0446\\u0438\\u043e\\u043d\\u0430\\u043b\\u044c\\u043d\\u043e\\u0441\\u0442\\u0438", "added_by": null, "parsing_run_id": null}', None, 'system')]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+Traceback (most recent call last):
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 546, in _prepare_and_execute
+    self._rows = await prepared_stmt.fetch(*parameters)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\asyncpg\prepared_stmt.py", line 176, in fetch
+    data = await self.__bind_execute(args, 0, timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\asyncpg\prepared_stmt.py", line 241, in __bind_execute
+    data, status, _ = await self.__do_execute(
+                      ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\asyncpg\prepared_stmt.py", line 230, in __do_execute
+    return await executor(protocol)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "asyncpg\protocol\protocol.pyx", line 207, in bind_execute
+asyncpg.exceptions.InsufficientPrivilegeError: нет доступа к таблице audit_log
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1969, in _exec_single_context
+    self.dialect.do_execute(
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\engine\default.py", line 922, in do_execute
+    cursor.execute(statement, parameters)
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 580, in execute
+    self._adapt_connection.await_(
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 130, in await_only
+    return current.driver.switch(awaitable)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 195, in greenlet_spawn
+    value = await result
+            ^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 558, in _prepare_and_execute
+    self._handle_exception(error)
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 509, in _handle_exception
+    self._adapt_connection._handle_exception(error)
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 797, in _handle_exception
+    raise translated_error from error
+sqlalchemy.dialects.postgresql.asyncpg.AsyncAdapt_asyncpg_dbapi.ProgrammingError: <class 'asyncpg.exceptions.InsufficientPrivilegeError'>: нет доступа к таблице audit_log
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\tryagain\backend\app\adapters\audit.py", line 36, in log_audit
+    await db.execute(
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\ext\asyncio\session.py", line 455, in execute
+    result = await greenlet_spawn(
+             ^^^^^^^^^^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 200, in greenlet_spawn
+    result = context.throw(*sys.exc_info())
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2308, in execute
+    return self._execute_internal(
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2199, in _execute_internal
+    result = conn.execute(
+             ^^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1416, in execute
+    return meth(
+           ^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\sql\elements.py", line 517, in _execute_on_connection
+    return connection._execute_clauseelement(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1639, in _execute_clauseelement
+    ret = self._execute_context(
+          ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1848, in _execute_context
+    return self._exec_single_context(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1988, in _exec_single_context
+    self._handle_dbapi_exception(
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 2344, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1969, in _exec_single_context
+    self.dialect.do_execute(
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\engine\default.py", line 922, in do_execute
+    cursor.execute(statement, parameters)
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 580, in execute
+    self._adapt_connection.await_(
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 130, in await_only
+    return current.driver.switch(awaitable)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 195, in greenlet_spawn
+    value = await result
+            ^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 558, in _prepare_and_execute
+    self._handle_exception(error)
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 509, in _handle_exception
+    self._adapt_connection._handle_exception(error)
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 797, in _handle_exception
+    raise translated_error from error
+sqlalchemy.exc.ProgrammingError: (sqlalchemy.dialects.postgresql.asyncpg.ProgrammingError) <class 'asyncpg.exceptions.InsufficientPrivilegeError'>: нет доступа к таблице audit_log
+[SQL: 
+                INSERT INTO audit_log (table_name, operation, record_id, old_data, new_data, changed_by)
+                VALUES ($1, $2, $3, $4, $5, $6)
+            ]
+[parameters: ('blacklist', 'DELETE', 'test-comment-20251230232429.com', '{"domain": "test-comment-20251230232429.com", "reason": "\\u0422\\u0435\\u0441\\u0442\\u043e\\u0432\\u044b\\u0439 \\u043a\\u043e\\u043c\\u043c\\u0435 ... (129 characters truncated) ... \\u0443\\u043d\\u043a\\u0446\\u0438\\u043e\\u043d\\u0430\\u043b\\u044c\\u043d\\u043e\\u0441\\u0442\\u0438", "added_by": null, "parsing_run_id": null}', None, 'system')]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2026-01-04 17:04:45,395 - app.transport.routers.blacklist - INFO - Successfully removed domain from blacklist: test-comment-20251230232429.com
+INFO:     127.0.0.1:51023 - "DELETE /moderator/blacklist/test-comment-20251230232429.com HTTP/1.1" 204 No Content
+2026-01-04 17:04:45,400 - app.transport.routers.blacklist - INFO - Blacklist query: found 10 total entries, returning 10 entries
+2026-01-04 17:04:45,400 - app.transport.routers.blacklist - INFO - Returning 10 DTOs
+INFO:     127.0.0.1:51023 - "GET /moderator/blacklist?limit=1000 HTTP/1.1" 200 OK
+2026-01-04 17:04:47,545 - app.transport.routers.blacklist - INFO - Blacklist query: found 10 total entries, returning 10 entries
+2026-01-04 17:04:47,545 - app.transport.routers.blacklist - INFO - Returning 10 DTOs
+INFO:     127.0.0.1:51023 - "GET /moderator/blacklist?limit=1000 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64088 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64099 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61750 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52309 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56383 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53085 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63569 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64100 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53514 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55449 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55457 - "GET /health HTTP/1.1" 200 OK
+2026-01-04 17:08:35,082 - app.transport.routers.blacklist - INFO - Removing domain from blacklist: test-comment-20251230232429.com
+2026-01-04 17:08:35,087 - app.adapters.audit - ERROR - Failed to create audit log entry: (sqlalchemy.dialects.postgresql.asyncpg.ProgrammingError) <class 'asyncpg.exceptions.InsufficientPrivilegeError'>: нет доступа к таблице audit_log
+[SQL: 
+                INSERT INTO audit_log (table_name, operation, record_id, old_data, new_data, changed_by)
+                VALUES ($1, $2, $3, $4, $5, $6)
+            ]
+[parameters: ('blacklist', 'DELETE', 'test-comment-20251230232429.com', '{"domain": "test-comment-20251230232429.com", "reason": "\\u0422\\u0435\\u0441\\u0442\\u043e\\u0432\\u044b\\u0439 \\u043a\\u043e\\u043c\\u043c\\u0435 ... (129 characters truncated) ... \\u0443\\u043d\\u043a\\u0446\\u0438\\u043e\\u043d\\u0430\\u043b\\u044c\\u043d\\u043e\\u0441\\u0442\\u0438", "added_by": null, "parsing_run_id": null}', None, 'system')]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+Traceback (most recent call last):
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 546, in _prepare_and_execute
+    self._rows = await prepared_stmt.fetch(*parameters)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\asyncpg\prepared_stmt.py", line 176, in fetch
+    data = await self.__bind_execute(args, 0, timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\asyncpg\prepared_stmt.py", line 241, in __bind_execute
+    data, status, _ = await self.__do_execute(
+                      ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\asyncpg\prepared_stmt.py", line 230, in __do_execute
+    return await executor(protocol)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "asyncpg\protocol\protocol.pyx", line 207, in bind_execute
+asyncpg.exceptions.InsufficientPrivilegeError: нет доступа к таблице audit_log
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1969, in _exec_single_context
+    self.dialect.do_execute(
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\engine\default.py", line 922, in do_execute
+    cursor.execute(statement, parameters)
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 580, in execute
+    self._adapt_connection.await_(
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 130, in await_only
+    return current.driver.switch(awaitable)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 195, in greenlet_spawn
+    value = await result
+            ^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 558, in _prepare_and_execute
+    self._handle_exception(error)
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 509, in _handle_exception
+    self._adapt_connection._handle_exception(error)
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 797, in _handle_exception
+    raise translated_error from error
+sqlalchemy.dialects.postgresql.asyncpg.AsyncAdapt_asyncpg_dbapi.ProgrammingError: <class 'asyncpg.exceptions.InsufficientPrivilegeError'>: нет доступа к таблице audit_log
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\tryagain\backend\app\adapters\audit.py", line 36, in log_audit
+    await db.execute(
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\ext\asyncio\session.py", line 455, in execute
+    result = await greenlet_spawn(
+             ^^^^^^^^^^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 200, in greenlet_spawn
+    result = context.throw(*sys.exc_info())
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2308, in execute
+    return self._execute_internal(
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2199, in _execute_internal
+    result = conn.execute(
+             ^^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1416, in execute
+    return meth(
+           ^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\sql\elements.py", line 517, in _execute_on_connection
+    return connection._execute_clauseelement(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1639, in _execute_clauseelement
+    ret = self._execute_context(
+          ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1848, in _execute_context
+    return self._exec_single_context(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1988, in _exec_single_context
+    self._handle_dbapi_exception(
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 2344, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1969, in _exec_single_context
+    self.dialect.do_execute(
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\engine\default.py", line 922, in do_execute
+    cursor.execute(statement, parameters)
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 580, in execute
+    self._adapt_connection.await_(
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 130, in await_only
+    return current.driver.switch(awaitable)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 195, in greenlet_spawn
+    value = await result
+            ^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 558, in _prepare_and_execute
+    self._handle_exception(error)
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 509, in _handle_exception
+    self._adapt_connection._handle_exception(error)
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 797, in _handle_exception
+    raise translated_error from error
+sqlalchemy.exc.ProgrammingError: (sqlalchemy.dialects.postgresql.asyncpg.ProgrammingError) <class 'asyncpg.exceptions.InsufficientPrivilegeError'>: нет доступа к таблице audit_log
+[SQL: 
+                INSERT INTO audit_log (table_name, operation, record_id, old_data, new_data, changed_by)
+                VALUES ($1, $2, $3, $4, $5, $6)
+            ]
+[parameters: ('blacklist', 'DELETE', 'test-comment-20251230232429.com', '{"domain": "test-comment-20251230232429.com", "reason": "\\u0422\\u0435\\u0441\\u0442\\u043e\\u0432\\u044b\\u0439 \\u043a\\u043e\\u043c\\u043c\\u0435 ... (129 characters truncated) ... \\u0443\\u043d\\u043a\\u0446\\u0438\\u043e\\u043d\\u0430\\u043b\\u044c\\u043d\\u043e\\u0441\\u0442\\u0438", "added_by": null, "parsing_run_id": null}', None, 'system')]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2026-01-04 17:08:35,089 - app.transport.routers.blacklist - INFO - Successfully removed domain from blacklist: test-comment-20251230232429.com
+INFO:     127.0.0.1:51747 - "DELETE /moderator/blacklist/test-comment-20251230232429.com HTTP/1.1" 204 No Content
+2026-01-04 17:08:37,277 - app.transport.routers.blacklist - INFO - Blacklist query: found 10 total entries, returning 10 entries
+2026-01-04 17:08:37,277 - app.transport.routers.blacklist - INFO - Returning 10 DTOs
+INFO:     127.0.0.1:51752 - "GET /moderator/blacklist?limit=100 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51761 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51765 - "GET /health HTTP/1.1" 200 OK
+2026-01-04 17:08:47,211 - app.transport.routers.blacklist - INFO - Removing domain from blacklist: test-comment-20251230232429.com
+2026-01-04 17:08:47,215 - app.adapters.audit - ERROR - Failed to create audit log entry: (sqlalchemy.dialects.postgresql.asyncpg.ProgrammingError) <class 'asyncpg.exceptions.InsufficientPrivilegeError'>: нет доступа к таблице audit_log
+[SQL: 
+                INSERT INTO audit_log (table_name, operation, record_id, old_data, new_data, changed_by)
+                VALUES ($1, $2, $3, $4, $5, $6)
+            ]
+[parameters: ('blacklist', 'DELETE', 'test-comment-20251230232429.com', '{"domain": "test-comment-20251230232429.com", "reason": "\\u0422\\u0435\\u0441\\u0442\\u043e\\u0432\\u044b\\u0439 \\u043a\\u043e\\u043c\\u043c\\u0435 ... (129 characters truncated) ... \\u0443\\u043d\\u043a\\u0446\\u0438\\u043e\\u043d\\u0430\\u043b\\u044c\\u043d\\u043e\\u0441\\u0442\\u0438", "added_by": null, "parsing_run_id": null}', None, 'system')]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+Traceback (most recent call last):
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 546, in _prepare_and_execute
+    self._rows = await prepared_stmt.fetch(*parameters)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\asyncpg\prepared_stmt.py", line 176, in fetch
+    data = await self.__bind_execute(args, 0, timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\asyncpg\prepared_stmt.py", line 241, in __bind_execute
+    data, status, _ = await self.__do_execute(
+                      ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\asyncpg\prepared_stmt.py", line 230, in __do_execute
+    return await executor(protocol)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "asyncpg\protocol\protocol.pyx", line 207, in bind_execute
+asyncpg.exceptions.InsufficientPrivilegeError: нет доступа к таблице audit_log
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1969, in _exec_single_context
+    self.dialect.do_execute(
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\engine\default.py", line 922, in do_execute
+    cursor.execute(statement, parameters)
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 580, in execute
+    self._adapt_connection.await_(
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 130, in await_only
+    return current.driver.switch(awaitable)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 195, in greenlet_spawn
+    value = await result
+            ^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 558, in _prepare_and_execute
+    self._handle_exception(error)
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 509, in _handle_exception
+    self._adapt_connection._handle_exception(error)
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 797, in _handle_exception
+    raise translated_error from error
+sqlalchemy.dialects.postgresql.asyncpg.AsyncAdapt_asyncpg_dbapi.ProgrammingError: <class 'asyncpg.exceptions.InsufficientPrivilegeError'>: нет доступа к таблице audit_log
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\tryagain\backend\app\adapters\audit.py", line 36, in log_audit
+    await db.execute(
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\ext\asyncio\session.py", line 455, in execute
+    result = await greenlet_spawn(
+             ^^^^^^^^^^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 200, in greenlet_spawn
+    result = context.throw(*sys.exc_info())
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2308, in execute
+    return self._execute_internal(
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2199, in _execute_internal
+    result = conn.execute(
+             ^^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1416, in execute
+    return meth(
+           ^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\sql\elements.py", line 517, in _execute_on_connection
+    return connection._execute_clauseelement(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1639, in _execute_clauseelement
+    ret = self._execute_context(
+          ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1848, in _execute_context
+    return self._exec_single_context(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1988, in _exec_single_context
+    self._handle_dbapi_exception(
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 2344, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1969, in _exec_single_context
+    self.dialect.do_execute(
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\engine\default.py", line 922, in do_execute
+    cursor.execute(statement, parameters)
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 580, in execute
+    self._adapt_connection.await_(
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 130, in await_only
+    return current.driver.switch(awaitable)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 195, in greenlet_spawn
+    value = await result
+            ^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 558, in _prepare_and_execute
+    self._handle_exception(error)
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 509, in _handle_exception
+    self._adapt_connection._handle_exception(error)
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 797, in _handle_exception
+    raise translated_error from error
+sqlalchemy.exc.ProgrammingError: (sqlalchemy.dialects.postgresql.asyncpg.ProgrammingError) <class 'asyncpg.exceptions.InsufficientPrivilegeError'>: нет доступа к таблице audit_log
+[SQL: 
+                INSERT INTO audit_log (table_name, operation, record_id, old_data, new_data, changed_by)
+                VALUES ($1, $2, $3, $4, $5, $6)
+            ]
+[parameters: ('blacklist', 'DELETE', 'test-comment-20251230232429.com', '{"domain": "test-comment-20251230232429.com", "reason": "\\u0422\\u0435\\u0441\\u0442\\u043e\\u0432\\u044b\\u0439 \\u043a\\u043e\\u043c\\u043c\\u0435 ... (129 characters truncated) ... \\u0443\\u043d\\u043a\\u0446\\u0438\\u043e\\u043d\\u0430\\u043b\\u044c\\u043d\\u043e\\u0441\\u0442\\u0438", "added_by": null, "parsing_run_id": null}', None, 'system')]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2026-01-04 17:08:47,217 - app.transport.routers.blacklist - INFO - Successfully removed domain from blacklist: test-comment-20251230232429.com
+INFO:     127.0.0.1:51771 - "DELETE /moderator/blacklist/test-comment-20251230232429.com HTTP/1.1" 204 No Content
+2026-01-04 17:08:49,360 - app.transport.routers.blacklist - INFO - Blacklist query: found 10 total entries, returning 10 entries
+2026-01-04 17:08:49,360 - app.transport.routers.blacklist - INFO - Returning 10 DTOs
+INFO:     127.0.0.1:51775 - "GET /moderator/blacklist?limit=100 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51455 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51465 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51471 - "GET /health HTTP/1.1" 200 OK
+2026-01-04 17:09:25,478 - app.transport.routers.blacklist - INFO - Removing domain from blacklist: test-comment-20251230232429.com
+2026-01-04 17:09:25,481 - app.adapters.audit - ERROR - Failed to create audit log entry: (sqlalchemy.dialects.postgresql.asyncpg.ProgrammingError) <class 'asyncpg.exceptions.InsufficientPrivilegeError'>: нет доступа к таблице audit_log
+[SQL: 
+                INSERT INTO audit_log (table_name, operation, record_id, old_data, new_data, changed_by)
+                VALUES ($1, $2, $3, $4, $5, $6)
+            ]
+[parameters: ('blacklist', 'DELETE', 'test-comment-20251230232429.com', '{"domain": "test-comment-20251230232429.com", "reason": "\\u0422\\u0435\\u0441\\u0442\\u043e\\u0432\\u044b\\u0439 \\u043a\\u043e\\u043c\\u043c\\u0435 ... (129 characters truncated) ... \\u0443\\u043d\\u043a\\u0446\\u0438\\u043e\\u043d\\u0430\\u043b\\u044c\\u043d\\u043e\\u0441\\u0442\\u0438", "added_by": null, "parsing_run_id": null}', None, 'system')]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+Traceback (most recent call last):
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 546, in _prepare_and_execute
+    self._rows = await prepared_stmt.fetch(*parameters)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\asyncpg\prepared_stmt.py", line 176, in fetch
+    data = await self.__bind_execute(args, 0, timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\asyncpg\prepared_stmt.py", line 241, in __bind_execute
+    data, status, _ = await self.__do_execute(
+                      ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\asyncpg\prepared_stmt.py", line 230, in __do_execute
+    return await executor(protocol)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "asyncpg\protocol\protocol.pyx", line 207, in bind_execute
+asyncpg.exceptions.InsufficientPrivilegeError: нет доступа к таблице audit_log
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1969, in _exec_single_context
+    self.dialect.do_execute(
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\engine\default.py", line 922, in do_execute
+    cursor.execute(statement, parameters)
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 580, in execute
+    self._adapt_connection.await_(
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 130, in await_only
+    return current.driver.switch(awaitable)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 195, in greenlet_spawn
+    value = await result
+            ^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 558, in _prepare_and_execute
+    self._handle_exception(error)
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 509, in _handle_exception
+    self._adapt_connection._handle_exception(error)
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 797, in _handle_exception
+    raise translated_error from error
+sqlalchemy.dialects.postgresql.asyncpg.AsyncAdapt_asyncpg_dbapi.ProgrammingError: <class 'asyncpg.exceptions.InsufficientPrivilegeError'>: нет доступа к таблице audit_log
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\tryagain\backend\app\adapters\audit.py", line 36, in log_audit
+    await db.execute(
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\ext\asyncio\session.py", line 455, in execute
+    result = await greenlet_spawn(
+             ^^^^^^^^^^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 200, in greenlet_spawn
+    result = context.throw(*sys.exc_info())
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2308, in execute
+    return self._execute_internal(
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2199, in _execute_internal
+    result = conn.execute(
+             ^^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1416, in execute
+    return meth(
+           ^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\sql\elements.py", line 517, in _execute_on_connection
+    return connection._execute_clauseelement(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1639, in _execute_clauseelement
+    ret = self._execute_context(
+          ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1848, in _execute_context
+    return self._exec_single_context(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1988, in _exec_single_context
+    self._handle_dbapi_exception(
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 2344, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1969, in _exec_single_context
+    self.dialect.do_execute(
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\engine\default.py", line 922, in do_execute
+    cursor.execute(statement, parameters)
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 580, in execute
+    self._adapt_connection.await_(
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 130, in await_only
+    return current.driver.switch(awaitable)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 195, in greenlet_spawn
+    value = await result
+            ^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 558, in _prepare_and_execute
+    self._handle_exception(error)
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 509, in _handle_exception
+    self._adapt_connection._handle_exception(error)
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 797, in _handle_exception
+    raise translated_error from error
+sqlalchemy.exc.ProgrammingError: (sqlalchemy.dialects.postgresql.asyncpg.ProgrammingError) <class 'asyncpg.exceptions.InsufficientPrivilegeError'>: нет доступа к таблице audit_log
+[SQL: 
+                INSERT INTO audit_log (table_name, operation, record_id, old_data, new_data, changed_by)
+                VALUES ($1, $2, $3, $4, $5, $6)
+            ]
+[parameters: ('blacklist', 'DELETE', 'test-comment-20251230232429.com', '{"domain": "test-comment-20251230232429.com", "reason": "\\u0422\\u0435\\u0441\\u0442\\u043e\\u0432\\u044b\\u0439 \\u043a\\u043e\\u043c\\u043c\\u0435 ... (129 characters truncated) ... \\u0443\\u043d\\u043a\\u0446\\u0438\\u043e\\u043d\\u0430\\u043b\\u044c\\u043d\\u043e\\u0441\\u0442\\u0438", "added_by": null, "parsing_run_id": null}', None, 'system')]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2026-01-04 17:09:25,483 - app.transport.routers.blacklist - INFO - Successfully removed domain from blacklist: test-comment-20251230232429.com
+INFO:     127.0.0.1:51486 - "DELETE /moderator/blacklist/test-comment-20251230232429.com HTTP/1.1" 204 No Content
+2026-01-04 17:09:34,035 - app.transport.routers.blacklist - INFO - Blacklist query: found 10 total entries, returning 10 entries
+2026-01-04 17:09:34,035 - app.transport.routers.blacklist - INFO - Returning 10 DTOs
+INFO:     127.0.0.1:51506 - "GET /moderator/blacklist?limit=100 HTTP/1.1" 200 OK
+2026-01-04 17:09:41,712 - app.transport.routers.blacklist - INFO - Removing domain from blacklist: test-api-domain.ru
+2026-01-04 17:09:41,714 - app.adapters.audit - ERROR - Failed to create audit log entry: (sqlalchemy.dialects.postgresql.asyncpg.ProgrammingError) <class 'asyncpg.exceptions.InsufficientPrivilegeError'>: нет доступа к таблице audit_log
+[SQL: 
+                INSERT INTO audit_log (table_name, operation, record_id, old_data, new_data, changed_by)
+                VALUES ($1, $2, $3, $4, $5, $6)
+            ]
+[parameters: ('blacklist', 'DELETE', 'test-api-domain.ru', '{"domain": "test-api-domain.ru", "reason": null, "added_by": null, "parsing_run_id": null}', None, 'system')]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+Traceback (most recent call last):
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 546, in _prepare_and_execute
+    self._rows = await prepared_stmt.fetch(*parameters)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\asyncpg\prepared_stmt.py", line 176, in fetch
+    data = await self.__bind_execute(args, 0, timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\asyncpg\prepared_stmt.py", line 241, in __bind_execute
+    data, status, _ = await self.__do_execute(
+                      ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\asyncpg\prepared_stmt.py", line 230, in __do_execute
+    return await executor(protocol)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "asyncpg\protocol\protocol.pyx", line 207, in bind_execute
+asyncpg.exceptions.InsufficientPrivilegeError: нет доступа к таблице audit_log
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1969, in _exec_single_context
+    self.dialect.do_execute(
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\engine\default.py", line 922, in do_execute
+    cursor.execute(statement, parameters)
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 580, in execute
+    self._adapt_connection.await_(
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 130, in await_only
+    return current.driver.switch(awaitable)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 195, in greenlet_spawn
+    value = await result
+            ^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 558, in _prepare_and_execute
+    self._handle_exception(error)
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 509, in _handle_exception
+    self._adapt_connection._handle_exception(error)
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 797, in _handle_exception
+    raise translated_error from error
+sqlalchemy.dialects.postgresql.asyncpg.AsyncAdapt_asyncpg_dbapi.ProgrammingError: <class 'asyncpg.exceptions.InsufficientPrivilegeError'>: нет доступа к таблице audit_log
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\tryagain\backend\app\adapters\audit.py", line 36, in log_audit
+    await db.execute(
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\ext\asyncio\session.py", line 455, in execute
+    result = await greenlet_spawn(
+             ^^^^^^^^^^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 200, in greenlet_spawn
+    result = context.throw(*sys.exc_info())
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2308, in execute
+    return self._execute_internal(
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2199, in _execute_internal
+    result = conn.execute(
+             ^^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1416, in execute
+    return meth(
+           ^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\sql\elements.py", line 517, in _execute_on_connection
+    return connection._execute_clauseelement(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1639, in _execute_clauseelement
+    ret = self._execute_context(
+          ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1848, in _execute_context
+    return self._exec_single_context(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1988, in _exec_single_context
+    self._handle_dbapi_exception(
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 2344, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1969, in _exec_single_context
+    self.dialect.do_execute(
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\engine\default.py", line 922, in do_execute
+    cursor.execute(statement, parameters)
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 580, in execute
+    self._adapt_connection.await_(
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 130, in await_only
+    return current.driver.switch(awaitable)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 195, in greenlet_spawn
+    value = await result
+            ^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 558, in _prepare_and_execute
+    self._handle_exception(error)
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 509, in _handle_exception
+    self._adapt_connection._handle_exception(error)
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 797, in _handle_exception
+    raise translated_error from error
+sqlalchemy.exc.ProgrammingError: (sqlalchemy.dialects.postgresql.asyncpg.ProgrammingError) <class 'asyncpg.exceptions.InsufficientPrivilegeError'>: нет доступа к таблице audit_log
+[SQL: 
+                INSERT INTO audit_log (table_name, operation, record_id, old_data, new_data, changed_by)
+                VALUES ($1, $2, $3, $4, $5, $6)
+            ]
+[parameters: ('blacklist', 'DELETE', 'test-api-domain.ru', '{"domain": "test-api-domain.ru", "reason": null, "added_by": null, "parsing_run_id": null}', None, 'system')]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2026-01-04 17:09:41,716 - app.transport.routers.blacklist - INFO - Successfully removed domain from blacklist: test-api-domain.ru
+INFO:     127.0.0.1:51518 - "DELETE /moderator/blacklist/test-api-domain.ru HTTP/1.1" 204 No Content
+INFO:     127.0.0.1:51522 - "GET /health HTTP/1.1" 200 OK
+2026-01-04 17:09:43,685 - app.transport.routers.blacklist - INFO - Blacklist query: found 10 total entries, returning 10 entries
+2026-01-04 17:09:43,685 - app.transport.routers.blacklist - INFO - Returning 10 DTOs
+INFO:     127.0.0.1:51525 - "GET /moderator/blacklist?limit=100 HTTP/1.1" 200 OK
+2026-01-04 17:09:53,797 - app.transport.routers.blacklist - INFO - Removing domain from blacklist: test-api-domain.ru
+2026-01-04 17:09:53,799 - app.adapters.audit - ERROR - Failed to create audit log entry: (sqlalchemy.dialects.postgresql.asyncpg.ProgrammingError) <class 'asyncpg.exceptions.InsufficientPrivilegeError'>: нет доступа к таблице audit_log
+[SQL: 
+                INSERT INTO audit_log (table_name, operation, record_id, old_data, new_data, changed_by)
+                VALUES ($1, $2, $3, $4, $5, $6)
+            ]
+[parameters: ('blacklist', 'DELETE', 'test-api-domain.ru', '{"domain": "test-api-domain.ru", "reason": null, "added_by": null, "parsing_run_id": null}', None, 'system')]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+Traceback (most recent call last):
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 546, in _prepare_and_execute
+    self._rows = await prepared_stmt.fetch(*parameters)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\asyncpg\prepared_stmt.py", line 176, in fetch
+    data = await self.__bind_execute(args, 0, timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\asyncpg\prepared_stmt.py", line 241, in __bind_execute
+    data, status, _ = await self.__do_execute(
+                      ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\asyncpg\prepared_stmt.py", line 230, in __do_execute
+    return await executor(protocol)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "asyncpg\protocol\protocol.pyx", line 207, in bind_execute
+asyncpg.exceptions.InsufficientPrivilegeError: нет доступа к таблице audit_log
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1969, in _exec_single_context
+    self.dialect.do_execute(
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\engine\default.py", line 922, in do_execute
+    cursor.execute(statement, parameters)
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 580, in execute
+    self._adapt_connection.await_(
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 130, in await_only
+    return current.driver.switch(awaitable)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 195, in greenlet_spawn
+    value = await result
+            ^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 558, in _prepare_and_execute
+    self._handle_exception(error)
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 509, in _handle_exception
+    self._adapt_connection._handle_exception(error)
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 797, in _handle_exception
+    raise translated_error from error
+sqlalchemy.dialects.postgresql.asyncpg.AsyncAdapt_asyncpg_dbapi.ProgrammingError: <class 'asyncpg.exceptions.InsufficientPrivilegeError'>: нет доступа к таблице audit_log
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\tryagain\backend\app\adapters\audit.py", line 36, in log_audit
+    await db.execute(
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\ext\asyncio\session.py", line 455, in execute
+    result = await greenlet_spawn(
+             ^^^^^^^^^^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 200, in greenlet_spawn
+    result = context.throw(*sys.exc_info())
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2308, in execute
+    return self._execute_internal(
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2199, in _execute_internal
+    result = conn.execute(
+             ^^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1416, in execute
+    return meth(
+           ^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\sql\elements.py", line 517, in _execute_on_connection
+    return connection._execute_clauseelement(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1639, in _execute_clauseelement
+    ret = self._execute_context(
+          ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1848, in _execute_context
+    return self._exec_single_context(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1988, in _exec_single_context
+    self._handle_dbapi_exception(
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 2344, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1969, in _exec_single_context
+    self.dialect.do_execute(
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\engine\default.py", line 922, in do_execute
+    cursor.execute(statement, parameters)
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 580, in execute
+    self._adapt_connection.await_(
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 130, in await_only
+    return current.driver.switch(awaitable)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 195, in greenlet_spawn
+    value = await result
+            ^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 558, in _prepare_and_execute
+    self._handle_exception(error)
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 509, in _handle_exception
+    self._adapt_connection._handle_exception(error)
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 797, in _handle_exception
+    raise translated_error from error
+sqlalchemy.exc.ProgrammingError: (sqlalchemy.dialects.postgresql.asyncpg.ProgrammingError) <class 'asyncpg.exceptions.InsufficientPrivilegeError'>: нет доступа к таблице audit_log
+[SQL: 
+                INSERT INTO audit_log (table_name, operation, record_id, old_data, new_data, changed_by)
+                VALUES ($1, $2, $3, $4, $5, $6)
+            ]
+[parameters: ('blacklist', 'DELETE', 'test-api-domain.ru', '{"domain": "test-api-domain.ru", "reason": null, "added_by": null, "parsing_run_id": null}', None, 'system')]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2026-01-04 17:09:53,801 - app.transport.routers.blacklist - INFO - Successfully removed domain from blacklist: test-api-domain.ru
+INFO:     127.0.0.1:51561 - "DELETE /moderator/blacklist/test-api-domain.ru HTTP/1.1" 204 No Content
+2026-01-04 17:09:55,835 - app.transport.routers.blacklist - INFO - Blacklist query: found 10 total entries, returning 10 entries
+2026-01-04 17:09:55,835 - app.transport.routers.blacklist - INFO - Returning 10 DTOs
+INFO:     127.0.0.1:58753 - "GET /moderator/blacklist?limit=100 HTTP/1.1" 200 OK
+2026-01-04 17:10:04,417 - app.transport.routers.blacklist - INFO - Removing domain from blacklist: pulscen.ru
+2026-01-04 17:10:04,419 - app.adapters.audit - ERROR - Failed to create audit log entry: (sqlalchemy.dialects.postgresql.asyncpg.ProgrammingError) <class 'asyncpg.exceptions.InsufficientPrivilegeError'>: нет доступа к таблице audit_log
+[SQL: 
+                INSERT INTO audit_log (table_name, operation, record_id, old_data, new_data, changed_by)
+                VALUES ($1, $2, $3, $4, $5, $6)
+            ]
+[parameters: ('blacklist', 'DELETE', 'pulscen.ru', '{"domain": "pulscen.ru", "reason": null, "added_by": null, "parsing_run_id": "f9a29a3e-a959-4201-b9d9-3120b77c33b9"}', None, 'system')]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+Traceback (most recent call last):
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 546, in _prepare_and_execute
+    self._rows = await prepared_stmt.fetch(*parameters)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\asyncpg\prepared_stmt.py", line 176, in fetch
+    data = await self.__bind_execute(args, 0, timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\asyncpg\prepared_stmt.py", line 241, in __bind_execute
+    data, status, _ = await self.__do_execute(
+                      ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\asyncpg\prepared_stmt.py", line 230, in __do_execute
+    return await executor(protocol)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "asyncpg\protocol\protocol.pyx", line 207, in bind_execute
+asyncpg.exceptions.InsufficientPrivilegeError: нет доступа к таблице audit_log
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1969, in _exec_single_context
+    self.dialect.do_execute(
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\engine\default.py", line 922, in do_execute
+    cursor.execute(statement, parameters)
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 580, in execute
+    self._adapt_connection.await_(
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 130, in await_only
+    return current.driver.switch(awaitable)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 195, in greenlet_spawn
+    value = await result
+            ^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 558, in _prepare_and_execute
+    self._handle_exception(error)
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 509, in _handle_exception
+    self._adapt_connection._handle_exception(error)
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 797, in _handle_exception
+    raise translated_error from error
+sqlalchemy.dialects.postgresql.asyncpg.AsyncAdapt_asyncpg_dbapi.ProgrammingError: <class 'asyncpg.exceptions.InsufficientPrivilegeError'>: нет доступа к таблице audit_log
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\tryagain\backend\app\adapters\audit.py", line 36, in log_audit
+    await db.execute(
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\ext\asyncio\session.py", line 455, in execute
+    result = await greenlet_spawn(
+             ^^^^^^^^^^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 200, in greenlet_spawn
+    result = context.throw(*sys.exc_info())
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2308, in execute
+    return self._execute_internal(
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2199, in _execute_internal
+    result = conn.execute(
+             ^^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1416, in execute
+    return meth(
+           ^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\sql\elements.py", line 517, in _execute_on_connection
+    return connection._execute_clauseelement(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1639, in _execute_clauseelement
+    ret = self._execute_context(
+          ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1848, in _execute_context
+    return self._exec_single_context(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1988, in _exec_single_context
+    self._handle_dbapi_exception(
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 2344, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1969, in _exec_single_context
+    self.dialect.do_execute(
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\engine\default.py", line 922, in do_execute
+    cursor.execute(statement, parameters)
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 580, in execute
+    self._adapt_connection.await_(
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 130, in await_only
+    return current.driver.switch(awaitable)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 195, in greenlet_spawn
+    value = await result
+            ^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 558, in _prepare_and_execute
+    self._handle_exception(error)
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 509, in _handle_exception
+    self._adapt_connection._handle_exception(error)
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 797, in _handle_exception
+    raise translated_error from error
+sqlalchemy.exc.ProgrammingError: (sqlalchemy.dialects.postgresql.asyncpg.ProgrammingError) <class 'asyncpg.exceptions.InsufficientPrivilegeError'>: нет доступа к таблице audit_log
+[SQL: 
+                INSERT INTO audit_log (table_name, operation, record_id, old_data, new_data, changed_by)
+                VALUES ($1, $2, $3, $4, $5, $6)
+            ]
+[parameters: ('blacklist', 'DELETE', 'pulscen.ru', '{"domain": "pulscen.ru", "reason": null, "added_by": null, "parsing_run_id": "f9a29a3e-a959-4201-b9d9-3120b77c33b9"}', None, 'system')]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2026-01-04 17:10:04,422 - app.transport.routers.blacklist - INFO - Successfully removed domain from blacklist: pulscen.ru
+INFO:     127.0.0.1:57600 - "DELETE /moderator/blacklist/pulscen.ru HTTP/1.1" 204 No Content
+2026-01-04 17:10:07,375 - app.transport.routers.blacklist - INFO - Blacklist query: found 10 total entries, returning 10 entries
+2026-01-04 17:10:07,375 - app.transport.routers.blacklist - INFO - Returning 10 DTOs
+INFO:     127.0.0.1:57606 - "GET /moderator/blacklist?limit=100 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57617 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57624 - "GET /health HTTP/1.1" 200 OK
+2026-01-04 17:10:24,623 - app.transport.routers.blacklist - INFO - Removing domain from blacklist: www.wildberries.ru
+2026-01-04 17:10:24,625 - app.adapters.audit - ERROR - Failed to create audit log entry: (sqlalchemy.dialects.postgresql.asyncpg.ProgrammingError) <class 'asyncpg.exceptions.InsufficientPrivilegeError'>: нет доступа к таблице audit_log
+[SQL: 
+                INSERT INTO audit_log (table_name, operation, record_id, old_data, new_data, changed_by)
+                VALUES ($1, $2, $3, $4, $5, $6)
+            ]
+[parameters: ('blacklist', 'DELETE', 'www.wildberries.ru', '{"domain": "www.wildberries.ru", "reason": null, "added_by": null, "parsing_run_id": null}', None, 'system')]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+Traceback (most recent call last):
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 546, in _prepare_and_execute
+    self._rows = await prepared_stmt.fetch(*parameters)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\asyncpg\prepared_stmt.py", line 176, in fetch
+    data = await self.__bind_execute(args, 0, timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\asyncpg\prepared_stmt.py", line 241, in __bind_execute
+    data, status, _ = await self.__do_execute(
+                      ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\asyncpg\prepared_stmt.py", line 230, in __do_execute
+    return await executor(protocol)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "asyncpg\protocol\protocol.pyx", line 207, in bind_execute
+asyncpg.exceptions.InsufficientPrivilegeError: нет доступа к таблице audit_log
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1969, in _exec_single_context
+    self.dialect.do_execute(
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\engine\default.py", line 922, in do_execute
+    cursor.execute(statement, parameters)
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 580, in execute
+    self._adapt_connection.await_(
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 130, in await_only
+    return current.driver.switch(awaitable)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 195, in greenlet_spawn
+    value = await result
+            ^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 558, in _prepare_and_execute
+    self._handle_exception(error)
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 509, in _handle_exception
+    self._adapt_connection._handle_exception(error)
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 797, in _handle_exception
+    raise translated_error from error
+sqlalchemy.dialects.postgresql.asyncpg.AsyncAdapt_asyncpg_dbapi.ProgrammingError: <class 'asyncpg.exceptions.InsufficientPrivilegeError'>: нет доступа к таблице audit_log
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\tryagain\backend\app\adapters\audit.py", line 36, in log_audit
+    await db.execute(
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\ext\asyncio\session.py", line 455, in execute
+    result = await greenlet_spawn(
+             ^^^^^^^^^^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 200, in greenlet_spawn
+    result = context.throw(*sys.exc_info())
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2308, in execute
+    return self._execute_internal(
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2199, in _execute_internal
+    result = conn.execute(
+             ^^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1416, in execute
+    return meth(
+           ^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\sql\elements.py", line 517, in _execute_on_connection
+    return connection._execute_clauseelement(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1639, in _execute_clauseelement
+    ret = self._execute_context(
+          ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1848, in _execute_context
+    return self._exec_single_context(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1988, in _exec_single_context
+    self._handle_dbapi_exception(
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 2344, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1969, in _exec_single_context
+    self.dialect.do_execute(
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\engine\default.py", line 922, in do_execute
+    cursor.execute(statement, parameters)
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 580, in execute
+    self._adapt_connection.await_(
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 130, in await_only
+    return current.driver.switch(awaitable)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 195, in greenlet_spawn
+    value = await result
+            ^^^^^^^^^^^^
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 558, in _prepare_and_execute
+    self._handle_exception(error)
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 509, in _handle_exception
+    self._adapt_connection._handle_exception(error)
+  File "D:\tryagain\backend\venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 797, in _handle_exception
+    raise translated_error from error
+sqlalchemy.exc.ProgrammingError: (sqlalchemy.dialects.postgresql.asyncpg.ProgrammingError) <class 'asyncpg.exceptions.InsufficientPrivilegeError'>: нет доступа к таблице audit_log
+[SQL: 
+                INSERT INTO audit_log (table_name, operation, record_id, old_data, new_data, changed_by)
+                VALUES ($1, $2, $3, $4, $5, $6)
+            ]
+[parameters: ('blacklist', 'DELETE', 'www.wildberries.ru', '{"domain": "www.wildberries.ru", "reason": null, "added_by": null, "parsing_run_id": null}', None, 'system')]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2026-01-04 17:10:24,626 - app.transport.routers.blacklist - INFO - Successfully removed domain from blacklist: www.wildberries.ru
+INFO:     127.0.0.1:57637 - "DELETE /moderator/blacklist/www.wildberries.ru HTTP/1.1" 204 No Content
+2026-01-04 17:10:29,093 - app.transport.routers.blacklist - INFO - Blacklist query: found 10 total entries, returning 10 entries
+2026-01-04 17:10:29,093 - app.transport.routers.blacklist - INFO - Returning 10 DTOs
+INFO:     127.0.0.1:62202 - "GET /moderator/blacklist?limit=100 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62234 - "GET /health HTTP/1.1" 200 OK
