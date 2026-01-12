@@ -1876,6 +1876,189 @@ export default function ParsingRunDetailsPage({ params }: { params: Promise<{ ru
           </Card>
         )}
 
+        {/* Статус Comet в реальном времени */}
+        {cometStatus && cometStatus.results && cometStatus.results.length > 0 && (
+          <Card className="mt-6 border-2 border-orange-500">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                🤖 Comet — Автоматическое извлечение данных
+                {cometStatus.status === 'running' && (
+                  <Badge className="bg-orange-600 text-white animate-pulse">
+                    Работает
+                  </Badge>
+                )}
+                {cometStatus.status === 'completed' && (
+                  <Badge className="bg-green-600 text-white">
+                    Завершено
+                  </Badge>
+                )}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {cometStatus.status === 'running' && (
+                <div className="mb-4 p-4 bg-orange-50 border border-orange-200 rounded-md">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="w-3 h-3 bg-orange-500 rounded-full animate-pulse"></div>
+                    <span className="text-sm font-semibold text-orange-900">
+                      Comet обрабатывает домены...
+                    </span>
+                  </div>
+                  <div className="text-xs text-orange-700 space-y-1">
+                    <p>📄 Открытие страницы сайта</p>
+                    <p>🎯 Активация ассистента Comet</p>
+                    <p>✍️ Отправка промпта для поиска ИНН и Email</p>
+                    <p>⏳ Ожидание ответа (может занять до 2 минут)</p>
+                  </div>
+                  <div className="mt-3 w-full bg-orange-200 rounded-full h-2">
+                    <div 
+                      className="bg-orange-600 h-2 rounded-full transition-all duration-300"
+                      style={{ width: `${(cometStatus.processed / cometStatus.total) * 100}%` }}
+                    />
+                  </div>
+                  <p className="text-xs text-orange-600 mt-2 text-center">
+                    {cometStatus.processed} из {cometStatus.total} доменов обработано
+                  </p>
+                </div>
+              )}
+
+              <Accordion type="multiple" className="w-full">
+                {cometStatus.results.map((result, idx) => {
+                  const hasData = result.inn || result.email
+                  const hasError = !!result.error
+                  
+                  return (
+                    <AccordionItem key={`comet-${idx}`} value={`comet-${idx}`} className="border-b">
+                      <AccordionTrigger className="hover:no-underline">
+                        <div className="flex items-center gap-2 flex-1">
+                          <span className={`w-3 h-3 rounded-full ${
+                            hasError ? 'bg-red-500' : 
+                            hasData ? 'bg-green-500' : 
+                            'bg-gray-400'
+                          }`}></span>
+                          <span className="font-mono font-semibold">{result.domain}</span>
+                          {result.inn && (
+                            <Badge className="bg-blue-600 text-white">
+                              ИНН: {result.inn}
+                            </Badge>
+                          )}
+                          {result.email && (
+                            <Badge className="bg-green-600 text-white">
+                              Email: {result.email}
+                            </Badge>
+                          )}
+                          {hasError && (
+                            <Badge variant="destructive">
+                              {result.error?.includes('Assistant panel not opened') ? '❌ Ассистент не открылся' :
+                               result.error?.includes('Timeout') ? '⏱️ Таймаут' :
+                               result.error?.includes('ModuleNotFoundError') ? '📦 Нет зависимостей' :
+                               '❌ Ошибка'}
+                            </Badge>
+                          )}
+                          {!hasData && !hasError && (
+                            <Badge variant="outline">
+                              Не найдено
+                            </Badge>
+                          )}
+                        </div>
+                      </AccordionTrigger>
+                      <AccordionContent>
+                        <div className="pt-2 space-y-3">
+                          {result.inn && (
+                            <div className="text-sm">
+                              <p className="font-semibold text-blue-700 mb-1">ИНН найден через Comet:</p>
+                              <div className="p-2 bg-blue-50 rounded border border-blue-200">
+                                <span className="font-mono text-lg">{result.inn}</span>
+                              </div>
+                            </div>
+                          )}
+                          
+                          {result.email && (
+                            <div className="text-sm">
+                              <p className="font-semibold text-green-700 mb-1">Email найден через Comet:</p>
+                              <div className="p-2 bg-green-50 rounded border border-green-200">
+                                <a href={`mailto:${result.email}`} className="text-green-700 hover:underline">
+                                  {result.email}
+                                </a>
+                              </div>
+                            </div>
+                          )}
+                          
+                          {result.sourceUrls && result.sourceUrls.length > 0 && (
+                            <div className="text-sm">
+                              <p className="font-semibold text-muted-foreground mb-1">Источники ({result.sourceUrls.length}):</p>
+                              <div className="space-y-1">
+                                {result.sourceUrls.map((url, urlIdx) => (
+                                  <div key={urlIdx} className="text-xs">
+                                    <a
+                                      href={url}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-blue-600 hover:underline flex items-center gap-1"
+                                    >
+                                      <span className="truncate">{url}</span>
+                                      <ExternalLink className="h-3 w-3 flex-shrink-0" />
+                                    </a>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          
+                          {result.error && (
+                            <div className="p-3 bg-red-50 border border-red-200 rounded-md">
+                              <p className="text-sm text-red-800 font-semibold mb-1">Ошибка Comet:</p>
+                              <p className="text-sm text-red-700">{result.error}</p>
+                              {result.error.includes('Assistant panel not opened') && (
+                                <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded">
+                                  <p className="text-xs text-yellow-800">
+                                    💡 <strong>Причина:</strong> Ассистент Comet не открылся автоматически.
+                                    Возможно, нужно вручную активировать ассистент в браузере Comet (Alt+A или Ctrl+Shift+A).
+                                  </p>
+                                </div>
+                              )}
+                              {result.error.includes('ModuleNotFoundError') && (
+                                <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded">
+                                  <p className="text-xs text-yellow-800">
+                                    💡 <strong>Причина:</strong> Отсутствуют Python зависимости.
+                                    Установите: pip install requests playwright
+                                  </p>
+                                </div>
+                              )}
+                            </div>
+                          )}
+                          
+                          {!result.inn && !result.email && !result.error && (
+                            <div className="p-3 bg-gray-50 border border-gray-200 rounded-md">
+                              <p className="text-sm text-gray-700">
+                                ℹ️ Comet не нашел ИНН или Email на этом сайте. Возможно, данные находятся в защищенных разделах или отсутствуют.
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
+                  )
+                })}
+              </Accordion>
+              
+              <div className="mt-4 p-3 bg-orange-50 border border-orange-200 rounded-md">
+                <p className="text-sm text-orange-800">
+                  <strong>📊 Статистика Comet:</strong> Обработано {cometStatus.processed} из {cometStatus.total} доменов
+                  {cometStatus.results.filter(r => r.inn).length > 0 && (
+                    <span> • ИНН найден: {cometStatus.results.filter(r => r.inn).length}</span>
+                  )}
+                  {cometStatus.results.filter(r => r.email).length > 0 && (
+                    <span> • Email найден: {cometStatus.results.filter(r => r.email).length}</span>
+                  )}
+                  {cometStatus.results.filter(r => r.error).length > 0 && (
+                    <span className="text-red-600"> • Ошибок: {cometStatus.results.filter(r => r.error).length}</span>
+                  )}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Логи извлечения данных (Domain Parser) */}
         {parserStatus && parserStatus.results && parserStatus.results.length > 0 && (
           <Card className="mt-6 border-2 border-green-500">
