@@ -806,25 +806,35 @@ async def test_single_domain(domain: str) -> dict:
                 joined = "\n".join(filtered)
                 last_filtered = filtered
 
-                # Return immediately if it looks like it contains required fields IN THE CORRECT FORMAT
-                # Don't return early if "ИНН" is just mentioned in general context
-                if (
-                    re.search(r"\bИНН\s*:\s*\d{10,12}\b", joined, re.IGNORECASE)  # ИНН with actual digits
-                    or re.search(r"\bНайдено\s*:\s*(да|нет)\b", joined, re.IGNORECASE)
-                    or (re.search(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b", joined) and re.search(r"\bEmail\s*:", joined, re.IGNORECASE))  # Email in format
-                    or ("|" in joined and (re.search(r"\d{10,12}", joined) or re.search(r"@", joined)))  # Pipe format with actual data
-                ):
-                    return joined
-
-                # Otherwise wait for the assembled response to stabilize
-                if joined == last_joined:
-                    stable_ticks += 1
+                # Check if response looks complete (has both INN and Email fields, or explicit "not found")
+                has_inn_field = re.search(r"\bИНН\s*:\s*", joined, re.IGNORECASE)
+                has_email_field = re.search(r"\bEmail\s*:\s*", joined, re.IGNORECASE)
+                has_sources = re.search(r"\bИсточник[12]\s*:\s*https?://", joined, re.IGNORECASE)
+                
+                # Only return early if we have BOTH fields (even if empty) AND sources
+                # This ensures assistant finished searching for both INN and Email
+                if has_inn_field and has_email_field and has_sources:
+                    # Wait a bit more to ensure no more content is coming
+                    if joined == last_joined:
+                        stable_ticks += 1
+                    else:
+                        last_joined = joined
+                        stable_ticks = 0
+                    
+                    # Return after response is stable for 5 seconds (5 ticks)
+                    if stable_ticks >= 5:
+                        return joined
                 else:
-                    last_joined = joined
-                    stable_ticks = 0
-
-                if stable_ticks >= 3:
-                    return "\n".join(last_filtered)
+                    # Response not complete yet, reset stability counter
+                    if joined == last_joined:
+                        stable_ticks += 1
+                    else:
+                        last_joined = joined
+                        stable_ticks = 0
+                    
+                    # If response is stable for 8 seconds but incomplete, return what we have
+                    if stable_ticks >= 8:
+                        return "\n".join(last_filtered)
             return ""
 
         response_text = await send_and_wait_once(prompt, "step1")

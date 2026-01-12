@@ -1,0 +1,325 @@
+[
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/inspector.html?ws=127.0.0.1:9222/devtools/page/2B835010CA2DDF9A3D8E4E9333715B49",
+    "faviconUrl": "https://www.santech.ru/img/favicon.svg",
+    "id": "2B835010CA2DDF9A3D8E4E9333715B49",
+    "title": "Сантехкомплект — продажа сантехники оптом | Купить инженерное и сантехническое оборудование в Москве",
+    "type": "page",
+    "url": "https://www.santech.ru/",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/2B835010CA2DDF9A3D8E4E9333715B49"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/inspector.html?ws=127.0.0.1:9222/devtools/page/8750ADEB1C2747600A4D8DB6A15676A5",
+    "id": "8750ADEB1C2747600A4D8DB6A15676A5",
+    "title": "",
+    "type": "page",
+    "url": "",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/8750ADEB1C2747600A4D8DB6A15676A5"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/inspector.html?ws=127.0.0.1:9222/devtools/page/07BFCD89F99A67C3E604E504A2E9C169",
+    "id": "07BFCD89F99A67C3E604E504A2E9C169",
+    "title": "chrome://sidebar/?window_id=1744632564",
+    "type": "page",
+    "url": "chrome://sidebar/?window_id=1744632564",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/07BFCD89F99A67C3E604E504A2E9C169"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/inspector.html?ws=127.0.0.1:9222/devtools/page/6F52A4B8014C69591539BB8C994726F4",
+    "faviconUrl": "https://www.santech.ru/img/favicon.svg",
+    "id": "6F52A4B8014C69591539BB8C994726F4",
+    "title": "Сантехкомплект — продажа сантехники оптом | Купить инженерное и сантехническое оборудование в Москве",
+    "type": "page",
+    "url": "https://www.santech.ru/",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/6F52A4B8014C69591539BB8C994726F4"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/inspector.html?ws=127.0.0.1:9222/devtools/page/F08B264951ACD399E34EEBD55C89142F",
+    "faviconUrl": "https://www.santech.ru/img/favicon.svg",
+    "id": "F08B264951ACD399E34EEBD55C89142F",
+    "title": "Сантехкомплект — продажа сантехники оптом | Купить инженерное и сантехническое оборудование в Москве",
+    "type": "page",
+    "url": "https://www.santech.ru/",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/F08B264951ACD399E34EEBD55C89142F"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/inspector.html?ws=127.0.0.1:9222/devtools/page/08F7D125C397C7252A0405DCE724D74C",
+    "faviconUrl": "https://www.perplexity.ai/favicon.ico",
+    "id": "08F7D125C397C7252A0405DCE724D74C",
+    "title": "Perplexity",
+    "type": "page",
+    "url": "https://www.perplexity.ai/sidecar",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/08F7D125C397C7252A0405DCE724D74C"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/inspector.html?ws=127.0.0.1:9222/devtools/page/3B7A5DD6E3E45413821B378299BD10AC",
+    "id": "3B7A5DD6E3E45413821B378299BD10AC",
+    "title": "Example Domain",
+    "type": "page",
+    "url": "https://example.com/",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/3B7A5DD6E3E45413821B378299BD10AC"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/inspector.html?ws=127.0.0.1:9222/devtools/page/79C04D8B76E5CF00DE15ADFEF317083F",
+    "faviconUrl": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAADEElEQVR4AcRWPYgTQRSe2btT8DgIJiIqgqhXiaBwYqFJLqXFFSrCkTUgFsFGBEHERqzEQhs7tVDwNiL+gCK2uU1h44kiVhZioaKYzRUaUBP2+V6S2ZvZzMwmUbgjLzPvfd9735fJ3m4ctsp/oxkAxl0/DXKM+jmGNtARraXDuKBbzZyK1wbJBzbgLqbfkbhxqAMXjZgFSDRQqmXmO8Kc7bLMYRPh1HYbbsKMBg4937mWhEOAe6ZmUecOnLxT+PhL5MOsWgMkvH5yeZCBn7x8wBeyjdvDiMpcxcCJaipF4jLBtCdhjK0mPF6nuRTlpc3rZEwx0HLGlmVQt58OgwkU5jpMV0PRFgYIrNn83TyNX6/IIwPH/fQVUdSuDp8j4UsF1tbisWLRTz/tCY/HINaQvt7IAFo8HydSDsCWSNjL1p9RnhSlamaGhPGI5pK4hEcGKNFEuzIb7NPU+0vQvTuGDrzsB80VqwHO+XVz6wpCn9jV3B1XGOad1QBACOZWxlD0AonbOEmY1UBSMwN2OYnDGdywcawG8EKynoBtMDB+ji5e5PzAML6sBoxdNoCzLyRcydevdml2CSsKeH7dIfp3Lxco/SSMtS0yG1iIBylX1L0yQIUo40DvxkCDHdF8wGk18ixAggFL53+C7AaAlf9dhx+0zZAN6I47VaxmXNsAKwaMvv/9Nk5kAC+4wzoi/thY6N1saJiOoq1RD96o+n47dsn8fndlLDJQyQVPRFG34sAQI/FJ6PqZ18gD3QxR8/L1ebGPDFDhMz7rabXEGA0v1jLX4pySnz5CGGOwJ44pOTDl+aIYWMRnvYf/UkqDJuEAZ0nM9TfuLvobpmmPZ/1IQ1VLHI55s8EZuagYEACZAGd8h8jNa/stZ+F7Mx4hX2mml2s8jCq9jdYAYZXstw/UhPsXGCO/aAbGJtMAowHRgM0HMLjIB10nJ7etGaQv0YAQpGF/QmdK5KYVBx4l7s2ZVy0TR64jX07t+weF7z9pOOP8Vj+TvyHsbj543I+ZK0MZEGO8XL1MYmrU9wpcXpP2fwEAAP//1kBFlgAAAAZJREFUAwAiIw5Qc7qIGAAAAABJRU5ErkJggg==",
+    "id": "79C04D8B76E5CF00DE15ADFEF317083F",
+    "title": "Заказ &quot;Windsurf Codeium Pro | 1 месяц — специализированная IDE&quot;",
+    "type": "page",
+    "url": "https://payment.ggsel.net/order/bacd6a14-ed77-4e65-b9c2-57fab6e74d16",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/79C04D8B76E5CF00DE15ADFEF317083F"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/inspector.html?ws=127.0.0.1:9222/devtools/page/751FACE4C854FC21D87C9CC7D91E1F7A",
+    "faviconUrl": "https://ggsel.net/favicon-ggsel.ico",
+    "id": "751FACE4C854FC21D87C9CC7D91E1F7A",
+    "title": "ggsel – Маркетплейс цифровых товаров: игры, ключи, гифты, ПО и пополнение баланса",
+    "type": "page",
+    "url": "https://ggsel.net/",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/751FACE4C854FC21D87C9CC7D91E1F7A"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/inspector.html?ws=127.0.0.1:9222/devtools/page/4F37BDD6DF6B49D4DEBD419C22020AC7",
+    "faviconUrl": "https://ggsel.net/favicon-ggsel.ico",
+    "id": "4F37BDD6DF6B49D4DEBD419C22020AC7",
+    "parentId": "751FACE4C854FC21D87C9CC7D91E1F7A",
+    "title": "https://www.google.com/recaptcha/api2/anchor?ar=1&amp;k=6LdLwsAqAAAAAMBfpTV28aBO4g0Stq-KeTirpmSL&amp;co=aHR0cHM6Ly9nZ3NlbC5uZXQ6NDQz&amp;hl=ru&amp;v=9TiwnJFHeuIw_s0wSd3fiKfN&amp;size=invisible&amp;anchor-ms=20000&amp;execute-ms=30000&amp;cb=5kzjvwijltvu",
+    "type": "iframe",
+    "url": "https://www.google.com/recaptcha/api2/anchor?ar=1&k=6LdLwsAqAAAAAMBfpTV28aBO4g0Stq-KeTirpmSL&co=aHR0cHM6Ly9nZ3NlbC5uZXQ6NDQz&hl=ru&v=9TiwnJFHeuIw_s0wSd3fiKfN&size=invisible&anchor-ms=20000&execute-ms=30000&cb=5kzjvwijltvu",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/4F37BDD6DF6B49D4DEBD419C22020AC7"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/inspector.html?ws=127.0.0.1:9222/devtools/page/37CFCB5BB2E581BE555946EB81625B05",
+    "faviconUrl": "https://www.perplexity.ai/favicon.ico",
+    "id": "37CFCB5BB2E581BE555946EB81625B05",
+    "title": "погода в спб",
+    "type": "page",
+    "url": "chrome://newtab/",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/37CFCB5BB2E581BE555946EB81625B05"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/inspector.html?ws=127.0.0.1:9222/devtools/page/C0303609C6679511262D89F8D4E36843",
+    "faviconUrl": "https://www.perplexity.ai/favicon.ico",
+    "id": "C0303609C6679511262D89F8D4E36843",
+    "parentId": "37CFCB5BB2E581BE555946EB81625B05",
+    "title": "https://www.googletagmanager.com/static/service_worker/6150/sw_iframe.html?origin=https%3A%2F%2Fwww.perplexity.ai",
+    "type": "iframe",
+    "url": "https://www.googletagmanager.com/static/service_worker/6150/sw_iframe.html?origin=https%3A%2F%2Fwww.perplexity.ai",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/C0303609C6679511262D89F8D4E36843"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/inspector.html?ws=127.0.0.1:9222/devtools/page/CD57A70BF4836EBF85F7565532E9D0AD",
+    "faviconUrl": "https://checko.ru/icons/favicon-32x32.png",
+    "id": "CD57A70BF4836EBF85F7565532E9D0AD",
+    "title": "ООО ПК &quot;ВОСТОК&quot; - Арск - Гендиректор Сайфуллина Алена Владимировна - ИНН 1658192416",
+    "type": "page",
+    "url": "https://checko.ru/company/pk-vostok-1161690123649#contacts",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/CD57A70BF4836EBF85F7565532E9D0AD"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/inspector.html?ws=127.0.0.1:9222/devtools/page/AFB6516D72785996BFC5F4BF08A32F41",
+    "faviconUrl": "https://parterra.ru/favicon.ico",
+    "id": "AFB6516D72785996BFC5F4BF08A32F41",
+    "parentId": "65E0087253A588DEF2514DA9BC15C187",
+    "title": "https://www.google.com/recaptcha/api2/anchor?ar=1&amp;k=6LeWAtUhAAAAAOkR-vjmVTLDUWzSQ7WiP-rknv23&amp;co=aHR0cHM6Ly9wYXJ0ZXJyYS5ydTo0NDM.&amp;hl=ru&amp;v=9TiwnJFHeuIw_s0wSd3fiKfN&amp;size=invisible&amp;anchor-ms=20000&amp;execute-ms=30000&amp;cb=n2tacfatomgw",
+    "type": "iframe",
+    "url": "https://www.google.com/recaptcha/api2/anchor?ar=1&k=6LeWAtUhAAAAAOkR-vjmVTLDUWzSQ7WiP-rknv23&co=aHR0cHM6Ly9wYXJ0ZXJyYS5ydTo0NDM.&hl=ru&v=9TiwnJFHeuIw_s0wSd3fiKfN&size=invisible&anchor-ms=20000&execute-ms=30000&cb=n2tacfatomgw",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/AFB6516D72785996BFC5F4BF08A32F41"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/inspector.html?ws=127.0.0.1:9222/devtools/page/65E0087253A588DEF2514DA9BC15C187",
+    "faviconUrl": "https://parterra.ru/favicon.ico",
+    "id": "65E0087253A588DEF2514DA9BC15C187",
+    "title": "Партерра, интернет-магазин автозапчастей - О компании",
+    "type": "page",
+    "url": "https://parterra.ru/about-company/",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/65E0087253A588DEF2514DA9BC15C187"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/inspector.html?ws=127.0.0.1:9222/devtools/page/83F6D66AE28E666DBCC8A1BA5A978965",
+    "id": "83F6D66AE28E666DBCC8A1BA5A978965",
+    "title": "B2B Platform - Moderator Dashboard",
+    "type": "page",
+    "url": "http://localhost:3000/parsing-runs/35e40edd-7182-4d45-a39f-55333c0d152b",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/83F6D66AE28E666DBCC8A1BA5A978965"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/inspector.html?ws=127.0.0.1:9222/devtools/page/B81440EA88D940CAEDCADB6D84F7589F",
+    "id": "B81440EA88D940CAEDCADB6D84F7589F",
+    "title": "B2B Platform - Moderator Dashboard",
+    "type": "page",
+    "url": "http://localhost:3000/parsing-runs/35e40edd-7182-4d45-a39f-55333c0d152b",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/B81440EA88D940CAEDCADB6D84F7589F"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/inspector.html?ws=127.0.0.1:9222/devtools/page/2CCF4A6B5CEDEC1B7891D5FF51F8ABBB",
+    "faviconUrl": "https://sitecdn.api.lenta.com/assets-lnt/manifest/favicon.ico",
+    "id": "2CCF4A6B5CEDEC1B7891D5FF51F8ABBB",
+    "title": "Лента – сеть магазинов с доставкой товаров на дом",
+    "type": "page",
+    "url": "https://lenta.com/basket/",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/2CCF4A6B5CEDEC1B7891D5FF51F8ABBB"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/inspector.html?ws=127.0.0.1:9222/devtools/page/41466089E3A19AD751C7904E49B82ED5",
+    "faviconUrl": "https://www.perplexity.ai/favicon.ico",
+    "id": "41466089E3A19AD751C7904E49B82ED5",
+    "title": "New Tab",
+    "type": "page",
+    "url": "chrome://newtab/",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/41466089E3A19AD751C7904E49B82ED5"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/inspector.html?ws=127.0.0.1:9222/devtools/page/9D57B48C16A1DCE59AE1AED7BA7B88C6",
+    "id": "9D57B48C16A1DCE59AE1AED7BA7B88C6",
+    "title": "chrome-extension://npclhjbddhklpbnacpjloidibaggcgon/offscreen.html",
+    "type": "background_page",
+    "url": "chrome-extension://npclhjbddhklpbnacpjloidibaggcgon/offscreen.html",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/9D57B48C16A1DCE59AE1AED7BA7B88C6"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/inspector.html?ws=127.0.0.1:9222/devtools/page/E12776A650D7A947670D10B171D78E2E",
+    "id": "E12776A650D7A947670D10B171D78E2E",
+    "title": "chrome-extension://mcjlamohcooanphmebaiigheeeoplihb/src/pages/offscreen/index.html",
+    "type": "background_page",
+    "url": "chrome-extension://mcjlamohcooanphmebaiigheeeoplihb/src/pages/offscreen/index.html",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/E12776A650D7A947670D10B171D78E2E"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/inspector.html?ws=127.0.0.1:9222/devtools/page/C08C3B56446F434E3BA29E5573757CCA",
+    "id": "C08C3B56446F434E3BA29E5573757CCA",
+    "title": "Tab Search",
+    "type": "other",
+    "url": "chrome://tab-search.top-chrome/",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/C08C3B56446F434E3BA29E5573757CCA"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/inspector.html?ws=127.0.0.1:9222/devtools/page/847D2EEF3D52084682E3E047C770B7C9",
+    "id": "847D2EEF3D52084682E3E047C770B7C9",
+    "title": "blob:https://payment.ggsel.net/2f207cd7-a0ef-4ec2-a9aa-483b84d0aac0",
+    "type": "worker",
+    "url": "blob:https://payment.ggsel.net/2f207cd7-a0ef-4ec2-a9aa-483b84d0aac0",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/847D2EEF3D52084682E3E047C770B7C9"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/inspector.html?ws=127.0.0.1:9222/devtools/page/37A81467AEABD3B85710D1E452AFE0B7",
+    "id": "37A81467AEABD3B85710D1E452AFE0B7",
+    "title": "blob:https://lenta.com/3349982c-2412-41e0-94df-0aa93f55460e",
+    "type": "worker",
+    "url": "blob:https://lenta.com/3349982c-2412-41e0-94df-0aa93f55460e",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/37A81467AEABD3B85710D1E452AFE0B7"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/inspector.html?ws=127.0.0.1:9222/devtools/page/7358785C14968FE4E027BF1FCD7A03F9",
+    "id": "7358785C14968FE4E027BF1FCD7A03F9",
+    "title": "https://www.google.com/recaptcha/api2/webworker.js?hl=ru&amp;v=9TiwnJFHeuIw_s0wSd3fiKfN",
+    "type": "worker",
+    "url": "https://www.google.com/recaptcha/api2/webworker.js?hl=ru&v=9TiwnJFHeuIw_s0wSd3fiKfN",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/7358785C14968FE4E027BF1FCD7A03F9"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/inspector.html?ws=127.0.0.1:9222/devtools/page/EAB8B442C7BC7E98A89F04FF7A25AF35",
+    "id": "EAB8B442C7BC7E98A89F04FF7A25AF35",
+    "title": "blob:https://www.perplexity.ai/163b2480-3286-48d5-bc43-9d224b7dd654",
+    "type": "worker",
+    "url": "blob:https://www.perplexity.ai/163b2480-3286-48d5-bc43-9d224b7dd654",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/EAB8B442C7BC7E98A89F04FF7A25AF35"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/inspector.html?ws=127.0.0.1:9222/devtools/page/1A0AA0B1586CEA4BD8E86875BBD200AB",
+    "id": "1A0AA0B1586CEA4BD8E86875BBD200AB",
+    "title": "https://www.google.com/recaptcha/api2/webworker.js?hl=ru&amp;v=9TiwnJFHeuIw_s0wSd3fiKfN",
+    "type": "worker",
+    "url": "https://www.google.com/recaptcha/api2/webworker.js?hl=ru&v=9TiwnJFHeuIw_s0wSd3fiKfN",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/1A0AA0B1586CEA4BD8E86875BBD200AB"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/inspector.html?ws=127.0.0.1:9222/devtools/page/5C8D90BE1964547EC966C20246153B59",
+    "id": "5C8D90BE1964547EC966C20246153B59",
+    "title": "blob:https://www.perplexity.ai/574b522f-b95d-4fc7-8bd9-432fc353ace4",
+    "type": "worker",
+    "url": "blob:https://www.perplexity.ai/574b522f-b95d-4fc7-8bd9-432fc353ace4",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/5C8D90BE1964547EC966C20246153B59"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/inspector.html?ws=127.0.0.1:9222/devtools/page/565CA1972D6A3A9D665F19A8D54F173F",
+    "id": "565CA1972D6A3A9D665F19A8D54F173F",
+    "title": "blob:https://www.perplexity.ai/01089ffd-00f2-4d41-96b3-387e6f38dc63",
+    "type": "worker",
+    "url": "blob:https://www.perplexity.ai/01089ffd-00f2-4d41-96b3-387e6f38dc63",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/565CA1972D6A3A9D665F19A8D54F173F"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/worker_app.html?ws=127.0.0.1:9222/devtools/page/2DAF39AE60FE8C3F865DD2DAD193D599",
+    "id": "2DAF39AE60FE8C3F865DD2DAD193D599",
+    "title": "Service Worker https://www.googletagmanager.com/static/service_worker/6150/sw.js?origin=https%3A%2F%2Fwww.perplexity.ai",
+    "type": "service_worker",
+    "url": "https://www.googletagmanager.com/static/service_worker/6150/sw.js?origin=https%3A%2F%2Fwww.perplexity.ai",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/2DAF39AE60FE8C3F865DD2DAD193D599"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/worker_app.html?ws=127.0.0.1:9222/devtools/page/98D6F1C2C703270804156FEA8508C01B",
+    "id": "98D6F1C2C703270804156FEA8508C01B",
+    "title": "Service Worker https://lenta.com/ngsw-bootstrap.js",
+    "type": "service_worker",
+    "url": "https://lenta.com/ngsw-bootstrap.js",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/98D6F1C2C703270804156FEA8508C01B"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/worker_app.html?ws=127.0.0.1:9222/devtools/page/C23592B901D96D147B7CDCA10C9D644E",
+    "id": "C23592B901D96D147B7CDCA10C9D644E",
+    "title": "Service Worker chrome-extension://ahfpelljbenimhohmgdbgpcgmmahcbkn/background/index.js",
+    "type": "service_worker",
+    "url": "chrome-extension://ahfpelljbenimhohmgdbgpcgmmahcbkn/background/index.js",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/C23592B901D96D147B7CDCA10C9D644E"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/worker_app.html?ws=127.0.0.1:9222/devtools/page/A9E54CE1283917B9B2BB9F5EC8D95E0C",
+    "id": "A9E54CE1283917B9B2BB9F5EC8D95E0C",
+    "title": "Service Worker chrome-extension://npclhjbddhklpbnacpjloidibaggcgon/background.js",
+    "type": "service_worker",
+    "url": "chrome-extension://npclhjbddhklpbnacpjloidibaggcgon/background.js",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/A9E54CE1283917B9B2BB9F5EC8D95E0C"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/worker_app.html?ws=127.0.0.1:9222/devtools/page/6220100E28A7CBD5D4594AA23C60F3CF",
+    "id": "6220100E28A7CBD5D4594AA23C60F3CF",
+    "title": "Service Worker chrome-extension://mcjlamohcooanphmebaiigheeeoplihb/service-worker-loader.js",
+    "type": "service_worker",
+    "url": "chrome-extension://mcjlamohcooanphmebaiigheeeoplihb/service-worker-loader.js",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/6220100E28A7CBD5D4594AA23C60F3CF"
+  }
+]
