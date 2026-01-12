@@ -135,6 +135,33 @@ async def _process_domain_parser_batch(parser_run_id: str, run_id: str, domains:
         
         logger.info(f"Domain parser batch completed: {parser_run_id}")
         
+        # AUTO-TRIGGER COMET: Find domains where parser failed to find INN or Email
+        failed_domains = []
+        for result in results:
+            has_inn = result.get("inn")
+            has_email = result.get("emails") and len(result.get("emails", [])) > 0
+            
+            # If parser didn't find INN or Email, add to failed list
+            if not has_inn or not has_email:
+                failed_domains.append(result["domain"])
+        
+        if failed_domains:
+            logger.info(f"🤖 AUTO-TRIGGER: {len(failed_domains)} domains failed in parser, starting Comet automatically...")
+            
+            # Import comet router to trigger extraction
+            from . import comet
+            try:
+                # Start Comet extraction for failed domains
+                comet_response = await comet._start_comet_batch_internal(run_id, failed_domains, auto_learn=True)
+                logger.info(f"✅ AUTO-TRIGGER: Comet started with run_id={comet_response['cometRunId']}")
+                
+                # Store comet_run_id in parser run for reference
+                _parser_runs[parser_run_id]["auto_comet_run_id"] = comet_response["cometRunId"]
+            except Exception as comet_error:
+                logger.error(f"❌ AUTO-TRIGGER: Failed to start Comet: {comet_error}")
+        else:
+            logger.info(f"✅ All domains processed successfully by parser, no need for Comet")
+        
     except Exception as e:
         logger.error(f"Error in domain parser batch: {e}")
         _parser_runs[parser_run_id]["status"] = "failed"

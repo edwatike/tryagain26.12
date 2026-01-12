@@ -1476,8 +1476,28 @@ export default function ParsingRunDetailsPage({ params }: { params: Promise<{ ru
               )}
             </div>
             {cometRunId && cometStatus && (
-              <div className="text-xs text-muted-foreground mb-2">
-                Comet: {cometStatus.status} — {cometStatus.processed}/{cometStatus.total}
+              <div className="text-xs mb-2">
+                <div className="flex items-center gap-2">
+                  <span className={`font-medium ${
+                    cometStatus.status === 'running' ? 'text-black' : 
+                    cometStatus.status === 'completed' ? 'text-green-600' : 
+                    'text-red-600'
+                  }`}>
+                    {cometStatus.status === 'running' ? '⚡ Comet работает...' : 
+                     cometStatus.status === 'completed' ? '✅ Comet завершен' : 
+                     '❌ Ошибка Comet'}
+                  </span>
+                  <span className="text-muted-foreground">
+                    {cometStatus.processed}/{cometStatus.total}
+                  </span>
+                </div>
+                {cometStatus.status === 'completed' && learnedItems.length > 0 && (
+                  <div className="mt-1 text-xs text-purple-600 flex items-center gap-1">
+                    <span>🎓</span>
+                    <span className="font-medium">Автоматическое обучение завершено:</span>
+                    <span>{learnedItems.length} паттернов выучено</span>
+                  </div>
+                )}
               </div>
             )}
             {parserRunId && parserStatus && (
@@ -1502,6 +1522,13 @@ export default function ParsingRunDetailsPage({ params }: { params: Promise<{ ru
                       className="bg-blue-600 h-2 rounded-full transition-all duration-300"
                       style={{ width: `${(parserStatus.processed / parserStatus.total) * 100}%` }}
                     />
+                  </div>
+                )}
+                {parserStatus.status === 'completed' && cometRunId && (
+                  <div className="mt-1 text-xs text-purple-600 flex items-center gap-1">
+                    <span>🤖</span>
+                    <span className="font-medium">Автоматический workflow:</span>
+                    <span>Parser → Comet → Обучение</span>
                   </div>
                 )}
               </div>
@@ -2066,6 +2093,110 @@ export default function ParsingRunDetailsPage({ params }: { params: Promise<{ ru
                   )}
                 </p>
               </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Результаты обучения парсера */}
+        {learnedItems.length > 0 && (
+          <Card className="mt-6 border-2 border-purple-500">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                🎓 Обучение парсера — Чему научился Domain Parser
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Accordion type="multiple" className="w-full">
+                {learnedItems.map((item, idx) => (
+                  <AccordionItem key={`learned-${idx}`} value={`learned-${idx}`} className="border-b">
+                    <AccordionTrigger className="hover:no-underline">
+                      <div className="flex items-center gap-2 flex-1">
+                        <span className={`w-3 h-3 rounded-full ${item.type === 'inn' ? 'bg-blue-500' : 'bg-green-500'}`}></span>
+                        <span className="font-mono font-semibold">{item.domain}</span>
+                        <Badge className={item.type === 'inn' ? 'bg-blue-600 text-white' : 'bg-green-600 text-white'}>
+                          {item.type === 'inn' ? 'ИНН' : 'Email'}: {item.value}
+                        </Badge>
+                        <Badge variant="outline" className="bg-purple-50">
+                          📚 Выучено
+                        </Badge>
+                      </div>
+                    </AccordionTrigger>
+                    <AccordionContent>
+                      <div className="pt-2 space-y-3">
+                        <div className="p-3 bg-purple-50 border border-purple-200 rounded-md">
+                          <p className="text-sm font-semibold text-purple-900 mb-2">
+                            💡 Что выучил парсер:
+                          </p>
+                          <p className="text-sm text-purple-800">
+                            {item.learning}
+                          </p>
+                        </div>
+
+                        <div className="text-sm">
+                          <p className="font-semibold text-gray-700 mb-1">
+                            Найденное значение:
+                          </p>
+                          <div className={`p-2 rounded border ${
+                            item.type === 'inn' 
+                              ? 'bg-blue-50 border-blue-200' 
+                              : 'bg-green-50 border-green-200'
+                          }`}>
+                            <span className="font-mono text-lg">{item.value}</span>
+                          </div>
+                        </div>
+
+                        {item.sourceUrls && item.sourceUrls.length > 0 && (
+                          <div className="text-sm">
+                            <p className="font-semibold text-gray-700 mb-1">
+                              Источники ({item.sourceUrls.length}):
+                            </p>
+                            <div className="space-y-1">
+                              {item.sourceUrls.map((url, urlIdx) => (
+                                <div key={urlIdx} className="text-xs">
+                                  <a
+                                    href={url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-blue-600 hover:underline flex items-center gap-1"
+                                  >
+                                    <span className="truncate">{url}</span>
+                                    <ExternalLink className="h-3 w-3 flex-shrink-0" />
+                                  </a>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {item.urlPatterns && item.urlPatterns.length > 0 && (
+                          <div className="text-sm">
+                            <p className="font-semibold text-gray-700 mb-1">
+                              Выученные URL паттерны:
+                            </p>
+                            <div className="flex flex-wrap gap-1">
+                              {item.urlPatterns.map((pattern, patternIdx) => (
+                                <Badge key={patternIdx} variant="outline" className="text-xs">
+                                  {pattern}
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+                ))}
+              </Accordion>
+
+              {learningStats && (
+                <div className="mt-4 p-3 bg-purple-50 border border-purple-200 rounded-md">
+                  <p className="text-sm text-purple-800">
+                    <strong>📊 Статистика обучения:</strong>
+                    {' '}Всего выучено паттернов: {learningStats.totalLearned}
+                    {' '}• Обучений от Comet: {learningStats.cometContributions}
+                  </p>
+                </div>
+              )}
             </CardContent>
           </Card>
         )}

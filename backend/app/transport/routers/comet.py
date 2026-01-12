@@ -30,6 +30,67 @@ logger = logging.getLogger(__name__)
 _comet_runs: Dict[str, Dict] = {}
 
 
+async def _start_comet_batch_internal(run_id: str, domains: List[str], auto_learn: bool = False) -> Dict:
+    """
+    Internal function to start Comet batch extraction.
+    Can be called from other routers (e.g., domain_parser) for auto-triggering.
+    
+    Args:
+        run_id: Parsing run ID
+        domains: List of domains to extract
+        auto_learn: If True, automatically trigger learning after completion
+    
+    Returns:
+        Dict with runId and cometRunId
+    """
+    from app.adapters.db.session import async_session_maker
+    
+    logger.info(f"=== INTERNAL COMET BATCH START ===")
+    logger.info(f"Run ID: {run_id}")
+    logger.info(f"Domains: {len(domains)}")
+    logger.info(f"Auto-learn: {auto_learn}")
+    
+    # Verify parsing run exists
+    async with async_session_maker() as db:
+        parsing_run = await get_parsing_run.execute(db=db, run_id=run_id)
+        if not parsing_run:
+            raise Exception("Parsing run not found")
+    
+    # Generate unique Comet run ID
+    comet_run_id = f"comet_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{uuid.uuid4().hex[:8]}"
+    
+    # Initialize Comet run status
+    _comet_runs[comet_run_id] = {
+        "runId": run_id,
+        "cometRunId": comet_run_id,
+        "status": "running",
+        "processed": 0,
+        "total": len(domains),
+        "results": [],
+        "domains": domains,
+        "auto_learn": auto_learn,  # Flag for automatic learning
+    }
+    
+    # Start background task to process domains
+    task = asyncio.create_task(_process_comet_batch(comet_run_id, run_id, domains, auto_learn=auto_learn))
+    
+    # Add error handler for background task
+    def task_done_callback(t):
+        try:
+            t.result()
+        except Exception as e:
+            logger.error(f"Background task error for {comet_run_id}: {e}", exc_info=True)
+    
+    task.add_done_callback(task_done_callback)
+    
+    logger.info(f"Comet batch started: {comet_run_id}")
+    
+    return {
+        "runId": run_id,
+        "cometRunId": comet_run_id
+    }
+
+
 @router.post("/extract-batch", response_model=CometExtractBatchResponseDTO)
 async def start_comet_extract_batch(
     request: CometExtractBatchRequestDTO,
@@ -42,50 +103,13 @@ async def start_comet_extract_batch(
     logger.info(f"=== COMET EXTRACT BATCH REQUEST ===")
     logger.info(f"Run ID: {run_id}")
     logger.info(f"Domains: {domains}")
-    logger.info(f"Request object: {request}")
     
     try:
-        logger.info(f"Starting Comet extraction for run {run_id}, {len(domains)} domains")
-        
-        # Verify parsing run exists
-        parsing_run = await get_parsing_run.execute(db=db, run_id=run_id)
-        if not parsing_run:
-            raise HTTPException(status_code=404, detail="Parsing run not found")
-        
-        # Generate unique Comet run ID
-        comet_run_id = f"comet_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{uuid.uuid4().hex[:8]}"
-        
-        # Initialize Comet run status
-        _comet_runs[comet_run_id] = {
-            "runId": run_id,
-            "cometRunId": comet_run_id,
-            "status": "running",
-            "processed": 0,
-            "total": len(domains),
-            "results": [],
-            "domains": domains,
-        }
-        
-        # Start background task to process domains
-        # Don't pass db session to background task - it will create its own
-        task = asyncio.create_task(_process_comet_batch(comet_run_id, run_id, domains))
-        
-        # Add error handler for background task
-        def task_done_callback(t):
-            try:
-                t.result()
-            except Exception as e:
-                logger.error(f"Background task error for {comet_run_id}: {e}", exc_info=True)
-        
-        task.add_done_callback(task_done_callback)
-        
-        logger.info(f"Comet batch started: {comet_run_id}")
-        
+        result = await _start_comet_batch_internal(run_id, domains, auto_learn=False)
         return CometExtractBatchResponseDTO(
-            runId=run_id,
-            cometRunId=comet_run_id
+            runId=result["runId"],
+            cometRunId=result["cometRunId"]
         )
-        
     except Exception as e:
         logger.error(f"Error in start_comet_extract_batch: {e}")
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
@@ -195,9 +219,10 @@ async def add_manual_comet_results(
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
 
-async def _process_comet_batch(comet_run_id: str, run_id: str, domains: List[str]):
+async def _process_comet_batch(comet_run_id: str, run_id: str, domains: List[str], auto_learn: bool = False):
     """Background task to process Comet extraction for multiple domains."""
     logger.info(f"Processing Comet batch {comet_run_id} for {len(domains)} domains")
+    logger.info(f"Auto-learn enabled: {auto_learn}")
     
     results = []
     
@@ -234,6 +259,60 @@ async def _process_comet_batch(comet_run_id: str, run_id: str, domains: List[str
     await _save_comet_results_to_db(run_id, comet_run_id, results, None)
     
     logger.info(f"Comet batch {comet_run_id} completed: {len(results)} results")
+    
+    # AUTO-TRIGGER LEARNING: If auto_learn is enabled, trigger learning automatically
+    if auto_learn:
+        logger.info(f"🎓 AUTO-TRIGGER: Starting automatic learning from Comet results...")
+        
+        # Find domains where Comet found data
+        domains_with_data = [r["domain"] for r in results if r.get("inn") or r.get("email")]
+        
+        if domains_with_data:
+            try:
+                # Import learning router
+                from . import learning
+                
+                # Trigger learning
+                learning_session_id = f"auto_learning_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+                
+                # Create a temporary DB session for learning
+                from app.adapters.db.session import async_session_maker
+                async with async_session_maker() as db:
+                    from app.transport.schemas.learning import LearnFromCometRequestDTO
+                    
+                    request = LearnFromCometRequestDTO(
+                        runId=run_id,
+                        learningSessionId=learning_session_id,
+                        domains=domains_with_data
+                    )
+                    
+                    # Call learning function directly
+                    learning_response = await learning.learn_from_comet_results(request, db)
+                    
+                    logger.info(f"✅ AUTO-LEARNING: Completed! Learned {len(learning_response.learnedItems)} patterns")
+                    
+                    # Store learning results in comet run for reference
+                    if comet_run_id in _comet_runs:
+                        _comet_runs[comet_run_id]["learning_results"] = {
+                            "learned_items": len(learning_response.learnedItems),
+                            "session_id": learning_session_id,
+                            "statistics": {
+                                "total_learned": learning_response.statistics.totalLearned,
+                                "comet_contributions": learning_response.statistics.cometContributions
+                            }
+                        }
+                    
+                    # Log what was learned
+                    for item in learning_response.learnedItems:
+                        logger.info(f"  📚 Learned: {item.domain} -> {item.type}={item.value}")
+                        logger.info(f"     Patterns: {', '.join(item.urlPatterns)}")
+                    
+            except Exception as learning_error:
+                logger.error(f"❌ AUTO-LEARNING: Failed: {learning_error}", exc_info=True)
+        else:
+            logger.info(f"ℹ️ AUTO-LEARNING: No data found by Comet, nothing to learn")
+    else:
+        logger.info(f"ℹ️ Auto-learning disabled for this run")
 
 
 async def _run_comet_for_domain(domain: str) -> Dict:
