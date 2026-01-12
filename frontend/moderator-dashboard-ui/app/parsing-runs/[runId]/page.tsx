@@ -20,7 +20,7 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Navigation } from "@/components/navigation"
 import { CheckoInfoDialog } from "@/components/checko-info-dialog"
-import { getParsingRun, getDomainsQueue, getBlacklist, addToBlacklist, createSupplier, updateSupplier, getSuppliers, getParsingLogs, extractINNBatch, startCometExtractBatch, getCometStatus, getCheckoData, startDomainParserBatch, getDomainParserStatus, learnFromComet, getLearningStatistics, APIError, type LearnedItem, type LearningStatistics } from "@/lib/api"
+import { getParsingRun, getDomainsQueue, getBlacklist, addToBlacklist, createSupplier, updateSupplier, getSuppliers, getParsingLogs, startCometExtractBatch, getCometStatus, getCheckoData, startDomainParserBatch, getDomainParserStatus, learnFromComet, getLearningStatistics, APIError, type LearnedItem, type LearningStatistics } from "@/lib/api"
 import { groupByDomain, extractRootDomain, collectDomainSources, normalizeUrl } from "@/lib/utils-domain"
 import { getCachedSuppliers, setCachedSuppliers, getCachedBlacklist, setCachedBlacklist, invalidateSuppliersCache, invalidateBlacklistCache } from "@/lib/cache"
 import { toast } from "sonner"
@@ -79,13 +79,7 @@ export default function ParsingRunDetailsPage({ params }: { params: Promise<{ ru
     yandex?: { total_links: number; pages_processed: number; last_links: string[]; links_by_page?: Record<number, number> }
   } | null>(null)
   const [accordionValue, setAccordionValue] = useState<string[]>([]) // Состояние аккордеона для логов парсинга
-  const [selectedDomains, setSelectedDomains] = useState<Set<string>>(new Set()) // Выбранные домены для извлечения ИНН
-  const [innExtractionDialogOpen, setInnExtractionDialogOpen] = useState(false) // Модальное окно извлечения ИНН
-  const [innExtractionResults, setInnExtractionResults] = useState<INNExtractionResult[]>([]) // Результаты извлечения ИНН
-  const [innExtractionLoading, setInnExtractionLoading] = useState(false) // Загрузка извлечения ИНН
-  const [innExtractionProgress, setInnExtractionProgress] = useState({ processed: 0, total: 0 }) // Прогресс извлечения
-  const [innResultsMap, setInnResultsMap] = useState<Map<string, INNExtractionResult>>(new Map()) // Кэш результатов извлечения ИНН по домену
-  const [extractingDomains, setExtractingDomains] = useState<Set<string>>(new Set()) // Домены, для которых идет извлечение
+  const [selectedDomains, setSelectedDomains] = useState<Set<string>>(new Set()) // Выбранные домены для Domain Parser
 
   const [cometRunId, setCometRunId] = useState<string | null>(null)
   const [cometStatus, setCometStatus] = useState<CometStatusResponse | null>(null)
@@ -162,11 +156,7 @@ export default function ParsingRunDetailsPage({ params }: { params: Promise<{ ru
   useEffect(() => {
     if (!runId) return
     try {
-      const cached = localStorage.getItem(`inn-results-${runId}`)
-      if (cached) {
-        const cachedMap = new Map<string, INNExtractionResult>(JSON.parse(cached))
-        setInnResultsMap(cachedMap)
-      }
+      // Old INN extraction cache removed - using Domain Parser now
     } catch (error) {
       // Игнорируем ошибки парсинга кэша
     }
@@ -208,16 +198,7 @@ export default function ParsingRunDetailsPage({ params }: { params: Promise<{ ru
     }
   }, [runId])
 
-  // Сохраняем кэш результатов ИНН в localStorage при изменении
-  useEffect(() => {
-    if (!runId || innResultsMap.size === 0) return
-    try {
-      const serialized = JSON.stringify(Array.from(innResultsMap.entries()))
-      localStorage.setItem(`inn-results-${runId}`, serialized)
-    } catch (error) {
-      // Игнорируем ошибки сохранения кэша
-    }
-  }, [innResultsMap, runId])
+  // Old INN extraction localStorage save removed - using Domain Parser now
 
   useEffect(() => {
     if (!runId || cometResultsMap.size === 0) return
@@ -1163,74 +1144,14 @@ export default function ParsingRunDetailsPage({ params }: { params: Promise<{ ru
       const newSet = new Set(prev)
       if (newSet.has(domain)) {
         newSet.delete(domain)
-        // Удаляем результат из кэша при снятии выбора (опционально)
-        // setInnResultsMap((prevMap) => {
-        //   const newMap = new Map(prevMap)
-        //   newMap.delete(domain)
-        //   return newMap
-        // })
       } else {
         newSet.add(domain)
-        // Автоматически запускаем извлечение ИНН для выбранного домена
-        if (!innResultsMap.has(domain) && !extractingDomains.has(domain)) {
-          extractINNForDomain(domain)
-        }
       }
       return newSet
     })
   }
 
-  // Функция для извлечения ИНН для одного домена
-  const extractINNForDomain = async (domain: string) => {
-    // Проверяем кэш
-    if (innResultsMap.has(domain)) {
-      return
-    }
-
-    // Помечаем домен как обрабатываемый
-    setExtractingDomains((prev) => new Set(prev).add(domain))
-
-    try {
-      const response = await extractINNBatch([domain])
-      if (response.results && response.results.length > 0) {
-        const result = response.results[0]
-        // Сохраняем только если ИНН найден
-        if (result.inn) {
-          setInnResultsMap((prev) => {
-            const newMap = new Map(prev)
-            newMap.set(domain, result)
-            return newMap
-          })
-        }
-      }
-    } catch (error) {
-      // Обрабатываем разные типы ошибок
-      if (error instanceof APIError) {
-        if (error.status === 404) {
-          // Endpoint не найден - возможно Backend не запущен
-          console.warn(`[INN Extraction] Endpoint not found for ${domain}. Backend may not be running.`)
-          // Не показываем toast для 404 - это техническая ошибка
-        } else if (error.status === 503) {
-          // Сервер недоступен
-          toast.error(`Сервер недоступен. Проверьте, что Backend запущен.`)
-        } else {
-          // Другие ошибки
-          toast.error(`Ошибка при извлечении ИНН для ${domain}: ${error.message}`)
-        }
-      } else {
-        // Неожиданная ошибка
-        console.error(`[INN Extraction] Unexpected error for ${domain}:`, error)
-        toast.error(`Неожиданная ошибка при извлечении ИНН для ${domain}`)
-      }
-    } finally {
-      // Убираем домен из списка обрабатываемых
-      setExtractingDomains((prev) => {
-        const newSet = new Set(prev)
-        newSet.delete(domain)
-        return newSet
-      })
-    }
-  }
+  // OLD INN Extraction removed - now using Domain Parser with auto-trigger Comet workflow
 
   const selectAllDomains = () => {
     const allDomains = groups.map((g) => g.domain)
@@ -1656,26 +1577,7 @@ export default function ParsingRunDetailsPage({ params }: { params: Promise<{ ru
                                 </>
                               )
                             })()}
-                            {/* Автоматически найденный ИНН - отображается желтым с ссылкой на пруф */}
-                            {innResultsMap.get(group.domain)?.inn && (
-                              <a
-                                href={innResultsMap.get(group.domain)?.proof?.url || "#"}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="ml-1 px-2 py-0.5 bg-yellow-200 hover:bg-yellow-300 text-yellow-900 rounded text-xs font-semibold underline transition-colors"
-                                title={`ИНН найден: ${innResultsMap.get(group.domain)?.inn}. Контекст: ${innResultsMap.get(group.domain)?.proof?.context || "нет"}`}
-                                onClick={(e) => e.stopPropagation()}
-                              >
-                                ИНН: {innResultsMap.get(group.domain)?.inn}
-                                <ExternalLink className="h-3 w-3 inline ml-1" />
-                              </a>
-                            )}
-                            {/* Индикатор загрузки для домена, у которого идет извлечение */}
-                            {extractingDomains.has(group.domain) && (
-                              <span className="ml-1 text-xs text-muted-foreground animate-pulse">
-                                Извлечение...
-                              </span>
-                            )}
+                            {/* Old INN extraction badges removed - using Domain Parser results now */}
 
                             {(() => {
                               const comet = cometResultsMap.get(group.domain)
@@ -2425,116 +2327,7 @@ export default function ParsingRunDetailsPage({ params }: { params: Promise<{ ru
         </DialogContent>
       </Dialog>
 
-      {/* INN Extraction Results Dialog */}
-      <Dialog open={innExtractionDialogOpen} onOpenChange={setInnExtractionDialogOpen}>
-        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Результаты извлечения ИНН</DialogTitle>
-            <DialogDescription>
-              {innExtractionLoading
-                ? `Обработка: ${innExtractionProgress.processed} из ${innExtractionProgress.total} доменов`
-                : `Обработано: ${innExtractionProgress.processed} из ${innExtractionProgress.total} доменов`}
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-4">
-            {innExtractionLoading && (
-              <div className="text-center py-4">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-                <p className="mt-2 text-sm text-muted-foreground">Извлечение ИНН...</p>
-              </div>
-            )}
-
-            {!innExtractionLoading && innExtractionResults.length > 0 && (
-              <div className="space-y-2">
-                <div className="grid grid-cols-1 gap-2">
-                  {innExtractionResults.map((result, index) => (
-                    <Card key={index} className="p-3">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2">
-                            <span className="font-mono font-semibold text-sm">{result.domain}</span>
-                            {result.status === "success" && result.inn && (
-                              <Badge className="bg-green-600">ИНН: {result.inn}</Badge>
-                            )}
-                            {result.status === "not_found" && (
-                              <Badge variant="outline">ИНН не найден</Badge>
-                            )}
-                            {result.status === "error" && (
-                              <Badge variant="destructive">Ошибка</Badge>
-                            )}
-                          </div>
-
-                          {result.proof && (
-                            <div className="mt-2 p-2 bg-muted rounded text-xs space-y-1">
-                              <div>
-                                <span className="font-semibold">URL:</span>{" "}
-                                <a
-                                  href={result.proof.url}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-blue-600 hover:underline"
-                                >
-                                  {result.proof.url}
-                                  <ExternalLink className="h-3 w-3 inline ml-1" />
-                                </a>
-                              </div>
-                              <div>
-                                <span className="font-semibold">Метод:</span> {result.proof.method}
-                                {result.proof.confidence && (
-                                  <span className="ml-1">
-                                    ({result.proof.confidence === "high" ? "высокая" : result.proof.confidence === "medium" ? "средняя" : "низкая"} уверенность)
-                                  </span>
-                                )}
-                              </div>
-                              <div>
-                                <span className="font-semibold">Контекст:</span>
-                                <div className="mt-1 p-2 bg-background rounded border">
-                                  {result.proof.context}
-                                </div>
-                              </div>
-                            </div>
-                          )}
-
-                          {result.error && (
-                            <div className="mt-2 text-xs text-destructive">
-                              Ошибка: {result.error}
-                            </div>
-                          )}
-
-                          {result.processingTime && (
-                            <div className="mt-1 text-xs text-muted-foreground">
-                              Время обработки: {result.processingTime} мс
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </Card>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {!innExtractionLoading && innExtractionResults.length === 0 && (
-              <div className="text-center py-4 text-muted-foreground">
-                Нет результатов для отображения
-              </div>
-            )}
-          </div>
-
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setInnExtractionDialogOpen(false)
-                setInnExtractionResults([])
-              }}
-            >
-              Закрыть
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {/* Old INN Extraction Dialog removed - using Domain Parser results accordion now */}
     </div>
   )
 }
