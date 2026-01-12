@@ -3180,3 +3180,146 @@ Call log:
 
 2026-01-12 15:19:50,913 - ERROR - ❌ Ассистент НЕ открылся: sidecar/input не найдены. См. cdp_debug/*assistant_attempt_* (desktop+sidecar snapshots).
 2026-01-12 15:19:50,913 - INFO - 🎉 ТЕСТ ЗАВЕРШЕН!
+2026-01-12 15:22:46,633 - INFO - 🚀 ТЕСТ ОДНОГО ДОМЕНА COMET CDP
+2026-01-12 15:22:46,636 - INFO - ==================================================
+2026-01-12 15:22:46,636 - INFO - 🔍 Проверяю доступность CDP...
+2026-01-12 15:22:46,640 - INFO - 📍 CDP ответил со статусом 200
+2026-01-12 15:22:47,553 - INFO - ✅ Подключено к Comet
+2026-01-12 15:22:47,554 - INFO - 🌐 Тестирую домен: elektro.ru
+2026-01-12 15:22:47,637 - INFO - 📍 Открываю: https://elektro.ru
+2026-01-12 15:22:52,930 - INFO - 📸 Screenshot saved: cdp_debug\20260112_152251_elektro.ru_site_loaded.png
+2026-01-12 15:22:52,946 - INFO - 🧭 CDP targets snapshot saved: cdp_debug\20260112_152252_before_assistant_open_targets.json (count=23)
+2026-01-12 15:22:52,947 - INFO - 📍 Открываю ассистента (попытка 1/6)...
+2026-01-12 15:22:53,235 - INFO - 🧭 CDP targets snapshot saved: cdp_debug\20260112_152253_assistant_open_attempt_1_targets.json (count=23)
+2026-01-12 15:22:53,236 - INFO - 🧭 Assistant open signals: chrome://sidebar=True, sidecar=True
+2026-01-12 15:23:08,243 - INFO - ⏳ Waiting for sidecar UI to fully load...
+2026-01-12 15:23:21,260 - WARNING - ⚠️ No interactive elements found after 10s: Page.wait_for_selector: Timeout 10000ms exceeded.
+Call log:
+  - waiting for locator("textarea, [contenteditable=\"true\"], [role=\"textbox\"]") to be visible
+    24 × locator resolved to hidden <div id="ask-input" role="textbox" spellcheck="true" contenteditable="true" data-lexical-editor="true" aria-placeholder="Задайте любой вопрос…" class="overflow-auto max-h-[45vh] lg:max-h-[40vh] sm:max-h-[25vh] outline-none font-sans resize-none caret-super selection:bg-super/30 selection:text-foreground dark:selection:bg-super/10 dark:selection:text-super text-foreground bg-transparent placeholder-quieter placeholder:select-none scrollbar-subtle size-full">…</div>
+
+2026-01-12 15:23:21,270 - WARNING - ⚠️ Failed to take screenshot (elektro.ru_assistant_attempt_1_sidecar_opened): Page.screenshot: Protocol error (Page.captureScreenshot): Cannot take screenshot with 0 width.
+Call log:
+  - taking page screenshot
+  - waiting for fonts to load...
+  - fonts loaded
+
+2026-01-12 15:23:21,363 - INFO - 🧩 Sidecar snapshot saved: cdp_debug\20260112_152321_assistant_attempt_1_input_not_found_sidecar_snapshot.json (inputs=0, blocks=2)
+2026-01-12 15:23:21,373 - WARNING - ⚠️ Failed to take screenshot (elektro.ru_assistant_attempt_1_input_not_found): Page.screenshot: Protocol error (Page.captureScreenshot): Cannot take screenshot with 0 width.
+Call log:
+  - taking page screenshot
+  - waiting for fonts to load...
+  - fonts loaded
+
+2026-01-12 15:23:21,374 - INFO - 📍 Открываю ассистента (попытка 2/6)...
+2026-01-12 15:23:21,640 - INFO - 🧭 CDP targets snapshot saved: cdp_debug\20260112_152321_assistant_open_attempt_2_targets.json (count=23)
+2026-01-12 15:23:21,641 - INFO - 🧭 Assistant open signals: chrome://sidebar=True, sidecar=True
+2026-01-12 15:23:36,656 - INFO - ⏳ Waiting for sidecar UI to fully load...
+2026-01-12 15:23:49,677 - WARNING - ⚠️ No interactive elements found after 10s: Page.wait_for_selector: Timeout 10000ms exceeded.
+Call log:
+  - waiting for locator("textarea, [contenteditable=\"true\"], [role=\"textbox\"]") to be visible
+    24 × locator resolved to hidden <div id="ask-input" role="textbox" spellcheck="true" contenteditable="true" data-lexical-editor="true" aria-placeholder="Задайте любой вопрос…" class="overflow-auto max-h-[45vh] lg:max-h-[40vh] sm:max-h-[25vh] outline-none font-sans resize-none caret-super selection:bg-super/30 selection:text-foreground dark:selection:bg-super/10 dark:selection:text-super text-foreground bg-transparent placeholder-quieter placeholder:select-none scrollbar-subtle size-full">…</div>
+
+2026-01-12 15:23:49,686 - WARNING - ⚠️ Failed to take screenshot (elektro.ru_assistant_attempt_2_sidecar_opened): Page.screenshot: Protocol error (Page.captureScreenshot): Cannot take screenshot with 0 width.
+Call log:
+  - taking page screenshot
+  - waiting for fonts to load...
+  - fonts loaded
+
+2026-01-12 15:23:49,754 - INFO - 🧩 Sidecar snapshot saved: cdp_debug\20260112_152349_assistant_attempt_2_input_not_found_sidecar_snapshot.json (inputs=0, blocks=2)
+2026-01-12 15:23:49,764 - WARNING - ⚠️ Failed to take screenshot (elektro.ru_assistant_attempt_2_input_not_found): Page.screenshot: Protocol error (Page.captureScreenshot): Cannot take screenshot with 0 width.
+Call log:
+  - taking page screenshot
+  - waiting for fonts to load...
+  - fonts loaded
+
+2026-01-12 15:23:49,765 - INFO - 📍 Открываю ассистента (попытка 3/6)...
+2026-01-12 15:23:50,039 - INFO - 🧭 CDP targets snapshot saved: cdp_debug\20260112_152350_assistant_open_attempt_3_targets.json (count=23)
+2026-01-12 15:23:50,040 - INFO - 🧭 Assistant open signals: chrome://sidebar=True, sidecar=True
+2026-01-12 15:24:05,051 - INFO - ⏳ Waiting for sidecar UI to fully load...
+2026-01-12 15:24:18,078 - WARNING - ⚠️ No interactive elements found after 10s: Page.wait_for_selector: Timeout 10000ms exceeded.
+Call log:
+  - waiting for locator("textarea, [contenteditable=\"true\"], [role=\"textbox\"]") to be visible
+    24 × locator resolved to hidden <div id="ask-input" role="textbox" spellcheck="true" contenteditable="true" data-lexical-editor="true" aria-placeholder="Задайте любой вопрос…" class="overflow-auto max-h-[45vh] lg:max-h-[40vh] sm:max-h-[25vh] outline-none font-sans resize-none caret-super selection:bg-super/30 selection:text-foreground dark:selection:bg-super/10 dark:selection:text-super text-foreground bg-transparent placeholder-quieter placeholder:select-none scrollbar-subtle size-full">…</div>
+
+2026-01-12 15:24:18,088 - WARNING - ⚠️ Failed to take screenshot (elektro.ru_assistant_attempt_3_sidecar_opened): Page.screenshot: Protocol error (Page.captureScreenshot): Cannot take screenshot with 0 width.
+Call log:
+  - taking page screenshot
+  - waiting for fonts to load...
+  - fonts loaded
+
+2026-01-12 15:24:18,167 - INFO - 🧩 Sidecar snapshot saved: cdp_debug\20260112_152418_assistant_attempt_3_input_not_found_sidecar_snapshot.json (inputs=0, blocks=2)
+2026-01-12 15:24:18,177 - WARNING - ⚠️ Failed to take screenshot (elektro.ru_assistant_attempt_3_input_not_found): Page.screenshot: Protocol error (Page.captureScreenshot): Cannot take screenshot with 0 width.
+Call log:
+  - taking page screenshot
+  - waiting for fonts to load...
+  - fonts loaded
+
+2026-01-12 15:24:18,178 - INFO - 📍 Открываю ассистента (попытка 4/6)...
+2026-01-12 15:24:18,443 - INFO - 🧭 CDP targets snapshot saved: cdp_debug\20260112_152418_assistant_open_attempt_4_targets.json (count=23)
+2026-01-12 15:24:18,444 - INFO - 🧭 Assistant open signals: chrome://sidebar=True, sidecar=True
+2026-01-12 15:24:33,461 - INFO - ⏳ Waiting for sidecar UI to fully load...
+2026-01-12 15:24:46,483 - WARNING - ⚠️ No interactive elements found after 10s: Page.wait_for_selector: Timeout 10000ms exceeded.
+Call log:
+  - waiting for locator("textarea, [contenteditable=\"true\"], [role=\"textbox\"]") to be visible
+    24 × locator resolved to hidden <div id="ask-input" role="textbox" spellcheck="true" contenteditable="true" data-lexical-editor="true" aria-placeholder="Задайте любой вопрос…" class="overflow-auto max-h-[45vh] lg:max-h-[40vh] sm:max-h-[25vh] outline-none font-sans resize-none caret-super selection:bg-super/30 selection:text-foreground dark:selection:bg-super/10 dark:selection:text-super text-foreground bg-transparent placeholder-quieter placeholder:select-none scrollbar-subtle size-full">…</div>
+
+2026-01-12 15:24:46,491 - WARNING - ⚠️ Failed to take screenshot (elektro.ru_assistant_attempt_4_sidecar_opened): Page.screenshot: Protocol error (Page.captureScreenshot): Cannot take screenshot with 0 width.
+Call log:
+  - taking page screenshot
+  - waiting for fonts to load...
+  - fonts loaded
+
+2026-01-12 15:24:46,557 - INFO - 🧩 Sidecar snapshot saved: cdp_debug\20260112_152446_assistant_attempt_4_input_not_found_sidecar_snapshot.json (inputs=0, blocks=2)
+2026-01-12 15:24:46,566 - WARNING - ⚠️ Failed to take screenshot (elektro.ru_assistant_attempt_4_input_not_found): Page.screenshot: Protocol error (Page.captureScreenshot): Cannot take screenshot with 0 width.
+Call log:
+  - taking page screenshot
+  - waiting for fonts to load...
+  - fonts loaded
+
+2026-01-12 15:24:46,567 - INFO - 📍 Открываю ассистента (попытка 5/6)...
+2026-01-12 15:24:46,846 - INFO - 🧭 CDP targets snapshot saved: cdp_debug\20260112_152446_assistant_open_attempt_5_targets.json (count=23)
+2026-01-12 15:24:46,847 - INFO - 🧭 Assistant open signals: chrome://sidebar=True, sidecar=True
+2026-01-12 15:25:01,862 - INFO - ⏳ Waiting for sidecar UI to fully load...
+2026-01-12 15:25:14,878 - WARNING - ⚠️ No interactive elements found after 10s: Page.wait_for_selector: Timeout 10000ms exceeded.
+Call log:
+  - waiting for locator("textarea, [contenteditable=\"true\"], [role=\"textbox\"]") to be visible
+    24 × locator resolved to hidden <div id="ask-input" role="textbox" spellcheck="true" contenteditable="true" data-lexical-editor="true" aria-placeholder="Задайте любой вопрос…" class="overflow-auto max-h-[45vh] lg:max-h-[40vh] sm:max-h-[25vh] outline-none font-sans resize-none caret-super selection:bg-super/30 selection:text-foreground dark:selection:bg-super/10 dark:selection:text-super text-foreground bg-transparent placeholder-quieter placeholder:select-none scrollbar-subtle size-full">…</div>
+
+2026-01-12 15:25:14,887 - WARNING - ⚠️ Failed to take screenshot (elektro.ru_assistant_attempt_5_sidecar_opened): Page.screenshot: Protocol error (Page.captureScreenshot): Cannot take screenshot with 0 width.
+Call log:
+  - taking page screenshot
+  - waiting for fonts to load...
+  - fonts loaded
+
+2026-01-12 15:25:14,957 - INFO - 🧩 Sidecar snapshot saved: cdp_debug\20260112_152514_assistant_attempt_5_input_not_found_sidecar_snapshot.json (inputs=0, blocks=2)
+2026-01-12 15:25:14,965 - WARNING - ⚠️ Failed to take screenshot (elektro.ru_assistant_attempt_5_input_not_found): Page.screenshot: Protocol error (Page.captureScreenshot): Cannot take screenshot with 0 width.
+Call log:
+  - taking page screenshot
+  - waiting for fonts to load...
+  - fonts loaded
+
+2026-01-12 15:25:14,966 - INFO - 📍 Открываю ассистента (попытка 6/6)...
+2026-01-12 15:25:15,255 - INFO - 🧭 CDP targets snapshot saved: cdp_debug\20260112_152515_assistant_open_attempt_6_targets.json (count=23)
+2026-01-12 15:25:15,255 - INFO - 🧭 Assistant open signals: chrome://sidebar=True, sidecar=True
+2026-01-12 15:25:30,266 - INFO - ⏳ Waiting for sidecar UI to fully load...
+2026-01-12 15:25:43,278 - WARNING - ⚠️ No interactive elements found after 10s: Page.wait_for_selector: Timeout 10000ms exceeded.
+Call log:
+  - waiting for locator("textarea, [contenteditable=\"true\"], [role=\"textbox\"]") to be visible
+    24 × locator resolved to hidden <div id="ask-input" role="textbox" spellcheck="true" contenteditable="true" data-lexical-editor="true" aria-placeholder="Задайте любой вопрос…" class="overflow-auto max-h-[45vh] lg:max-h-[40vh] sm:max-h-[25vh] outline-none font-sans resize-none caret-super selection:bg-super/30 selection:text-foreground dark:selection:bg-super/10 dark:selection:text-super text-foreground bg-transparent placeholder-quieter placeholder:select-none scrollbar-subtle size-full">…</div>
+
+2026-01-12 15:25:43,287 - WARNING - ⚠️ Failed to take screenshot (elektro.ru_assistant_attempt_6_sidecar_opened): Page.screenshot: Protocol error (Page.captureScreenshot): Cannot take screenshot with 0 width.
+Call log:
+  - taking page screenshot
+  - waiting for fonts to load...
+  - fonts loaded
+
+2026-01-12 15:25:43,354 - INFO - 🧩 Sidecar snapshot saved: cdp_debug\20260112_152543_assistant_attempt_6_input_not_found_sidecar_snapshot.json (inputs=0, blocks=2)
+2026-01-12 15:25:43,362 - WARNING - ⚠️ Failed to take screenshot (elektro.ru_assistant_attempt_6_input_not_found): Page.screenshot: Protocol error (Page.captureScreenshot): Cannot take screenshot with 0 width.
+Call log:
+  - taking page screenshot
+  - waiting for fonts to load...
+  - fonts loaded
+
+2026-01-12 15:25:43,364 - ERROR - ❌ Ассистент НЕ открылся: sidecar/input не найдены. См. cdp_debug/*assistant_attempt_* (desktop+sidecar snapshots).
+2026-01-12 15:25:43,364 - INFO - 🎉 ТЕСТ ЗАВЕРШЕН!

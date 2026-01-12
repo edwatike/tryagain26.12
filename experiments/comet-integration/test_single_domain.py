@@ -632,79 +632,62 @@ async def test_single_domain(domain: str) -> dict:
 
         sidecar_page = None
         assistant_input = None
-        max_attempts = 6
-        for attempt in range(1, max_attempts + 1):
-            logger.info(f"📍 Открываю ассистента (попытка {attempt}/{max_attempts})...")
+        
+        # CRITICAL FIX: Open sidecar directly via URL instead of hotkey
+        # Hotkey opens chrome://sidebar which doesn't load UI properly
+        # Direct URL works perfectly
+        logger.info(f"🚀 Открываю ассистента напрямую через URL...")
+        sidecar_url = "https://www.perplexity.ai/sidecar?copilot=true"
+        
+        try:
+            sidecar_page = await context.new_page()
+            await sidecar_page.goto(sidecar_url, timeout=30000)
+            logger.info(f"✅ Sidecar открыт: {sidecar_url}")
+        except Exception as e:
+            logger.error(f"❌ Не удалось открыть sidecar: {e}")
+            result["error"] = f"Failed to open sidecar: {e}"
+            return result
+        
+        # Snapshot for evidence
+        snapshot_cdp_targets(f"sidecar_opened_via_url")
 
-            await activate_comet_window()
-            if PYAUTOGUI_AVAILABLE:
-                try:
-                    method = "alt+a" if attempt % 2 == 1 else "ctrl+shift+a"
-                    logger.info(f"⌨️ UI hotkey: {method}")
-                    try_open_assistant_ui(method)
-                except Exception:
-                    pass
+        try:
+            await sidecar_page.bring_to_front()
+        except Exception:
+            pass
 
-            dump_desktop_screenshot(f"{domain}_assistant_open_attempt_{attempt}_{'alt_a' if attempt % 2 == 1 else 'ctrl_shift_a'}")
+        try:
+            await sidecar_page.wait_for_selector('html[data-erp="sidecar"]', timeout=15000)
+        except Exception:
+            pass
 
-            # Ensure focus returns to the domain tab
-            try:
-                await page.bring_to_front()
-                await page.wait_for_timeout(250)
-            except Exception:
-                pass
+        # CRITICAL: Wait for sidecar UI to fully load
+        # The sidecar page loads in stages - first the container, then the interactive elements
+        logger.info(f"⏳ Waiting for sidecar UI to fully load...")
+        await sidecar_page.wait_for_timeout(3000)  # Give UI time to initialize
+        
+        # Wait for any textarea or contenteditable element to appear
+        try:
+            await sidecar_page.wait_for_selector('textarea, [contenteditable="true"], [role="textbox"]', timeout=10000)
+            logger.info(f"✅ Interactive elements detected")
+        except Exception as e:
+            logger.warning(f"⚠️ No interactive elements found after 10s: {e}")
 
-            # Gather CDP targets for evidence
-            after_targets = snapshot_cdp_targets(f"assistant_open_attempt_{attempt}")
-            try:
-                has_sidebar = any((t[1] or '').startswith('chrome://sidebar') for t in after_targets)
-                has_sidecar = any('perplexity.ai/sidecar' in (t[1] or '') for t in after_targets)
-                logger.info(f"🧭 Assistant open signals: chrome://sidebar={has_sidebar}, sidecar={has_sidecar}")
-            except Exception:
-                pass
+        await dump_screenshot(sidecar_page, f"{domain}_sidecar_opened")
+        dump_desktop_screenshot(f"{domain}_sidecar_opened")
 
-            # Find sidecar and try to locate input
-            sidecar_page = await find_sidecar_page(browser, cdp_url=cdp_url)
-            if not sidecar_page:
-                await dump_debug_artifacts(page, f"assistant_attempt_{attempt}_sidecar_not_found")
-                continue
+        assistant_input = await find_sidecar_input(sidecar_page)
+        if not assistant_input:
+            await dump_sidecar_snapshot(sidecar_page, f"input_not_found", input_el=None)
+            await dump_screenshot(sidecar_page, f"{domain}_input_not_found")
+            dump_desktop_screenshot(f"{domain}_input_not_found")
+            logger.error("❌ Ассистент НЕ открылся: input не найден")
+            result["error"] = "Assistant panel not opened (input not found)"
+            return result
 
-            try:
-                await sidecar_page.bring_to_front()
-            except Exception:
-                pass
-
-            try:
-                await sidecar_page.wait_for_selector('html[data-erp="sidecar"]', timeout=15000)
-            except Exception:
-                pass
-
-            # CRITICAL: Wait for sidecar UI to fully load
-            # The sidecar page loads in stages - first the container, then the interactive elements
-            logger.info(f"⏳ Waiting for sidecar UI to fully load...")
-            await sidecar_page.wait_for_timeout(3000)  # Give UI time to initialize
-            
-            # Wait for any textarea or contenteditable element to appear
-            try:
-                await sidecar_page.wait_for_selector('textarea, [contenteditable="true"], [role="textbox"]', timeout=10000)
-                logger.info(f"✅ Interactive elements detected")
-            except Exception as e:
-                logger.warning(f"⚠️ No interactive elements found after 10s: {e}")
-
-            await dump_screenshot(sidecar_page, f"{domain}_assistant_attempt_{attempt}_sidecar_opened")
-            dump_desktop_screenshot(f"{domain}_assistant_attempt_{attempt}_sidecar_opened")
-
-            assistant_input = await find_sidecar_input(sidecar_page)
-            if not assistant_input:
-                await dump_sidecar_snapshot(sidecar_page, f"assistant_attempt_{attempt}_input_not_found", input_el=None)
-                await dump_screenshot(sidecar_page, f"{domain}_assistant_attempt_{attempt}_input_not_found")
-                dump_desktop_screenshot(f"{domain}_assistant_attempt_{attempt}_input_not_found")
-                continue
-
-            # Success: assistant opened and input found
-            await dump_sidecar_snapshot(sidecar_page, f"assistant_attempt_{attempt}_ready", input_el=assistant_input)
-            logger.info(f"✅ Ассистент открыт (попытка {attempt}) и поле ввода найдено")
-            break
+        # Success: assistant opened and input found
+        await dump_sidecar_snapshot(sidecar_page, f"assistant_ready", input_el=assistant_input)
+        logger.info(f"✅ Ассистент открыт и поле ввода найдено")
 
         if not sidecar_page or not assistant_input:
             logger.error("❌ Ассистент НЕ открылся: sidecar/input не найдены. См. cdp_debug/*assistant_attempt_* (desktop+sidecar snapshots).")
