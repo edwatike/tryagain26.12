@@ -1,0 +1,140 @@
+[
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/inspector.html?ws=127.0.0.1:9222/devtools/page/A220E158341D7E6FF75BA2284073C697",
+    "faviconUrl": "https://www.elektro.ru/local/templates/elektro/images/favicon.png",
+    "id": "A220E158341D7E6FF75BA2284073C697",
+    "title": "Планета Электрика - электросайт в Сибири",
+    "type": "page",
+    "url": "https://www.elektro.ru/",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/A220E158341D7E6FF75BA2284073C697"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/inspector.html?ws=127.0.0.1:9222/devtools/page/CC8EA26FC818D6E180DB63D8520066A4",
+    "faviconUrl": "https://www.perplexity.ai/favicon.ico",
+    "id": "CC8EA26FC818D6E180DB63D8520066A4",
+    "title": "Perplexity",
+    "type": "page",
+    "url": "https://www.perplexity.ai/sidecar",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/CC8EA26FC818D6E180DB63D8520066A4"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/inspector.html?ws=127.0.0.1:9222/devtools/page/1461F91A6DC23D2C0F5E57F8EC3717D3",
+    "id": "1461F91A6DC23D2C0F5E57F8EC3717D3",
+    "title": "chrome://sidebar/?window_id=1744633007",
+    "type": "page",
+    "url": "chrome://sidebar/?window_id=1744633007",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/1461F91A6DC23D2C0F5E57F8EC3717D3"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/inspector.html?ws=127.0.0.1:9222/devtools/page/9F6845643C37A6E3F226E3DCB8FFC1DA",
+    "id": "9F6845643C37A6E3F226E3DCB8FFC1DA",
+    "title": "B2B Platform - Moderator Dashboard",
+    "type": "page",
+    "url": "http://localhost:3000/parsing-runs/35e40edd-7182-4d45-a39f-55333c0d152b",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/9F6845643C37A6E3F226E3DCB8FFC1DA"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/inspector.html?ws=127.0.0.1:9222/devtools/page/9533E94EFA0A628996E60DA9F2279AA6",
+    "id": "9533E94EFA0A628996E60DA9F2279AA6",
+    "title": "DevTools - localhost:3000/parsing-runs/35e40edd-7182-4d45-a39f-55333c0d152b",
+    "type": "page",
+    "url": "devtools://devtools/bundled/devtools_app.html?remoteBase=https://chrome-devtools-frontend.appspot.com/serve_file/@6ebf0fd701444ed09c2db78802bdb3874ab53df/&targetType=tab&can_dock=true",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/9533E94EFA0A628996E60DA9F2279AA6"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/inspector.html?ws=127.0.0.1:9222/devtools/page/6C211E20DC2DD91A7B140442C95417CA",
+    "id": "6C211E20DC2DD91A7B140442C95417CA",
+    "title": "chrome-extension://npclhjbddhklpbnacpjloidibaggcgon/offscreen.html",
+    "type": "background_page",
+    "url": "chrome-extension://npclhjbddhklpbnacpjloidibaggcgon/offscreen.html",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/6C211E20DC2DD91A7B140442C95417CA"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/inspector.html?ws=127.0.0.1:9222/devtools/page/DFEA6516BC89B68DB4E1A266F2DDDBCE",
+    "id": "DFEA6516BC89B68DB4E1A266F2DDDBCE",
+    "title": "Tab Search",
+    "type": "other",
+    "url": "chrome://tab-search.top-chrome/",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/DFEA6516BC89B68DB4E1A266F2DDDBCE"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/inspector.html?ws=127.0.0.1:9222/devtools/page/F73F82EF556D6DD650332B3B67E62AEA",
+    "id": "F73F82EF556D6DD650332B3B67E62AEA",
+    "title": "chrome-extension://mcjlamohcooanphmebaiigheeeoplihb/src/pages/offscreen/index.html",
+    "type": "background_page",
+    "url": "chrome-extension://mcjlamohcooanphmebaiigheeeoplihb/src/pages/offscreen/index.html",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/F73F82EF556D6DD650332B3B67E62AEA"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/inspector.html?ws=127.0.0.1:9222/devtools/page/809D3DC64FA8DC9172E179B706886958",
+    "faviconUrl": "https://www.perplexity.ai/favicon.ico",
+    "id": "809D3DC64FA8DC9172E179B706886958",
+    "title": "New Tab",
+    "type": "page",
+    "url": "chrome://newtab/",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/809D3DC64FA8DC9172E179B706886958"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/inspector.html?ws=127.0.0.1:9222/devtools/page/C997916AE3EE0DC8233794905E899CCD",
+    "id": "C997916AE3EE0DC8233794905E899CCD",
+    "title": "blob:https://www.perplexity.ai/883bf525-1644-4868-8207-1153214eaa8d",
+    "type": "worker",
+    "url": "blob:https://www.perplexity.ai/883bf525-1644-4868-8207-1153214eaa8d",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/C997916AE3EE0DC8233794905E899CCD"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/inspector.html?ws=127.0.0.1:9222/devtools/page/C6335FED3D6D6109A7E5EAE65F46C3D8",
+    "id": "C6335FED3D6D6109A7E5EAE65F46C3D8",
+    "title": "blob:https://www.perplexity.ai/5cfe5498-e966-4cb8-a212-8d250af9f29a",
+    "type": "worker",
+    "url": "blob:https://www.perplexity.ai/5cfe5498-e966-4cb8-a212-8d250af9f29a",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/C6335FED3D6D6109A7E5EAE65F46C3D8"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/inspector.html?ws=127.0.0.1:9222/devtools/page/D35DCC7EAC422F67CD933D4F13A3D013",
+    "id": "D35DCC7EAC422F67CD933D4F13A3D013",
+    "title": "devtools://devtools/bundled/entrypoints/formatter_worker/formatter_worker-entrypoint.js",
+    "type": "worker",
+    "url": "devtools://devtools/bundled/entrypoints/formatter_worker/formatter_worker-entrypoint.js",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/D35DCC7EAC422F67CD933D4F13A3D013"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/worker_app.html?ws=127.0.0.1:9222/devtools/page/3CBD0DB6112C73DA04D363A75DF57E10",
+    "id": "3CBD0DB6112C73DA04D363A75DF57E10",
+    "title": "Service Worker chrome-extension://ahfpelljbenimhohmgdbgpcgmmahcbkn/background/index.js",
+    "type": "service_worker",
+    "url": "chrome-extension://ahfpelljbenimhohmgdbgpcgmmahcbkn/background/index.js",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/3CBD0DB6112C73DA04D363A75DF57E10"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/worker_app.html?ws=127.0.0.1:9222/devtools/page/FB6902761B4B4F12C598084AECDBC9FF",
+    "id": "FB6902761B4B4F12C598084AECDBC9FF",
+    "title": "Service Worker chrome-extension://npclhjbddhklpbnacpjloidibaggcgon/background.js",
+    "type": "service_worker",
+    "url": "chrome-extension://npclhjbddhklpbnacpjloidibaggcgon/background.js",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/FB6902761B4B4F12C598084AECDBC9FF"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@6ebf0fd701444ed09c2db78802bdb3874ab53df/worker_app.html?ws=127.0.0.1:9222/devtools/page/5EFA08BC7DEA0098588BB649D80D1245",
+    "id": "5EFA08BC7DEA0098588BB649D80D1245",
+    "title": "Service Worker chrome-extension://mcjlamohcooanphmebaiigheeeoplihb/service-worker-loader.js",
+    "type": "service_worker",
+    "url": "chrome-extension://mcjlamohcooanphmebaiigheeeoplihb/service-worker-loader.js",
+    "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/5EFA08BC7DEA0098588BB649D80D1245"
+  }
+]

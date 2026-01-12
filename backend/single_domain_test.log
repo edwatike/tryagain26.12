@@ -2645,3 +2645,110 @@ russteels
 2026-01-10 15:30:33,328 - INFO - 🚀 ТЕСТ ОДНОГО ДОМЕНА COMET CDP
 2026-01-10 15:30:33,332 - INFO - ==================================================
 2026-01-10 15:30:33,394 - ERROR - ❌ CDP недоступен
+2026-01-12 14:49:15,425 - INFO - 🚀 ТЕСТ ОДНОГО ДОМЕНА COMET CDP
+2026-01-12 14:49:15,472 - INFO - ==================================================
+2026-01-12 14:49:15,472 - INFO - 🔍 Проверяю доступность CDP...
+2026-01-12 14:49:15,492 - INFO - 📍 CDP ответил со статусом 200
+2026-01-12 14:49:20,213 - INFO - ✅ Подключено к Comet
+2026-01-12 14:49:20,214 - INFO - 🌐 Тестирую домен: elektro.ru
+2026-01-12 14:49:20,304 - INFO - 📍 Открываю: https://elektro.ru
+2026-01-12 14:49:33,597 - INFO - 📸 Screenshot saved: cdp_debug\20260112_144932_elektro.ru_site_loaded.png
+2026-01-12 14:49:33,599 - INFO - 🧭 CDP targets snapshot saved: cdp_debug\20260112_144933_before_assistant_open_targets.json (count=15)
+2026-01-12 14:49:33,601 - INFO - 📍 Открываю ассистента (попытка 1/6)...
+2026-01-12 14:49:33,880 - INFO - 🧭 CDP targets snapshot saved: cdp_debug\20260112_144933_assistant_open_attempt_1_targets.json (count=15)
+2026-01-12 14:49:33,881 - INFO - 🧭 Assistant open signals: chrome://sidebar=True, sidecar=True
+2026-01-12 14:49:48,902 - WARNING - ⚠️ Failed to take screenshot (elektro.ru_assistant_attempt_1_sidecar_opened): Page.screenshot: Protocol error (Page.captureScreenshot): Cannot take screenshot with 0 width.
+Call log:
+  - taking page screenshot
+  - waiting for fonts to load...
+  - fonts loaded
+
+2026-01-12 14:49:48,990 - INFO - 🧩 Sidecar snapshot saved: cdp_debug\20260112_144948_assistant_attempt_1_input_not_found_sidecar_snapshot.json (inputs=0, blocks=2)
+2026-01-12 14:49:48,997 - WARNING - ⚠️ Failed to take screenshot (elektro.ru_assistant_attempt_1_input_not_found): Page.screenshot: Protocol error (Page.captureScreenshot): Cannot take screenshot with 0 width.
+Call log:
+  - taking page screenshot
+  - waiting for fonts to load...
+  - fonts loaded
+
+2026-01-12 14:49:48,998 - INFO - 📍 Открываю ассистента (попытка 2/6)...
+2026-01-12 14:49:49,269 - INFO - 🧭 CDP targets snapshot saved: cdp_debug\20260112_144949_assistant_open_attempt_2_targets.json (count=15)
+2026-01-12 14:49:49,270 - INFO - 🧭 Assistant open signals: chrome://sidebar=True, sidecar=True
+2026-01-12 14:50:04,290 - WARNING - ⚠️ Failed to take screenshot (elektro.ru_assistant_attempt_2_sidecar_opened): Page.screenshot: Protocol error (Page.captureScreenshot): Cannot take screenshot with 0 width.
+Call log:
+  - taking page screenshot
+  - waiting for fonts to load...
+  - fonts loaded
+
+2026-01-12 14:50:04,409 - INFO - 🧩 Sidecar snapshot saved: cdp_debug\20260112_145004_assistant_attempt_2_input_not_found_sidecar_snapshot.json (inputs=0, blocks=2)
+2026-01-12 14:50:04,418 - WARNING - ⚠️ Failed to take screenshot (elektro.ru_assistant_attempt_2_input_not_found): Page.screenshot: Protocol error (Page.captureScreenshot): Cannot take screenshot with 0 width.
+Call log:
+  - taking page screenshot
+  - waiting for fonts to load...
+  - fonts loaded
+
+2026-01-12 14:50:04,420 - INFO - 📍 Открываю ассистента (попытка 3/6)...
+2026-01-12 14:50:04,695 - INFO - 🧭 CDP targets snapshot saved: cdp_debug\20260112_145004_assistant_open_attempt_3_targets.json (count=15)
+2026-01-12 14:50:04,695 - INFO - 🧭 Assistant open signals: chrome://sidebar=True, sidecar=True
+2026-01-12 14:50:19,709 - WARNING - ⚠️ Failed to take screenshot (elektro.ru_assistant_attempt_3_sidecar_opened): Page.screenshot: Protocol error (Page.captureScreenshot): Cannot take screenshot with 0 width.
+Call log:
+  - taking page screenshot
+  - waiting for fonts to load...
+  - fonts loaded
+
+2026-01-12 14:50:19,774 - INFO - 🧩 Sidecar snapshot saved: cdp_debug\20260112_145019_assistant_attempt_3_input_not_found_sidecar_snapshot.json (inputs=0, blocks=2)
+2026-01-12 14:50:19,782 - WARNING - ⚠️ Failed to take screenshot (elektro.ru_assistant_attempt_3_input_not_found): Page.screenshot: Protocol error (Page.captureScreenshot): Cannot take screenshot with 0 width.
+Call log:
+  - taking page screenshot
+  - waiting for fonts to load...
+  - fonts loaded
+
+2026-01-12 14:50:19,782 - INFO - 📍 Открываю ассистента (попытка 4/6)...
+2026-01-12 14:50:20,063 - INFO - 🧭 CDP targets snapshot saved: cdp_debug\20260112_145020_assistant_open_attempt_4_targets.json (count=15)
+2026-01-12 14:50:20,064 - INFO - 🧭 Assistant open signals: chrome://sidebar=True, sidecar=True
+2026-01-12 14:50:35,078 - WARNING - ⚠️ Failed to take screenshot (elektro.ru_assistant_attempt_4_sidecar_opened): Page.screenshot: Protocol error (Page.captureScreenshot): Cannot take screenshot with 0 width.
+Call log:
+  - taking page screenshot
+  - waiting for fonts to load...
+  - fonts loaded
+
+2026-01-12 14:50:35,141 - INFO - 🧩 Sidecar snapshot saved: cdp_debug\20260112_145035_assistant_attempt_4_input_not_found_sidecar_snapshot.json (inputs=0, blocks=2)
+2026-01-12 14:50:35,149 - WARNING - ⚠️ Failed to take screenshot (elektro.ru_assistant_attempt_4_input_not_found): Page.screenshot: Protocol error (Page.captureScreenshot): Cannot take screenshot with 0 width.
+Call log:
+  - taking page screenshot
+  - waiting for fonts to load...
+  - fonts loaded
+
+2026-01-12 14:50:35,151 - INFO - 📍 Открываю ассистента (попытка 5/6)...
+2026-01-12 14:50:35,432 - INFO - 🧭 CDP targets snapshot saved: cdp_debug\20260112_145035_assistant_open_attempt_5_targets.json (count=15)
+2026-01-12 14:50:35,433 - INFO - 🧭 Assistant open signals: chrome://sidebar=True, sidecar=True
+2026-01-12 14:50:50,459 - WARNING - ⚠️ Failed to take screenshot (elektro.ru_assistant_attempt_5_sidecar_opened): Page.screenshot: Protocol error (Page.captureScreenshot): Cannot take screenshot with 0 width.
+Call log:
+  - taking page screenshot
+  - waiting for fonts to load...
+  - fonts loaded
+
+2026-01-12 14:50:50,547 - INFO - 🧩 Sidecar snapshot saved: cdp_debug\20260112_145050_assistant_attempt_5_input_not_found_sidecar_snapshot.json (inputs=0, blocks=2)
+2026-01-12 14:50:50,560 - WARNING - ⚠️ Failed to take screenshot (elektro.ru_assistant_attempt_5_input_not_found): Page.screenshot: Protocol error (Page.captureScreenshot): Cannot take screenshot with 0 width.
+Call log:
+  - taking page screenshot
+  - waiting for fonts to load...
+  - fonts loaded
+
+2026-01-12 14:50:50,561 - INFO - 📍 Открываю ассистента (попытка 6/6)...
+2026-01-12 14:50:50,842 - INFO - 🧭 CDP targets snapshot saved: cdp_debug\20260112_145050_assistant_open_attempt_6_targets.json (count=15)
+2026-01-12 14:50:50,843 - INFO - 🧭 Assistant open signals: chrome://sidebar=True, sidecar=True
+2026-01-12 14:51:05,858 - WARNING - ⚠️ Failed to take screenshot (elektro.ru_assistant_attempt_6_sidecar_opened): Page.screenshot: Protocol error (Page.captureScreenshot): Cannot take screenshot with 0 width.
+Call log:
+  - taking page screenshot
+  - waiting for fonts to load...
+  - fonts loaded
+
+2026-01-12 14:51:05,917 - INFO - 🧩 Sidecar snapshot saved: cdp_debug\20260112_145105_assistant_attempt_6_input_not_found_sidecar_snapshot.json (inputs=0, blocks=2)
+2026-01-12 14:51:05,925 - WARNING - ⚠️ Failed to take screenshot (elektro.ru_assistant_attempt_6_input_not_found): Page.screenshot: Protocol error (Page.captureScreenshot): Cannot take screenshot with 0 width.
+Call log:
+  - taking page screenshot
+  - waiting for fonts to load...
+  - fonts loaded
+
+2026-01-12 14:51:05,926 - ERROR - ❌ Ассистент НЕ открылся: sidecar/input не найдены. См. cdp_debug/*assistant_attempt_* (desktop+sidecar snapshots).
+2026-01-12 14:51:05,927 - INFO - 🎉 ТЕСТ ЗАВЕРШЕН!
