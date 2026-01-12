@@ -1869,6 +1869,129 @@ export default function ParsingRunDetailsPage({ params }: { params: Promise<{ ru
           </Card>
         )}
 
+        {/* Логи извлечения данных (Domain Parser) */}
+        {parserStatus && parserStatus.results && parserStatus.results.length > 0 && (
+          <Card className="mt-6 border-2 border-green-500">
+            <CardHeader>
+              <CardTitle>Результаты извлечения данных (ИНН + Email)</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Accordion type="multiple" className="w-full">
+                {parserStatus.results.map((result, idx) => {
+                  const hasData = result.inn || (result.emails && result.emails.length > 0)
+                  const hasError = !!result.error
+                  
+                  return (
+                    <AccordionItem key={`parser-${idx}`} value={`parser-${idx}`} className="border-b">
+                      <AccordionTrigger className="hover:no-underline">
+                        <div className="flex items-center gap-2 flex-1">
+                          <span className={`w-3 h-3 rounded-full ${hasError ? 'bg-red-500' : hasData ? 'bg-green-500' : 'bg-gray-400'}`}></span>
+                          <span className="font-mono font-semibold">{result.domain}</span>
+                          {result.inn && (
+                            <Badge className="bg-blue-600 text-white">
+                              ИНН: {result.inn}
+                            </Badge>
+                          )}
+                          {result.emails && result.emails.length > 0 && (
+                            <Badge className="bg-green-600 text-white">
+                              Email: {result.emails[0]}
+                            </Badge>
+                          )}
+                          {hasError && (
+                            <Badge variant="destructive">
+                              Ошибка
+                            </Badge>
+                          )}
+                          {!hasData && !hasError && (
+                            <Badge variant="outline">
+                              Не найдено
+                            </Badge>
+                          )}
+                        </div>
+                      </AccordionTrigger>
+                      <AccordionContent>
+                        <div className="pt-2 space-y-3">
+                          {result.inn && (
+                            <div className="text-sm">
+                              <p className="font-semibold text-blue-700 mb-1">ИНН найден:</p>
+                              <div className="p-2 bg-blue-50 rounded border border-blue-200">
+                                <span className="font-mono text-lg">{result.inn}</span>
+                              </div>
+                            </div>
+                          )}
+                          
+                          {result.emails && result.emails.length > 0 && (
+                            <div className="text-sm">
+                              <p className="font-semibold text-green-700 mb-1">Email найден:</p>
+                              <div className="space-y-1">
+                                {result.emails.map((email, emailIdx) => (
+                                  <div key={emailIdx} className="p-2 bg-green-50 rounded border border-green-200">
+                                    <a href={`mailto:${email}`} className="text-green-700 hover:underline">
+                                      {email}
+                                    </a>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          
+                          {result.sourceUrls && result.sourceUrls.length > 0 && (
+                            <div className="text-sm">
+                              <p className="font-semibold text-muted-foreground mb-1">Источники ({result.sourceUrls.length}):</p>
+                              <div className="space-y-1">
+                                {result.sourceUrls.map((url, urlIdx) => (
+                                  <div key={urlIdx} className="text-xs">
+                                    <a
+                                      href={url}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-blue-600 hover:underline flex items-center gap-1"
+                                    >
+                                      <span className="truncate">{url}</span>
+                                      <ExternalLink className="h-3 w-3 flex-shrink-0" />
+                                    </a>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          
+                          {result.error && (
+                            <div className="p-3 bg-red-50 border border-red-200 rounded-md">
+                              <p className="text-sm text-red-800 font-semibold mb-1">Ошибка:</p>
+                              <p className="text-sm text-red-700">{result.error}</p>
+                            </div>
+                          )}
+                          
+                          {!result.inn && !result.emails?.length && !result.error && (
+                            <div className="p-3 bg-gray-50 border border-gray-200 rounded-md">
+                              <p className="text-sm text-gray-700">
+                                ℹ️ Данные не найдены на сайте. Возможно, сайт не содержит контактную информацию или она находится в защищенных разделах.
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
+                  )
+                })}
+              </Accordion>
+              
+              <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
+                <p className="text-sm text-blue-800">
+                  <strong>Статистика:</strong> Обработано {parserStatus.processed} из {parserStatus.total} доменов
+                  {parserStatus.results.filter(r => r.inn).length > 0 && (
+                    <span> • ИНН найден: {parserStatus.results.filter(r => r.inn).length}</span>
+                  )}
+                  {parserStatus.results.filter(r => r.emails && r.emails.length > 0).length > 0 && (
+                    <span> • Email найден: {parserStatus.results.filter(r => r.emails && r.emails.length > 0).length}</span>
+                  )}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* История парсинга */}
         {(run?.processLog || run?.process_log) && (
           <Card className="mt-6">

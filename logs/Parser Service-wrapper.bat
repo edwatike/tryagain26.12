@@ -1,6 +1,6 @@
 @echo off
 chcp 65001 >nul
-cd /d d:\tryagain\parser_service\
+cd /d D:\tryagain\parser_service\
 
 echo ========================================
 echo   Starting Parser Service API
@@ -69,6 +69,5 @@ if errorlevel 1 (
     echo.
     echo [ERROR] Parser Service failed to start
     echo Check the error messages above
-
     exit /b 1
 )

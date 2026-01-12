@@ -222,6 +222,62 @@ Write-Host "  Starting Services" -ForegroundColor Cyan
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host ""
 
+# Start Comet CDP first
+Write-Info -Service "Comet CDP" -Message "Checking Comet CDP on port 9222..."
+$cometCdpRunning = $false
+try {
+    $response = Invoke-WebRequest -Uri "http://127.0.0.1:9222/json/version" -UseBasicParsing -TimeoutSec 2 -ErrorAction Stop
+    if ($response.StatusCode -eq 200) {
+        Write-Success -Service "Comet CDP" -Message "Already running on port 9222"
+        $cometCdpRunning = $true
+    }
+} catch {
+    Write-Info -Service "Comet CDP" -Message "Not running, will start..."
+}
+
+if (-not $cometCdpRunning) {
+    Write-Info -Service "Comet CDP" -Message "Starting Comet browser with CDP..."
+    
+    # Comet path
+    $cometPath = "C:\Users\admin\AppData\Local\Perplexity\Comet\Application\comet.exe"
+    
+    if (Test-Path $cometPath) {
+        # Kill existing Comet processes
+        Get-Process -Name "comet" -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+        Start-Sleep -Seconds 2
+        
+        # Start Comet with CDP
+        Start-Process -FilePath $cometPath -ArgumentList "--remote-debugging-port=9222", "--remote-debugging-address=127.0.0.1" -WindowStyle Normal
+        
+        Write-Info -Service "Comet CDP" -Message "Waiting for CDP to be ready..."
+        $cdpReady = $false
+        for ($i = 1; $i -le 15; $i++) {
+            Start-Sleep -Seconds 1
+            try {
+                $response = Invoke-WebRequest -Uri "http://127.0.0.1:9222/json/version" -UseBasicParsing -TimeoutSec 1 -ErrorAction Stop
+                if ($response.StatusCode -eq 200) {
+                    Write-Success -Service "Comet CDP" -Message "CDP ready on port 9222"
+                    $cdpReady = $true
+                    break
+                }
+            } catch {
+                if ($i -lt 15) {
+                    Write-Info -Service "Comet CDP" -Message "Waiting... ($i/15)"
+                }
+            }
+        }
+        
+        if (-not $cdpReady) {
+            Write-Warning -Service "Comet CDP" -Message "CDP not responding after 15 seconds. Services may not work correctly."
+        }
+    } else {
+        Write-Error -Service "Comet CDP" -Message "Comet not found at: $cometPath"
+        Write-Warning -Service "Comet CDP" -Message "Install Comet from https://www.perplexity.ai/comet"
+    }
+}
+
+Write-Host ""
+
 # Start Parser Service
 Start-ServiceBackground -ServiceName "Parser Service" -Command "parser_service\start-parser-service.bat" -WorkingDir $ProjectRoot
 
@@ -347,12 +403,14 @@ function Check-ServicesHealth {
     Write-Host "========================================" -ForegroundColor Cyan
     Write-Host ""
     
-    # Check Chrome CDP
-    $chromePort = Get-NetTCPConnection -LocalPort 9222 -State Listen -ErrorAction SilentlyContinue
-    if ($chromePort) {
-        Write-Success -Service "Chrome CDP" -Message "Port 9222 is listening"
-    } else {
-        Write-Error -Service "Chrome CDP" -Message "Port 9222 is not listening"
+    # Check Comet CDP
+    try {
+        $response = Invoke-WebRequest -Uri "http://127.0.0.1:9222/json/version" -UseBasicParsing -TimeoutSec 2 -ErrorAction Stop
+        if ($response.StatusCode -eq 200) {
+            Write-Success -Service "Comet CDP" -Message "Running on http://127.0.0.1:9222"
+        }
+    } catch {
+        Write-Error -Service "Comet CDP" -Message "Not responding on http://127.0.0.1:9222"
     }
     
     # Check Parser Service

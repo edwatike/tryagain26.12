@@ -566,6 +566,263 @@ Get-Content "logs\Backend-*.log" -Tail 50 | Select-String -Pattern "Bulk deletin
 
 ---
 
+## Ошибка: Domain Parser - "No result found in parser output"
+
+### Описание проблемы
+При запуске Domain Parser для извлечения ИНН и Email все домены возвращают ошибку:
+- `Error: No result found in parser output`
+- В логах Backend: `Domain parser stdout length: 0`
+- В логах Backend: `Traceback (most recent call last): File "<string>", line 5, in <module>`
+- Парсер не может импортировать `DomainInfoParser` из-за отсутствия зависимостей
+
+**Симптомы:**
+- Все домены показывают статус "Ошибка" в аккордеоне результатов
+- Нет извлеченных ИНН или Email
+- В логах Backend видно `stderr: Traceback` но без детальной информации
+- stdout парсера пустой (length: 0)
+
+### Причина
+**Корневая причина:** Domain Parser пытался использовать Python из виртуального окружения Backend (`D:\tryagain\backend\venv\Scripts\python.exe`), в котором **не установлен Playwright**. Парсер `domain_info_parser/parser.py` требует Playwright для работы с браузером, но Backend venv содержит только зависимости FastAPI.
+
+**Детали:**
+1. Backend использует `sys.executable` для запуска парсера
+2. `sys.executable` указывает на `backend\venv\Scripts\python.exe`
+3. В Backend venv нет Playwright (только в системном Python)
+4. Парсер падает при попытке `from playwright.async_api import ...`
+5. Ошибка импорта не попадает в RESULT_START/RESULT_END блок
+6. Backend получает пустой stdout и выдает "No result found in parser output"
+
+### Решение ✅
+
+**1. Использовать системный Python вместо Backend venv:**
+
+Изменен `backend/app/transport/routers/domain_parser.py`:
+```python
+# Было:
+python_exe = sys.executable  # Backend venv без Playwright
+
+# Стало:
+python_exe = "python"  # Системный Python с Playwright
+```
+
+**2. Улучшено логирование ошибок:**
+```python
+logger.info(f"Domain parser for {domain}:")
+logger.info(f"  - stdout length: {len(stdout_text)}")
+logger.info(f"  - stderr length: {len(stderr_text)}")
+
+if stderr_text:
+    logger.warning(f"Domain parser stderr for {domain}:")
+    logger.warning(stderr_text)  # Полный вывод stderr
+```
+
+**3. Улучшена обработка ошибок:**
+```python
+# Детальное сообщение об ошибке с контекстом
+error_msg = f"No result markers found. stdout: {stdout_text[:500]}, stderr: {stderr_text[:500]}"
+logger.error(f"Parser output error for {domain}: {error_msg}")
+
+# Возврат детальной ошибки в результате
+return {
+    "domain": domain,
+    "inn": None,
+    "emails": [],
+    "sourceUrls": [],
+    "error": f"Parser error: {error_details}"
+}
+```
+
+**4. Увеличен таймаут парсера:**
+- Было: 30 секунд
+- Стало: 60 секунд (некоторые сайты загружаются медленно)
+
+### Проверка
+
+```powershell
+# 1. Проверить, что системный Python имеет Playwright
+python -c "import playwright; print('Playwright installed')"
+# Ожидаемый результат: "Playwright installed"
+
+# 2. Проверить, что Backend перезапустился
+Get-Content "logs\Backend-*.log" -Tail 20 | Select-String -Pattern "Started server|Application startup"
+
+# 3. Запустить Domain Parser через Frontend:
+# - Открыть parsing run
+# - Выбрать несколько доменов
+# - Нажать "Получить данные"
+# - Проверить логи Backend
+
+# 4. Проверить логи Domain Parser
+Get-Content "logs\Backend-*.log" -Tail 100 | Select-String -Pattern "Domain parser for|stdout length|stderr length|Extracted JSON"
+
+# 5. Проверить результаты в Frontend
+# - Открыть аккордеон "Результаты извлечения данных (ИНН + Email)"
+# - Должны быть найденные ИНН/Email (если они есть на сайтах)
+# - Детальные ошибки вместо "No result found in parser output"
+```
+
+**Ожидаемый результат:**
+- ✅ Парсер успешно запускается с системным Python
+- ✅ ИНН и Email извлекаются с сайтов (если они там есть)
+- ✅ Детальные ошибки для проблемных доменов (например, "Timeout", "Connection refused")
+- ✅ В логах видно `Extracted JSON for {domain}` с результатами
+- ✅ В Frontend отображаются найденные данные в аккордеоне
+
+### Альтернативное решение (если системный Python недоступен)
+
+Если системный Python не имеет Playwright, можно:
+
+**Вариант 1: Установить Playwright в Backend venv**
+```powershell
+cd backend
+.\venv\Scripts\activate
+pip install playwright
+playwright install chromium
+```
+
+**Вариант 2: Создать отдельное виртуальное окружение для парсера**
+```powershell
+cd domain_info_parser
+python -m venv venv
+.\venv\Scripts\activate
+pip install -r requirements.txt
+playwright install chromium
+```
+
+Затем изменить `python_exe` на путь к этому venv:
+```python
+python_exe = r"D:\tryagain\domain_info_parser\venv\Scripts\python.exe"
+```
+
+### Измененные файлы
+- `backend/app/transport/routers/domain_parser.py` - изменен Python executable, улучшено логирование, увеличен таймаут
+
+### Дата решения
+2026-01-12 ✅ **РЕШЕНО И ПРОВЕРЕНО**
+
+---
+
+## Улучшение: Comet Extraction - парсинг JSON с исключениями
+
+### Описание проблемы
+При запуске Comet extraction через Backend, ассистент дает ответ с ИНН и Email, но Backend не может распарсить JSON из stdout, потому что после JSON могут быть Python исключения (asyncio pipe errors).
+
+**Симптомы:**
+- Comet скрипт успешно извлекает данные (видно в логах)
+- Backend получает stdout с JSON, но не может его найти
+- В stdout после JSON есть Python traceback от asyncio
+- Данные не сохраняются в БД, хотя ассистент их нашел
+
+### Причина
+**Корневая причина:** Backend искал JSON только в последней строке stdout (`lines[-1]`), но после JSON могут быть Python исключения от asyncio (unclosed transport warnings). Эти исключения появляются после завершения скрипта и не влияют на результат, но мешают парсингу.
+
+**Детали:**
+1. Comet скрипт выводит JSON в stdout: `{"domain": "...", "inn": "...", ...}`
+2. После завершения asyncio выводит warnings в stdout
+3. Backend берет последнюю строку, которая содержит traceback, а не JSON
+4. `json.loads()` падает с ошибкой парсинга
+5. Результат не сохраняется в БД
+
+### Решение ✅
+
+**1. Улучшен поиск JSON в stdout:**
+
+Изменен `backend/app/transport/routers/comet.py`:
+```python
+# Было:
+lines = stdout_str.strip().split('\n')
+json_line = lines[-1] if lines else ""
+
+# Стало:
+lines = stdout_str.strip().split('\n')
+json_line = ""
+
+# Try to find JSON line (starts with '{' and contains "domain")
+for line in reversed(lines):
+    line = line.strip()
+    if line.startswith('{') and '"domain"' in line:
+        json_line = line
+        break
+
+# Fallback to last line if no JSON found
+if not json_line and lines:
+    json_line = lines[-1]
+```
+
+**2. Улучшено логирование сохранения результатов:**
+```python
+logger.info(f"✅ Saved Comet results for run {run_id}, comet_run_id {comet_run_id}")
+logger.info(f"   - Results count: {len(results)}")
+logger.info(f"   - Success count: {sum(1 for r in results if r.get('inn') or r.get('email'))}")
+```
+
+### Проверка
+
+```powershell
+# 1. Тест Comet скрипта напрямую
+python "D:\tryagain\experiments\comet-integration\test_single_domain.py" --domain "santech.ru" --json
+
+# Ожидаемый результат: JSON с найденным ИНН
+# {"domain": "santech.ru", "status": "success", "inn": "7736192449", ...}
+
+# 2. Проверить логи Backend при Comet extraction
+Get-Content "logs\Backend-*.log" -Tail 100 | Select-String -Pattern "Comet|JSON line found|Saved Comet results"
+
+# 3. Запустить Comet extraction через Frontend:
+# - Открыть parsing run
+# - Выбрать домен (например, santech.ru)
+# - Нажать кнопку "Comet"
+# - Проверить, что данные сохранились в БД
+
+# 4. Проверить process_log в БД
+# Должен содержать структуру:
+# {
+#   "comet": {
+#     "runs": {
+#       "comet_YYYYMMDD_HHMMSS_xxxxx": {
+#         "status": "completed",
+#         "results": [{"domain": "...", "inn": "...", "email": "..."}]
+#       }
+#     }
+#   }
+# }
+```
+
+**Ожидаемый результат:**
+- ✅ Backend находит JSON даже если после него есть исключения
+- ✅ Comet результаты сохраняются в `process_log` БД
+- ✅ Frontend отображает найденные ИНН и Email
+- ✅ Данные автоматически создают поставщиков (если включено auto-save)
+
+### Известные ограничения
+
+**Comet ассистент не всегда дает ответ в нужном формате:**
+- Иногда ассистент только начинает работу ("Готовимся помочь вам", "Чтение страницы")
+- Иногда дает полный ответ с ИНН и Email
+- Это зависит от скорости ответа ассистента и таймаута ожидания (120 секунд)
+
+**Рекомендации:**
+- Использовать Comet для сложных случаев, когда Domain Parser не нашел данные
+- Для массового извлечения использовать Domain Parser (быстрее и стабильнее)
+- Учитывать лимиты API Comet (не запускать для всех доменов сразу)
+
+### Тестирование
+
+**Успешный тест на santech.ru:**
+```
+ИНН: 7736192449
+Email: (не найден)
+Источники: https://www.santech.ru/pages/requis...
+```
+
+### Измененные файлы
+- `backend/app/transport/routers/comet.py` - улучшен поиск JSON в stdout, добавлено детальное логирование
+
+### Дата решения
+2026-01-12 ✅ **РЕШЕНО И ПРОТЕСТИРОВАНО**
+
+---
+
 ## Ошибка: UnmappedInstanceError при удалении parsing run
 
 ### Описание проблемы

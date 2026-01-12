@@ -12,25 +12,24 @@ class CheckoClient:
     
     BASE_URL = "https://api.checko.ru/v2"
     
-    # Список API ключей для ротации
-    _api_keys: List[str] = []
-    _current_key_index: int = 0
-    
     def __init__(self, api_key: Optional[str] = None):
         """Initialize Checko client.
         
         Args:
             api_key: Checko API key. If not provided, uses settings.CHECKO_API_KEYS.
         """
+        # Список API ключей для ротации
+        self._api_keys: List[str] = []
+        self._current_key_index: int = 0
+        
         if api_key:
-            self.api_key = api_key
             self._api_keys = [api_key]
         else:
             # Загружаем список ключей из настроек
             self._load_api_keys()
             if not self._api_keys:
                 raise ValueError("Checko API key is required")
-            self.api_key = self._api_keys[self._current_key_index]
+        self.api_key = self._api_keys[self._current_key_index]
     
     def _load_api_keys(self):
         """Load API keys from settings."""
@@ -81,9 +80,12 @@ class CheckoClient:
                 async with httpx.AsyncClient(timeout=30.0) as client:
                     response = await client.get(url, params=params)
                     
-                    # Проверяем на ошибку лимита (429 или специфичные коды Checko)
-                    if response.status_code == 429:
-                        logger.warning(f"Rate limit exceeded for API key #{self._current_key_index + 1}")
+                    # Проверяем на ошибку лимита (429) или блокировку (403)
+                    if response.status_code == 429 or response.status_code == 403:
+                        if response.status_code == 429:
+                            logger.warning(f"Rate limit exceeded for API key #{self._current_key_index + 1}")
+                        else:  # 403
+                            logger.warning(f"API key blocked (403) for key #{self._current_key_index + 1}")
                         if self._rotate_api_key():
                             continue  # Пробуем следующий ключ
                         else:
@@ -253,12 +255,3 @@ class CheckoClient:
             "_inspections": inspections_data.get("data") or {},
             "_enforcements": enforcements_data.get("data") or {},
         }
-
-
-
-
-
-
-
-
-

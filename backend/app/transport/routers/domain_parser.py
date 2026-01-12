@@ -153,91 +153,127 @@ async def _run_domain_parser_for_domain(domain: str) -> Dict:
     if not os.path.exists(parser_script):
         raise Exception(f"Domain parser script not found: {parser_script}")
     
-    # Get Python executable
-    python_exe = sys.executable
+    # Use system Python (not venv) because Playwright is installed globally
+    # Backend venv doesn't have Playwright
+    python_exe = "python"  # Use system Python
     
     logger.info(f"Running domain parser for: {domain}")
-    logger.info(f"Python: {python_exe}")
+    logger.info(f"Python: {python_exe} (system)")
     logger.info(f"Script: {parser_script}")
     
     try:
-        # Run parser as subprocess
-        process = await asyncio.create_subprocess_exec(
-            python_exe,
-            "-c",
-            f"""
+        # Create a temporary Python script to run the parser
+        import tempfile
+        script_content = f"""
 import sys
 import asyncio
+import json
+
+# Add parser directory to path
 sys.path.insert(0, r'{parser_dir}')
-from parser import DomainInfoParser
 
 async def main():
-    parser = DomainInfoParser(headless=True, timeout=15000)
-    await parser.start()
     try:
-        result = await parser.parse_domain('{domain}')
+        from parser import DomainInfoParser
+        
+        parser = DomainInfoParser(headless=True, timeout=15000)
+        await parser.start()
+        try:
+            result = await parser.parse_domain('{domain}')
+            print('RESULT_START')
+            print(json.dumps(result, ensure_ascii=False))
+            print('RESULT_END')
+        finally:
+            await parser.close()
+    except Exception as e:
         print('RESULT_START')
-        import json
-        print(json.dumps(result, ensure_ascii=False))
+        print(json.dumps({{"domain": "{domain}", "inn": None, "emails": [], "source_urls": [], "error": str(e)}}))
         print('RESULT_END')
-    finally:
-        await parser.close()
+        raise
 
-asyncio.run(main())
-""",
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE,
-            cwd=parser_dir
-        )
+if __name__ == "__main__":
+    asyncio.run(main())
+"""
         
-        # Wait for completion with timeout
-        try:
-            stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=30.0)
-        except asyncio.TimeoutError:
-            process.kill()
-            raise Exception("Domain parser timeout (30s)")
-        
-        # Decode output
-        try:
-            stdout_text = stdout.decode('utf-8')
-        except UnicodeDecodeError:
-            stdout_text = stdout.decode('cp1251', errors='ignore')
+        # Write script to temp file
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False, encoding='utf-8') as f:
+            f.write(script_content)
+            temp_script = f.name
         
         try:
-            stderr_text = stderr.decode('utf-8')
-        except UnicodeDecodeError:
-            stderr_text = stderr.decode('cp1251', errors='ignore')
-        
-        logger.info(f"Domain parser stdout length: {len(stdout_text)}")
-        if stderr_text:
-            logger.warning(f"Domain parser stderr: {stderr_text[:500]}")
-        
-        # Extract result from output
-        if 'RESULT_START' in stdout_text and 'RESULT_END' in stdout_text:
-            result_start = stdout_text.index('RESULT_START') + len('RESULT_START')
-            result_end = stdout_text.index('RESULT_END')
-            result_json = stdout_text[result_start:result_end].strip()
+            # Run parser as subprocess using the temp script
+            process = await asyncio.create_subprocess_exec(
+                python_exe,
+                temp_script,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
+                cwd=parser_dir
+            )
             
-            result = json.loads(result_json)
+            # Wait for completion with timeout
+            try:
+                stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=60.0)
+            except asyncio.TimeoutError:
+                process.kill()
+                raise Exception("Domain parser timeout (60s)")
             
-            return {
-                "domain": result.get("domain", domain),
-                "inn": result.get("inn"),
-                "emails": result.get("emails", []),
-                "sourceUrls": result.get("source_urls", []),
-                "error": result.get("error")
-            }
-        else:
-            raise Exception("No result found in parser output")
+            # Decode output
+            try:
+                stdout_text = stdout.decode('utf-8')
+            except UnicodeDecodeError:
+                stdout_text = stdout.decode('cp1251', errors='ignore')
+            
+            try:
+                stderr_text = stderr.decode('utf-8')
+            except UnicodeDecodeError:
+                stderr_text = stderr.decode('cp1251', errors='ignore')
+            
+            logger.info(f"Domain parser for {domain}:")
+            logger.info(f"  - stdout length: {len(stdout_text)}")
+            logger.info(f"  - stderr length: {len(stderr_text)}")
+            
+            if stderr_text:
+                logger.warning(f"Domain parser stderr for {domain}:")
+                logger.warning(stderr_text)
+            
+            # Extract result from output
+            if 'RESULT_START' in stdout_text and 'RESULT_END' in stdout_text:
+                result_start = stdout_text.index('RESULT_START') + len('RESULT_START')
+                result_end = stdout_text.index('RESULT_END')
+                result_json = stdout_text[result_start:result_end].strip()
+                
+                logger.info(f"Extracted JSON for {domain}: {result_json[:200]}")
+                
+                result = json.loads(result_json)
+                
+                return {
+                    "domain": result.get("domain", domain),
+                    "inn": result.get("inn"),
+                    "emails": result.get("emails", []),
+                    "sourceUrls": result.get("source_urls", []),
+                    "error": result.get("error")
+                }
+            else:
+                error_msg = f"No result markers found. stdout: {stdout_text[:500]}, stderr: {stderr_text[:500]}"
+                logger.error(f"Parser output error for {domain}: {error_msg}")
+                raise Exception(error_msg)
+        finally:
+            # Clean up temp file
+            import os
+            try:
+                os.unlink(temp_script)
+            except:
+                pass
         
     except Exception as e:
-        logger.error(f"Error running domain parser for {domain}: {e}")
+        error_details = str(e)
+        logger.error(f"Error running domain parser for {domain}: {error_details}")
         return {
             "domain": domain,
             "inn": None,
             "emails": [],
             "sourceUrls": [],
-            "error": str(e)
+            "error": f"Parser error: {error_details}"
         }
 
 

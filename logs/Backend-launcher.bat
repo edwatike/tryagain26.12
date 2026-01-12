@@ -1,3 +1,3 @@
 @echo off
-cd /d "d:\tryagain"
-call "d:\tryagain\logs\Backend-wrapper.bat" >> "d:\tryagain\logs\Backend-20260110-102009.log" 2>&1
+cd /d "D:\tryagain"
+call "D:\tryagain\logs\Backend-wrapper.bat" >> "D:\tryagain\logs\Backend-20260112-101510.log" 2>&1

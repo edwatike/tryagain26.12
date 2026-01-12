@@ -300,11 +300,23 @@ async def _run_comet_for_domain(domain: str) -> Dict:
             if stderr_str:
                 logger.warning(f"stderr output: {stderr_str[:500]}")
             
-            # Find JSON in stdout (last line should be JSON)
+            # Find JSON in stdout - look for line starting with '{"domain":'
+            # Script outputs JSON to stdout, but there may be exceptions after it
             lines = stdout_str.strip().split('\n')
-            json_line = lines[-1] if lines else ""
+            json_line = ""
             
-            logger.info(f"Last line (JSON): {json_line[:200]}...")
+            # Try to find JSON line (starts with '{' and contains "domain")
+            for line in reversed(lines):
+                line = line.strip()
+                if line.startswith('{') and '"domain"' in line:
+                    json_line = line
+                    break
+            
+            # Fallback to last line if no JSON found
+            if not json_line and lines:
+                json_line = lines[-1]
+            
+            logger.info(f"JSON line found: {json_line[:200]}...")
             
         except asyncio.TimeoutError:
             process.kill()
@@ -401,7 +413,9 @@ async def _save_comet_results_to_db(run_id: str, comet_run_id: str, results: Lis
                 parsing_run.process_log = json.dumps(process_log, ensure_ascii=False)
                 await new_session.commit()
                 
-                logger.info(f"Saved Comet results for run {run_id}, comet_run_id {comet_run_id}")
+                logger.info(f"✅ Saved Comet results for run {run_id}, comet_run_id {comet_run_id}")
+                logger.info(f"   - Results count: {len(results)}")
+                logger.info(f"   - Success count: {sum(1 for r in results if r.get('inn') or r.get('email'))}")
             except Exception as e:
                 logger.error(f"Error in save transaction: {e}")
                 await new_session.rollback()

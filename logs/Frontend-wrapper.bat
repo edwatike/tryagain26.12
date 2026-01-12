@@ -1,5 +1,5 @@
 @echo off
-cd /d d:\tryagain\scripts\..\frontend\moderator-dashboard-ui
+cd /d D:\tryagain\scripts\..\frontend\moderator-dashboard-ui
 echo [Frontend] Starting...
 if not exist node_modules (
     echo [Frontend] Installing dependencies...
@@ -8,3 +8,7 @@ if not exist node_modules (
 echo [Frontend] Starting Next.js on port 3000...
 set NODE_OPTIONS=--max-old-space-size=4096
 npm run dev
+if errorlevel 1 (
+    echo [Frontend] ERROR: Failed to start
+    exit /b 1
+)
