@@ -43,7 +43,7 @@ async def _start_comet_batch_internal(run_id: str, domains: List[str], auto_lear
     Returns:
         Dict with runId and cometRunId
     """
-    from app.adapters.db.session import async_session_maker
+    from app.adapters.db.session import AsyncSessionLocal
     
     logger.info(f"=== INTERNAL COMET BATCH START ===")
     logger.info(f"Run ID: {run_id}")
@@ -51,7 +51,7 @@ async def _start_comet_batch_internal(run_id: str, domains: List[str], auto_lear
     logger.info(f"Auto-learn: {auto_learn}")
     
     # Verify parsing run exists
-    async with async_session_maker() as db:
+    async with AsyncSessionLocal() as db:
         parsing_run = await get_parsing_run.execute(db=db, run_id=run_id)
         if not parsing_run:
             raise Exception("Parsing run not found")
@@ -276,8 +276,8 @@ async def _process_comet_batch(comet_run_id: str, run_id: str, domains: List[str
                 learning_session_id = f"auto_learning_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
                 
                 # Create a temporary DB session for learning
-                from app.adapters.db.session import async_session_maker
-                async with async_session_maker() as db:
+                from app.adapters.db.session import AsyncSessionLocal
+                async with AsyncSessionLocal() as db:
                     from app.transport.schemas.learning import LearnFromCometRequestDTO
                     
                     request = LearnFromCometRequestDTO(
