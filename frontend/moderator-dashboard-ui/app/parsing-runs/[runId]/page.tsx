@@ -20,7 +20,7 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Navigation } from "@/components/navigation"
 import { CheckoInfoDialog } from "@/components/checko-info-dialog"
-import { getParsingRun, getDomainsQueue, getBlacklist, addToBlacklist, createSupplier, updateSupplier, getSuppliers, getParsingLogs, extractINNBatch, startCometExtractBatch, getCometStatus, getCheckoData, startDomainParserBatch, getDomainParserStatus, APIError } from "@/lib/api"
+import { getParsingRun, getDomainsQueue, getBlacklist, addToBlacklist, createSupplier, updateSupplier, getSuppliers, getParsingLogs, extractINNBatch, startCometExtractBatch, getCometStatus, getCheckoData, startDomainParserBatch, getDomainParserStatus, learnFromComet, getLearningStatistics, APIError, type LearnedItem, type LearningStatistics } from "@/lib/api"
 import { groupByDomain, extractRootDomain, collectDomainSources, normalizeUrl } from "@/lib/utils-domain"
 import { getCachedSuppliers, setCachedSuppliers, getCachedBlacklist, setCachedBlacklist, invalidateSuppliersCache, invalidateBlacklistCache } from "@/lib/cache"
 import { toast } from "sonner"
@@ -96,6 +96,11 @@ export default function ParsingRunDetailsPage({ params }: { params: Promise<{ ru
   const [parserStatus, setParserStatus] = useState<DomainParserStatusResponse | null>(null)
   const [parserLoading, setParserLoading] = useState(false)
   const [parserResultsMap, setParserResultsMap] = useState<Map<string, DomainParserResult>>(new Map())
+
+  // Learning state
+  const [learningLoading, setLearningLoading] = useState(false)
+  const [learnedItems, setLearnedItems] = useState<LearnedItem[]>([])
+  const [learningStats, setLearningStats] = useState<LearningStatistics | null>(null)
 
   const suppliersByDomainRef = useRef<Map<string, SupplierDTO>>(new Map())
   const cometAutofillDoneRef = useRef<Set<string>>(new Set())
@@ -1294,6 +1299,70 @@ export default function ParsingRunDetailsPage({ params }: { params: Promise<{ ru
     }
   }
 
+  // Функция для обучения Domain Parser на основе результатов Comet
+  const handleLearnFromComet = async () => {
+    if (!runId) {
+      toast.error("runId не найден")
+      return
+    }
+
+    // Находим домены, где Comet нашел данные, а Domain Parser - нет
+    const domainsToLearn: string[] = []
+    
+    cometResultsMap.forEach((cometResult, domain) => {
+      const parserResult = parserResultsMap.get(domain)
+      
+      // Comet нашел ИНН или Email, а Parser - нет
+      const cometFoundInn = !!cometResult.inn
+      const cometFoundEmail = !!cometResult.email
+      const parserFoundInn = parserResult?.inn
+      const parserFoundEmail = parserResult?.emails && parserResult.emails.length > 0
+      
+      if ((cometFoundInn && !parserFoundInn) || (cometFoundEmail && !parserFoundEmail)) {
+        domainsToLearn.push(domain)
+      }
+    })
+
+    if (domainsToLearn.length === 0) {
+      toast.info("Нет доменов для обучения (Comet не нашел ничего нового)")
+      return
+    }
+
+    console.log('[Learning] Starting learning from Comet for domains:', domainsToLearn)
+    setLearningLoading(true)
+    
+    try {
+      const learningSessionId = `learning_${Date.now()}`
+      const response = await learnFromComet(runId, domainsToLearn, learningSessionId)
+      
+      setLearnedItems(response.learnedItems)
+      setLearningStats(response.statistics)
+      
+      toast.success(`🎓 Парсер обучен! Выучено ${response.learnedItems.length} паттернов`)
+      
+      if (response.learnedItems.length > 0) {
+        const innLearned = response.learnedItems.filter(i => i.type === 'inn').length
+        const emailLearned = response.learnedItems.filter(i => i.type === 'email').length
+        
+        if (innLearned > 0) {
+          toast.info(`📚 ИНН: выучено ${innLearned} паттернов`)
+        }
+        if (emailLearned > 0) {
+          toast.info(`📚 Email: выучено ${emailLearned} паттернов`)
+        }
+      }
+    } catch (error) {
+      console.error('[Learning] Error:', error)
+      if (error instanceof APIError) {
+        toast.error(`Ошибка обучения: ${error.message}`)
+      } else {
+        toast.error(error instanceof Error ? error.message : "Ошибка обучения парсера")
+      }
+    } finally {
+      setLearningLoading(false)
+    }
+  }
+
   const handleCometExtract = async () => {
     console.log('[Comet] Button clicked')
     console.log('[Comet] selectedDomains:', selectedDomains)
@@ -1393,6 +1462,15 @@ export default function ParsingRunDetailsPage({ params }: { params: Promise<{ ru
                     className="h-8 text-xs bg-black hover:bg-black/90 text-white"
                   >
                     Comet ({selectedDomains.size})
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={handleLearnFromComet}
+                    disabled={learningLoading || cometResultsMap.size === 0}
+                    className="h-8 text-xs bg-purple-600 hover:bg-purple-700 text-white"
+                    title="Обучить Domain Parser на основе результатов Comet"
+                  >
+                    🎓 Обучить парсер
                   </Button>
                 </div>
               )}

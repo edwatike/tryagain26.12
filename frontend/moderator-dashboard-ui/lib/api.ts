@@ -611,3 +611,55 @@ export async function getDomainParserStatus(parserRunId: string): Promise<Domain
   return apiFetch<DomainParserStatusResponse>(`/domain-parser/status/${parserRunId}`)
 }
 
+// Learning API
+export interface LearnedItem {
+  domain: string
+  type: "inn" | "email"
+  value: string
+  sourceUrls: string[]
+  urlPatterns: string[]
+  learning: string
+}
+
+export interface LearningStatistics {
+  totalLearned: number
+  cometContributions: number
+  successRateBefore: number
+  successRateAfter: number
+}
+
+export interface LearnFromCometResponse {
+  runId: string
+  learningSessionId: string | null
+  learnedItems: LearnedItem[]
+  statistics: LearningStatistics
+}
+
+export async function learnFromComet(
+  runId: string,
+  domains: string[],
+  learningSessionId?: string
+): Promise<LearnFromCometResponse> {
+  return apiFetch<LearnFromCometResponse>("/learning/learn-from-comet", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ runId, domains, learningSessionId }),
+  })
+}
+
+export async function getLearningStatistics(): Promise<LearningStatistics> {
+  return apiFetch<LearningStatistics>("/learning/statistics")
+}
+
+export async function getLearnedSummary(limit: number = 10): Promise<{
+  total_patterns: number
+  inn_url_patterns: string[]
+  email_url_patterns: string[]
+  domains_learned: number
+  statistics: LearningStatistics
+}> {
+  return apiFetch(`/learning/learned-summary?limit=${limit}`)
+}
+
