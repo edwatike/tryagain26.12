@@ -679,6 +679,18 @@ async def test_single_domain(domain: str) -> dict:
             except Exception:
                 pass
 
+            # CRITICAL: Wait for sidecar UI to fully load
+            # The sidecar page loads in stages - first the container, then the interactive elements
+            logger.info(f"⏳ Waiting for sidecar UI to fully load...")
+            await sidecar_page.wait_for_timeout(3000)  # Give UI time to initialize
+            
+            # Wait for any textarea or contenteditable element to appear
+            try:
+                await sidecar_page.wait_for_selector('textarea, [contenteditable="true"], [role="textbox"]', timeout=10000)
+                logger.info(f"✅ Interactive elements detected")
+            except Exception as e:
+                logger.warning(f"⚠️ No interactive elements found after 10s: {e}")
+
             await dump_screenshot(sidecar_page, f"{domain}_assistant_attempt_{attempt}_sidecar_opened")
             dump_desktop_screenshot(f"{domain}_assistant_attempt_{attempt}_sidecar_opened")
 
